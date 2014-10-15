@@ -1,0 +1,10 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="CTL Parser:jar">
+    <output-path>$PROJECT_DIR$/CTL Parser/out</output-path>
+    <root id="archive" name="CTL Parser.jar">
+      <element id="module-output" name="CTL Parser" />
+      <element id="module-output" name="Utility" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/CTL Parser/lib/antlr-4.4-complete.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

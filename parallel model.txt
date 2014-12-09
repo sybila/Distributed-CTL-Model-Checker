@@ -1,0 +1,25 @@
+
+DGraph
+	- Node
+		- int[] coordinates | used for graph partitioning
+		- float[] values | used for proposition evaluation
+		- List<Path> after | list of nodes following this node
+		- List<Path> before | list of nodes preceeding this node
+		- Map<Formula, Set<Color>> formulae
+	- Path
+		- Node source
+		- Node destination
+		- Set<Color> colors
+	- NodeStorage
+		- Hash set of nodes that is also a factory that ensures that one graph wont contain duplicate nodes
+
+GraphPartitioner
+	> constructor / full coordiante set / COMM config
+	> int decideNode / Node | based on coordinates and COMM config decide which machine specified node belongs to
+
+GraphGenerator
+	> constructor | now random, future will bridge tha c++ library
+	> List<Path> getAfter / Node | resolve all paths from specified node
+	> List<Path> getBefore / Node | resolve all paths to specified node
+
+DModelChecker

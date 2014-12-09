@@ -5,11 +5,13 @@ import cz.muni.fi.ctl.util.Log;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ListIterator;
 
 public class ParameterSet {
 
     //We need fast inverse (for negation) (up to some upper limit)
     //Fast intersect - for && and for path+node checking
+    //We need removeAll
     //fast empty check
     //fast union
 
@@ -21,74 +23,132 @@ public class ParameterSet {
         this.values.addAll(values);
     }
 
+    //should be good
+    //TODO: move size check before value checks
     public void intersect(ParameterSet other) {
         List<Integer> intersect = new ArrayList<>();
         int myIter = 0;
         int otherIter = 0;
-        while (myIter < values.size() && otherIter < values.size()) {
+        while (myIter < values.size() && otherIter < other.values.size()) {
+            Log.d("Process: "+values.get(myIter)+" "+other.values.get(otherIter));
             if (values.get(myIter) > other.values.get(otherIter)) {
                 //skip all smaller intervals
-                while (other.values.get(otherIter) < values.get(myIter)) {
+                while (other.values.get(otherIter) < values.get(myIter) && otherIter < other.values.size()) {
+                    Log.d("Skipping: "+other.values.get(otherIter));
                     otherIter++;
                 }
-                if (otherIter % 2 == 1) {
+                //if I end up in the middle of interval, I have intersection
+                while (otherIter % 2 == 1 && myIter < values.size()) {
                     intersect.add(values.get(myIter));
+                    if (other.values.get(otherIter) <= values.get(myIter+1)) {
+                        intersect.add(other.values.get(otherIter));
+                        otherIter++;
+                    } else {
+                        myIter++;
+                        intersect.add(values.get(myIter));
+                        myIter++;
+                        if (values.get(myIter) > other.values.get(otherIter)) {
+                            otherIter++;
+                        }
+                    }
+                }
+            } else if (values.get(myIter) < other.values.get(otherIter)) {
+                while (values.get(myIter) < other.values.get(otherIter) && myIter < this.values.size()) {
+                    Log.d("Skipping: "+values.get(myIter));
+                    myIter++;
+                }
+                while (myIter % 2 == 1 && otherIter < other.values.size()) {
                     intersect.add(other.values.get(otherIter));
-
+                    if (this.values.get(myIter) <= other.values.get(otherIter+1)) {
+                        intersect.add(values.get(myIter));
+                        myIter++;
+                    } else {
+                        otherIter++;
+                        intersect.add(other.values.get(otherIter));
+                        otherIter++;
+                        if (other.values.get(otherIter) > this.values.get(myIter)) {
+                            myIter++;
+                        }
+                    }
+                }
+            } else {    //equal
+                if (values.get(myIter+1) <= other.values.get(otherIter+1)) {
+                    intersect.add(values.get(myIter));
+                    myIter++;
+                    intersect.add(values.get(myIter));
+                    myIter++;
+                } else {
+                    intersect.add(other.values.get(otherIter));
+                    otherIter++;
+                    intersect.add(other.values.get(otherIter));
+                    otherIter++;
                 }
             }
         }
+        //no need to scan remaining, its intersection, so they won't be there
         values = intersect;
     }
 
+    //scrap this whole thing
+    //1. Find start
+    //2. Follow intervals till end
+    //3. Write interval
+    //4. repeat
     public void union(ParameterSet other) {
         List<Integer> union = new ArrayList<>(Math.max(values.size(),other.values.size()));
         int myIter = 0;
         int otherIter = 0;
-        while (myIter < values.size() && otherIter < other.values.size()) {
+        int start = -1;
+        int end = -1;
+        while (myIter < values.size() || otherIter < other.values.size()) {
+//            Log.d("Process: "+values.get(myIter)+" "+other.values.get(otherIter));
             //if smaller value is in our list, add it to the result
-            if (values.get(myIter) < other.values.get(otherIter)) {
-                union.add(values.get(myIter));
-                myIter++;
-                //skip all values from other list that are smaller than the end of interval
-                while (otherIter < other.values.size() && other.values.get(otherIter) <= values.get(myIter) ) {
-                    otherIter++;
-                }
-                //if I stopped in the middle of interval, it means I have intersection and I can push interval end
-                if (otherIter % 2 == 1) {
-                    union.add(other.values.get(otherIter));
-                    otherIter++;
+            if (otherIter >= other.values.size() || values.get(myIter) < other.values.get(otherIter)) {
+                if (start == -1) {
+                    start = values.get(myIter);
+                    myIter++;
+                    end = values.get(myIter);
+                    myIter++;
                 } else {
-                    union.add(values.get(myIter));
+                    if (values.get(myIter) > end) {
+                        union.add(start);
+                        union.add(end);
+                        start = -1;
+                        end = -1;
+                    } else {
+                        myIter++;
+                        end = Math.max(values.get(myIter), end);
+                        myIter++;
+                    }
                 }
-                myIter++;
             } else {
-                union.add(other.values.get(otherIter));
-                otherIter++;
-                while (myIter < values.size() && values.get(myIter) <= other.values.get(otherIter)) {
-                    Log.d("Skip: "+myIter);
-                    myIter++;
+                if (start == -1) {
+                    start = other.values.get(otherIter);
+                    otherIter++;
+                    end = other.values.get(otherIter);
+                    otherIter++;
+                } else  {
+                    if (other.values.get(otherIter) > end) {
+                        union.add(start);
+                        union.add(end);
+                        start = -1;
+                        end = -1;
+                    } else {
+                        otherIter++;
+                        end = Math.max(other.values.get(otherIter), end);
+                        otherIter++;
+                    }
                 }
-                if (myIter % 2 == 1) {
-                    union.add(values.get(myIter));
-                    myIter++;
-                } else {
-                    union.add(other.values.get(otherIter));
-                }
-                otherIter++;
             }
         }
-        while (myIter < values.size()) {
-            union.add(values.get(myIter));
-            myIter++;
-        }
-        while (otherIter < other.values.size()) {
-            union.add(other.values.get(otherIter));
-            otherIter++;
+        if (end != -1) {
+            union.add(start);
+            union.add(end);
         }
         values = union;
     }
 
+    //should be good
     public void invert() {
         List<Integer> inversion = new ArrayList<>(values.size());
         if (values.get(0) != 0) {   //handle start of list separately

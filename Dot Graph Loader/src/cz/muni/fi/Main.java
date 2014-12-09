@@ -12,9 +12,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-/**
- * Created by daemontus on 23/09/14.
- */
 public class Main {
 
     public static void main(String[] args) throws IOException {
@@ -25,7 +22,7 @@ public class Main {
         for (Node node : graph.getInitialNodes()) {
             printRecursive(node, 5);
         }*/
-        ParameterSet.limit = 20;
+        ParameterSet.limit = 40;
         ArrayList<Integer> a = new ArrayList<>();
         a.add(1);
         a.add(1);
@@ -37,9 +34,17 @@ public class Main {
         a.add(11);
         a.add(13);
         a.add(15);
+        a.add(17);
+        a.add(22);
         ArrayList<Integer> b = new ArrayList<>();
-        b.add(2);
+        b.add(1);
         b.add(5);
+        b.add(12);
+        b.add(14);
+        b.add(17);
+        b.add(19);
+        b.add(21);
+        b.add(24);
         ParameterSet A = new ParameterSet(a);
         ParameterSet B = new ParameterSet(b);
         B.union(A);

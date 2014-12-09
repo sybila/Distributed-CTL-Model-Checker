@@ -1,5 +1,6 @@
 package cz.muni.fi.graph;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -24,6 +25,9 @@ public class Path {
         colors.add(color);
     }
 
+    public Set<Integer> getColors() {
+        return colors;
+    }
     public boolean hasColor(int color) {
         return colors.contains(color);
     }

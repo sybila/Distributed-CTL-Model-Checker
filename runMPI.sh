@@ -1,0 +1,1 @@
+$MPJ_HOME/bin/mpjrun.sh -np 4 -jar "./out/artifacts/Parametrized_CTL_Model_Checker_jar/Parametrized CTL Model Checker.jar"

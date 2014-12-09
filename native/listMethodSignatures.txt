@@ -1,0 +1,86 @@
+Compiled from "List.java"
+public interface java.util.List<E> extends java.util.Collection<E> {
+  public abstract int size();
+    descriptor: ()I
+
+  public abstract boolean isEmpty();
+    descriptor: ()Z
+
+  public abstract boolean contains(java.lang.Object);
+    descriptor: (Ljava/lang/Object;)Z
+
+  public abstract java.util.Iterator<E> iterator();
+    descriptor: ()Ljava/util/Iterator;
+
+  public abstract java.lang.Object[] toArray();
+    descriptor: ()[Ljava/lang/Object;
+
+  public abstract <T> T[] toArray(T[]);
+    descriptor: ([Ljava/lang/Object;)[Ljava/lang/Object;
+
+  public abstract boolean add(E);
+    descriptor: (Ljava/lang/Object;)Z
+
+  public abstract boolean remove(java.lang.Object);
+    descriptor: (Ljava/lang/Object;)Z
+
+  public abstract boolean containsAll(java.util.Collection<?>);
+    descriptor: (Ljava/util/Collection;)Z
+
+  public abstract boolean addAll(java.util.Collection<? extends E>);
+    descriptor: (Ljava/util/Collection;)Z
+
+  public abstract boolean addAll(int, java.util.Collection<? extends E>);
+    descriptor: (ILjava/util/Collection;)Z
+
+  public abstract boolean removeAll(java.util.Collection<?>);
+    descriptor: (Ljava/util/Collection;)Z
+
+  public abstract boolean retainAll(java.util.Collection<?>);
+    descriptor: (Ljava/util/Collection;)Z
+
+  public void replaceAll(java.util.function.UnaryOperator<E>);
+    descriptor: (Ljava/util/function/UnaryOperator;)V
+
+  public void sort(java.util.Comparator<? super E>);
+    descriptor: (Ljava/util/Comparator;)V
+
+  public abstract void clear();
+    descriptor: ()V
+
+  public abstract boolean equals(java.lang.Object);
+    descriptor: (Ljava/lang/Object;)Z
+
+  public abstract int hashCode();
+    descriptor: ()I
+
+  public abstract E get(int);
+    descriptor: (I)Ljava/lang/Object;
+
+  public abstract E set(int, E);
+    descriptor: (ILjava/lang/Object;)Ljava/lang/Object;
+
+  public abstract void add(int, E);
+    descriptor: (ILjava/lang/Object;)V
+
+  public abstract E remove(int);
+    descriptor: (I)Ljava/lang/Object;
+
+  public abstract int indexOf(java.lang.Object);
+    descriptor: (Ljava/lang/Object;)I
+
+  public abstract int lastIndexOf(java.lang.Object);
+    descriptor: (Ljava/lang/Object;)I
+
+  public abstract java.util.ListIterator<E> listIterator();
+    descriptor: ()Ljava/util/ListIterator;
+
+  public abstract java.util.ListIterator<E> listIterator(int);
+    descriptor: (I)Ljava/util/ListIterator;
+
+  public abstract java.util.List<E> subList(int, int);
+    descriptor: (II)Ljava/util/List;
+
+  public java.util.Spliterator<E> spliterator();
+    descriptor: ()Ljava/util/Spliterator;
+}

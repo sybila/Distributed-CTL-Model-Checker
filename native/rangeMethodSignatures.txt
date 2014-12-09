@@ -1,0 +1,142 @@
+Compiled from "Range.java"
+public final class com.google.common.collect.Range<C extends java.lang.Comparable> implements com.google.common.base.Predicate<C>, java.io.Serializable {
+  private static final com.google.common.base.Function<com.google.common.collect.Range, com.google.common.collect.Cut> LOWER_BOUND_FN;
+    descriptor: Lcom/google/common/base/Function;
+  private static final com.google.common.base.Function<com.google.common.collect.Range, com.google.common.collect.Cut> UPPER_BOUND_FN;
+    descriptor: Lcom/google/common/base/Function;
+  static final com.google.common.collect.Ordering<com.google.common.collect.Range<?>> RANGE_LEX_ORDERING;
+    descriptor: Lcom/google/common/collect/Ordering;
+  private static final com.google.common.collect.Range<java.lang.Comparable> ALL;
+    descriptor: Lcom/google/common/collect/Range;
+  final com.google.common.collect.Cut<C> lowerBound;
+    descriptor: Lcom/google/common/collect/Cut;
+  final com.google.common.collect.Cut<C> upperBound;
+    descriptor: Lcom/google/common/collect/Cut;
+  private static final long serialVersionUID;
+    descriptor: J
+  static <C extends java.lang.Comparable<?>> com.google.common.base.Function<com.google.common.collect.Range<C>, com.google.common.collect.Cut<C>> lowerBoundFn();
+    descriptor: ()Lcom/google/common/base/Function;
+
+  static <C extends java.lang.Comparable<?>> com.google.common.base.Function<com.google.common.collect.Range<C>, com.google.common.collect.Cut<C>> upperBoundFn();
+    descriptor: ()Lcom/google/common/base/Function;
+
+  static <C extends java.lang.Comparable<?>> com.google.common.collect.Range<C> create(com.google.common.collect.Cut<C>, com.google.common.collect.Cut<C>);
+    descriptor: (Lcom/google/common/collect/Cut;Lcom/google/common/collect/Cut;)Lcom/google/common/collect/Range;
+
+  public static <C extends java.lang.Comparable<?>> com.google.common.collect.Range<C> open(C, C);
+    descriptor: (Ljava/lang/Comparable;Ljava/lang/Comparable;)Lcom/google/common/collect/Range;
+
+  public static <C extends java.lang.Comparable<?>> com.google.common.collect.Range<C> closed(C, C);
+    descriptor: (Ljava/lang/Comparable;Ljava/lang/Comparable;)Lcom/google/common/collect/Range;
+
+  public static <C extends java.lang.Comparable<?>> com.google.common.collect.Range<C> closedOpen(C, C);
+    descriptor: (Ljava/lang/Comparable;Ljava/lang/Comparable;)Lcom/google/common/collect/Range;
+
+  public static <C extends java.lang.Comparable<?>> com.google.common.collect.Range<C> openClosed(C, C);
+    descriptor: (Ljava/lang/Comparable;Ljava/lang/Comparable;)Lcom/google/common/collect/Range;
+
+  public static <C extends java.lang.Comparable<?>> com.google.common.collect.Range<C> range(C, com.google.common.collect.BoundType, C, com.google.common.collect.BoundType);
+    descriptor: (Ljava/lang/Comparable;Lcom/google/common/collect/BoundType;Ljava/lang/Comparable;Lcom/google/common/collect/BoundType;)Lcom/google/common/collect/Range;
+
+  public static <C extends java.lang.Comparable<?>> com.google.common.collect.Range<C> lessThan(C);
+    descriptor: (Ljava/lang/Comparable;)Lcom/google/common/collect/Range;
+
+  public static <C extends java.lang.Comparable<?>> com.google.common.collect.Range<C> atMost(C);
+    descriptor: (Ljava/lang/Comparable;)Lcom/google/common/collect/Range;
+
+  public static <C extends java.lang.Comparable<?>> com.google.common.collect.Range<C> upTo(C, com.google.common.collect.BoundType);
+    descriptor: (Ljava/lang/Comparable;Lcom/google/common/collect/BoundType;)Lcom/google/common/collect/Range;
+
+  public static <C extends java.lang.Comparable<?>> com.google.common.collect.Range<C> greaterThan(C);
+    descriptor: (Ljava/lang/Comparable;)Lcom/google/common/collect/Range;
+
+  public static <C extends java.lang.Comparable<?>> com.google.common.collect.Range<C> atLeast(C);
+    descriptor: (Ljava/lang/Comparable;)Lcom/google/common/collect/Range;
+
+  public static <C extends java.lang.Comparable<?>> com.google.common.collect.Range<C> downTo(C, com.google.common.collect.BoundType);
+    descriptor: (Ljava/lang/Comparable;Lcom/google/common/collect/BoundType;)Lcom/google/common/collect/Range;
+
+  public static <C extends java.lang.Comparable<?>> com.google.common.collect.Range<C> all();
+    descriptor: ()Lcom/google/common/collect/Range;
+
+  public static <C extends java.lang.Comparable<?>> com.google.common.collect.Range<C> singleton(C);
+    descriptor: (Ljava/lang/Comparable;)Lcom/google/common/collect/Range;
+
+  public static <C extends java.lang.Comparable<?>> com.google.common.collect.Range<C> encloseAll(java.lang.Iterable<C>);
+    descriptor: (Ljava/lang/Iterable;)Lcom/google/common/collect/Range;
+
+  private com.google.common.collect.Range(com.google.common.collect.Cut<C>, com.google.common.collect.Cut<C>);
+    descriptor: (Lcom/google/common/collect/Cut;Lcom/google/common/collect/Cut;)V
+
+  public boolean hasLowerBound();
+    descriptor: ()Z
+
+  public C lowerEndpoint();
+    descriptor: ()Ljava/lang/Comparable;
+
+  public com.google.common.collect.BoundType lowerBoundType();
+    descriptor: ()Lcom/google/common/collect/BoundType;
+
+  public boolean hasUpperBound();
+    descriptor: ()Z
+
+  public C upperEndpoint();
+    descriptor: ()Ljava/lang/Comparable;
+
+  public com.google.common.collect.BoundType upperBoundType();
+    descriptor: ()Lcom/google/common/collect/BoundType;
+
+  public boolean isEmpty();
+    descriptor: ()Z
+
+  public boolean contains(C);
+    descriptor: (Ljava/lang/Comparable;)Z
+
+  public boolean apply(C);
+    descriptor: (Ljava/lang/Comparable;)Z
+
+  public boolean containsAll(java.lang.Iterable<? extends C>);
+    descriptor: (Ljava/lang/Iterable;)Z
+
+  public boolean encloses(com.google.common.collect.Range<C>);
+    descriptor: (Lcom/google/common/collect/Range;)Z
+
+  public boolean isConnected(com.google.common.collect.Range<C>);
+    descriptor: (Lcom/google/common/collect/Range;)Z
+
+  public com.google.common.collect.Range<C> intersection(com.google.common.collect.Range<C>);
+    descriptor: (Lcom/google/common/collect/Range;)Lcom/google/common/collect/Range;
+
+  public com.google.common.collect.Range<C> span(com.google.common.collect.Range<C>);
+    descriptor: (Lcom/google/common/collect/Range;)Lcom/google/common/collect/Range;
+
+  public com.google.common.collect.Range<C> canonical(com.google.common.collect.DiscreteDomain<C>);
+    descriptor: (Lcom/google/common/collect/DiscreteDomain;)Lcom/google/common/collect/Range;
+
+  public boolean equals(java.lang.Object);
+    descriptor: (Ljava/lang/Object;)Z
+
+  public int hashCode();
+    descriptor: ()I
+
+  public java.lang.String toString();
+    descriptor: ()Ljava/lang/String;
+
+  private static java.lang.String toString(com.google.common.collect.Cut<?>, com.google.common.collect.Cut<?>);
+    descriptor: (Lcom/google/common/collect/Cut;Lcom/google/common/collect/Cut;)Ljava/lang/String;
+
+  private static <T> java.util.SortedSet<T> cast(java.lang.Iterable<T>);
+    descriptor: (Ljava/lang/Iterable;)Ljava/util/SortedSet;
+
+  java.lang.Object readResolve();
+    descriptor: ()Ljava/lang/Object;
+
+  static int compareOrThrow(java.lang.Comparable, java.lang.Comparable);
+    descriptor: (Ljava/lang/Comparable;Ljava/lang/Comparable;)I
+
+  public boolean apply(java.lang.Object);
+    descriptor: (Ljava/lang/Object;)Z
+
+  static {};
+    descriptor: ()V
+}

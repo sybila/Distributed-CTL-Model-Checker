@@ -1,0 +1,10 @@
+1) Ak dam hodnotu mimo <min, max>, nic nevrati (napr a < max+1)
+2) Ak dam hodnotu inu ako threshold, nic nevrati
+3) podivne coordiantes - prva suradnica akoby sla po tresholdoch
+ale druha po jednotkach 
+(tj ak by som mal dostat vsetko od <0,7> a <0,5> pricom prve ma threshold 3,5 tak dostanem 0,0..5, 1,0..5)
+
+1000x cele - 1039ms / 679ms
+1x cele - 20ms / 10ms
+1000x cpp - 270ms / 116ms
+=> overhead ~700ms

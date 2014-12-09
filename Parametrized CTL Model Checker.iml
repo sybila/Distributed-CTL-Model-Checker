@@ -10,6 +10,24 @@
     <orderEntry type="module" module-name="CTL Parser" exported="" />
     <orderEntry type="module" module-name="Dot Graph Loader" exported="" />
     <orderEntry type="module" module-name="Utility" exported="" />
+    <orderEntry type="module-library" exported="">
+      <library>
+        <CLASSES>
+          <root url="jar:///usr/local/lib/mpj-0.43/lib/mpj.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" exported="" name="guava-18.0" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/annotations.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>
-

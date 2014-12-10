@@ -1,20 +1,26 @@
 package cz.muni.fi.graph;
 
 import cz.muni.fi.ctl.formula.Formula;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
 public class Node {
 
+    @Nullable
     private String id;
     private int subGraphId;
+    @NotNull
     private Set<Path> to = new HashSet<>();  //children
+    @NotNull
     private Map<String, Float> values = new HashMap<>();
+    @NotNull
     public Map<Formula, Set<Integer>> formulas = new HashMap<>();
 
     private Node() {}
 
-    public Node(Map<String, Float> values, String id) {
+    public Node(@Nullable Map<String, Float> values, @Nullable String id) {
         if (values == null) {
             throw new NullPointerException("Cannot create node with null values");
         }
@@ -25,8 +31,9 @@ public class Node {
         this.id = id;
     }
 
+    @NotNull
     public Node copy() {
-        Node result = new Node();
+        @NotNull Node result = new Node();
         result.values.putAll(values);
         result.id = id;
         result.subGraphId = subGraphId;
@@ -45,6 +52,7 @@ public class Node {
         to.add(path);
     }
 
+    @NotNull
     public Set<Path> getAfter() {
         return to;
     }
@@ -57,22 +65,23 @@ public class Node {
         }
     }
 
-    public void addFormula(Formula formula, Set<Integer> colors) {
+    public void addFormula(Formula formula, @NotNull Set<Integer> colors) {
         if (!formulas.containsKey(formula)) {
             formulas.put(formula, new HashSet<Integer>());
         }
         formulas.get(formula).addAll(colors);
     }
 
+    @NotNull
     @Override
     public String toString() {
-        String result = "Node: ";
-        for (Map.Entry<String, Float> pair : values.entrySet()) {
+        @NotNull String result = "Node: ";
+        for (@NotNull Map.Entry<String, Float> pair : values.entrySet()) {
             result += pair.getKey()+":"+pair.getValue()+" ";
         }
         result += "\n";
         result += formulas.size()+" ";
-        for (Map.Entry<Formula, Set<Integer>> pair : formulas.entrySet()) {
+        for (@NotNull Map.Entry<Formula, Set<Integer>> pair : formulas.entrySet()) {
             result += pair.getKey()+" ("+Arrays.toString(pair.getValue().toArray())+"), ";
         }
         //result += formulas.size()+" "+Arrays.toString(formulas.keySet().toArray());
@@ -84,7 +93,7 @@ public class Node {
         if (this == o) return true;
         if (!(o instanceof Node)) return false;
 
-        Node node = (Node) o;
+        @NotNull Node node = (Node) o;
 
         return id.equals(node.id) && values.equals(node.values);
 

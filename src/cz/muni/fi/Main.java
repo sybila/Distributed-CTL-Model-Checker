@@ -8,6 +8,7 @@ import cz.muni.fi.dot.DotParser;
 import cz.muni.fi.distributed.graph.Graph;
 import cz.muni.fi.distributed.graph.Node;
 import cz.muni.fi.graph.Path;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -49,9 +50,9 @@ public class Main {
     }
 
     private static void test(int count) throws IOException {
-        File folder = new File("/Users/daemontus/Downloads/doty/");
-        File f = new File("/Users/daemontus/Downloads/doty/enzyme_1complex.0.dot");
-        File[] input = new File[count];
+        @NotNull File folder = new File("/Users/daemontus/Downloads/doty/");
+        @NotNull File f = new File("/Users/daemontus/Downloads/doty/enzyme_1complex.0.dot");
+        @NotNull File[] input = new File[count];
         for (int i=0; i<input.length; i++) {
             input[i] = f;
         }
@@ -64,7 +65,7 @@ public class Main {
     }
 
 
-    private static void printRecursive(Node node, int k) {
+    private static void printRecursive(@NotNull Node node, int k) {
         if (k<=0) return;
         System.out.println(node.toString());
         //System.out.println(node.formulas.size()+" "+Arrays.toString(node.formulas.keySet().toArray()));

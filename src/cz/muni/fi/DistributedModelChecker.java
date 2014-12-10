@@ -12,24 +12,26 @@ import cz.muni.fi.model.ColorSet;
 import cz.muni.fi.model.Model;
 import cz.muni.fi.model.TreeColorSet;
 import mpi.MPI;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Map;
 
 public class DistributedModelChecker {
 
+    @NotNull
     public final Graph graph;
 
-    public DistributedModelChecker(Model model, int mpiSize, int mpiRank) {
+    public DistributedModelChecker(@NotNull Model model, int mpiSize, int mpiRank) {
         this.graph = new Graph(model, mpiSize, mpiRank);
     }
 
     public void check(Formula formula) throws InterruptedException {
         //propositions are trivially checked in all nodes
         if (formula instanceof Proposition) {
-            Map<Node, ColorSet> valid = graph.factory.getAllValidNodes(formula);
+            @NotNull Map<Node, ColorSet> valid = graph.factory.getAllValidNodes(formula);
             Log.d(formula+" Proposition nodes found: "+valid.size());
-            for (Map.Entry<Node, ColorSet> entry : valid.entrySet()) {
+            for (@NotNull Map.Entry<Node, ColorSet> entry : valid.entrySet()) {
                 entry.getKey().addFormula(formula, entry.getValue());
             }
             return;
@@ -40,7 +42,7 @@ public class DistributedModelChecker {
         }
         Log.d("--------------- Checking: "+formula+" ------------------");
         //create new task to process this formula and wait for it to finish
-        FormulaChecker checker = new FormulaChecker(formula, graph, MPI.COMM_WORLD);
+        @NotNull FormulaChecker checker = new FormulaChecker(formula, graph, MPI.COMM_WORLD);
         checker.execute();
     }
 

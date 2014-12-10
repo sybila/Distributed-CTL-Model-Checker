@@ -1,16 +1,22 @@
 package cz.muni.fi.graph;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 public class Path {
 
+    @Nullable
     private Node from;
+    @Nullable
     private Node to;
+    @NotNull
     private Set<Integer> colors = new HashSet<>();
 
-    public Path(Node from, Node to) {
+    public Path(@Nullable Node from, @Nullable Node to) {
         if (from == null) {
             throw new NullPointerException("Cannot create path with no start");
         }
@@ -25,6 +31,7 @@ public class Path {
         colors.add(color);
     }
 
+    @NotNull
     public Set<Integer> getColors() {
         return colors;
     }
@@ -32,17 +39,20 @@ public class Path {
         return colors.contains(color);
     }
 
-    public Set<Integer> intersectColors(Set<Integer> other) {
-        Set<Integer> copy = new HashSet<>();
+    @NotNull
+    public Set<Integer> intersectColors(@NotNull Set<Integer> other) {
+        @NotNull Set<Integer> copy = new HashSet<>();
         copy.addAll(other);
         copy.retainAll(colors);
         return copy;
     }
 
+    @Nullable
     public Node getFrom() {
         return from;
     }
 
+    @Nullable
     public Node getTo() {
         return to;
     }
@@ -52,7 +62,7 @@ public class Path {
         if (this == o) return true;
         if (!(o instanceof Path)) return false;
 
-        Path path = (Path) o;
+        @NotNull Path path = (Path) o;
 
         return from.equals(path.from) && to.equals(path.to);
 

@@ -4,6 +4,8 @@ package cz.muni.fi.distributed.graph;
 import cz.muni.fi.ctl.formula.Formula;
 import cz.muni.fi.model.ColorSet;
 import cz.muni.fi.model.TreeColorSet;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -15,10 +17,12 @@ public class Node {
     private final Graph graph;
     public final Map<Node, ColorSet> successors = new HashMap<>();
     //public final double[] valuation;
+    @NotNull
     public final int[] coordinates;
+    @NotNull
     public Map<Formula, ColorSet> formulae = new HashMap<>();
 
-    public Node(int[] coordinates, Graph graph) {
+    public Node(@NotNull int[] coordinates, Graph graph) {
         this.graph = graph;
         this.coordinates = Arrays.copyOf(coordinates, coordinates.length);
         //this.valuation = Arrays.copyOf(valuation, valuation.length);
@@ -32,7 +36,7 @@ public class Node {
         return coordinates[dimension];
     }
 
-    public Map<Node, ColorSet> getPredecessors(Formula formula) {
+    public Map<Node, ColorSet> getPredecessors(@Nullable Formula formula) {
         if (formula == null) {
             return graph.factory.computePredecessors(this, graph.model.getFullColorSet());
         } else {
@@ -40,7 +44,7 @@ public class Node {
         }
     }
 
-    public Map<Node, ColorSet> getSuccessors(Formula formula) {
+    public Map<Node, ColorSet> getSuccessors(@Nullable Formula formula) {
         if (formula == null) {
             return graph.factory.computeSuccessors(this, graph.model.getFullColorSet());
         } else {
@@ -56,7 +60,7 @@ public class Node {
         }
     }
 
-    public void addFormula(Formula formula, ColorSet colors) {
+    public void addFormula(Formula formula, @NotNull ColorSet colors) {
         if (!formulae.containsKey(formula)) {
             formulae.put(formula, TreeColorSet.createCopy(colors));
         } else {
@@ -80,7 +84,7 @@ public class Node {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof Node) {
-            Node n = (Node) obj;
+            @NotNull Node n = (Node) obj;
             return Arrays.equals(coordinates, n.coordinates) && graph.equals(n.graph);
         }
         return false;

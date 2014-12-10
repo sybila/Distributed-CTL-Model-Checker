@@ -3,6 +3,7 @@ package cz.muni.fi.ctl.util;
 /**
  * Simple logger for most basic message handling
  */
+@SuppressWarnings("UnusedDeclaration")
 public class Log {
     public static void d(String message) {
         System.out.println(message);

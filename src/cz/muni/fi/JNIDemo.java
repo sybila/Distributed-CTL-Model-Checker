@@ -6,6 +6,7 @@ import cz.muni.fi.distributed.graph.Graph;
 import cz.muni.fi.distributed.graph.Node;
 import cz.muni.fi.model.ColorSet;
 import cz.muni.fi.model.Model;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -13,13 +14,13 @@ import java.util.StringTokenizer;
 public class JNIDemo {
 
     public static void main(String[] args) {
-        FloatProposition proposition = new FloatProposition(10f, "pRB", FloatProposition.Operator.LT_EQ);
-        Model model = new Model("/Users/daemontus/Synced/Java Development/Parametrized CTL Model Checker/native/examples/tcbb1param.bio");
+        @NotNull FloatProposition proposition = new FloatProposition(10f, "pRB", FloatProposition.Operator.LT_EQ);
+        @NotNull Model model = new Model("/Users/daemontus/Synced/Java Development/Parametrized CTL Model Checker/native/examples/tcbb1param.bio");
         model.load();
-        Graph graph = new Graph(model, 1, 0);
-        Map<Node, ColorSet> nodeSet = graph.factory.getAllValidNodes(proposition);
+        @NotNull Graph graph = new Graph(model, 1, 0);
+        @NotNull Map<Node, ColorSet> nodeSet = graph.factory.getAllValidNodes(proposition);
         Log.d("Nodes: "+nodeSet.size());
-        for (Map.Entry<Node, ColorSet> entry: nodeSet.entrySet()) {
+        for (@NotNull Map.Entry<Node, ColorSet> entry: nodeSet.entrySet()) {
             /*Log.d("Node "+entry.getKey().coordinates[0]+" "+entry.getKey().coordinates[1]);
             if (entry.getKey().coordinates[1] < 5) {
                 Map<Node, ColorSet> successors = graph.factory.computePredecessors(entry.getKey(), entry.getValue());
@@ -33,11 +34,11 @@ public class JNIDemo {
         }*/
     }
 
-    private static void printSucc(Node node, Graph graph, ColorSet set, int depth) {
+    private static void printSucc(@NotNull Node node, @NotNull Graph graph, ColorSet set, int depth) {
         if (depth > 0) {
-            Map<Node, ColorSet> successors = graph.factory.computePredecessors(node, set);
+            @NotNull Map<Node, ColorSet> successors = graph.factory.computePredecessors(node, set);
             Log.d("Node "+node.coordinates[0]+" "+node.coordinates[1]+": "+successors.size());
-            for (Map.Entry<Node, ColorSet> entry : successors.entrySet()) {
+            for (@NotNull Map.Entry<Node, ColorSet> entry : successors.entrySet()) {
                 Log.d("     S "+entry.getKey().coordinates[0]+" "+entry.getKey().coordinates[1]+" "+entry.getValue());
                 printSucc(entry.getKey(), graph, entry.getValue(), depth-1);
             }
@@ -62,7 +63,7 @@ public class JNIDemo {
             System.loadLibrary("generator"); // used for tests. This library in classpath only
         } catch (UnsatisfiedLinkError e) {
             String property = System.getProperty("java.library.path");
-            StringTokenizer parser = new StringTokenizer(property, ";");
+            @NotNull StringTokenizer parser = new StringTokenizer(property, ";");
             while (parser.hasMoreTokens()) {
                 System.err.println(parser.nextToken());
             }

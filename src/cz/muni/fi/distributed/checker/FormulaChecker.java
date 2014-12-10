@@ -4,6 +4,7 @@ import cz.muni.fi.ctl.formula.Formula;
 import cz.muni.fi.ctl.util.Log;
 import cz.muni.fi.distributed.graph.Graph;
 import mpi.Intracomm;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Created by daemontus on 24/11/14.
@@ -11,12 +12,15 @@ import mpi.Intracomm;
 public class FormulaChecker implements Runnable, VerificationTask {
 
     private final Formula formula;
+    @NotNull
     private final Terminator terminator;
+    @NotNull
     private final SecondaryTaskListener secondaryTaskListener;
     private final Graph graph;
+    @NotNull
     private final Intracomm COMM;
 
-    public FormulaChecker(Formula formula, Graph graph, Intracomm COMM) {
+    public FormulaChecker(Formula formula, Graph graph, @NotNull Intracomm COMM) {
         this.formula = formula;
         this.graph = graph;
         this.COMM = COMM;
@@ -44,16 +48,18 @@ public class FormulaChecker implements Runnable, VerificationTask {
     }
 
     public void execute() throws InterruptedException {
-        Thread t = new Thread(this);
+        @NotNull Thread t = new Thread(this);
         t.start();
         t.join();
     }
 
+    @NotNull
     @Override
     public Terminator getTerminator() {
         return terminator;
     }
 
+    @NotNull
     @Override
     public TaskDispatcher getDispatcher() {
         return secondaryTaskListener;

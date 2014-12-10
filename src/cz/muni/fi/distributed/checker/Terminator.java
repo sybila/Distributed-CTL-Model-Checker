@@ -3,6 +3,7 @@ package cz.muni.fi.distributed.checker;
 import cz.muni.fi.ctl.util.Log;
 import mpi.Intracomm;
 import mpi.MPI;
+import org.jetbrains.annotations.NotNull;
 
 import static cz.muni.fi.distributed.checker.Tag.TERMINATOR;
 
@@ -13,12 +14,13 @@ public class Terminator implements Runnable {
 
     private final int PRIMARY_TERMINATION = -1;
     private final int SECONDARY_TERMINATION = -2;
+    @NotNull
     private final Intracomm COMM;
     private final VerificationTask task;
     private Thread thread;
     private int activeNodes;
 
-    public Terminator(Intracomm COMM, VerificationTask task) {
+    public Terminator(@NotNull Intracomm COMM, VerificationTask task) {
         this.COMM = COMM;
         this.task = task;
         this.activeNodes = COMM.Size();
@@ -29,7 +31,7 @@ public class Terminator implements Runnable {
      */
     @Override
     public void run() {
-        int[] buffer = new int[2];
+        @NotNull int[] buffer = new int[2];
         //if dispatcher has incomplete tasks, we will receive a message when such task is completed.
         //if active nodes isn't zero, there are still computers working
         while (task.getDispatcher().hasIncompleteRequests() || activeNodes > 0) {
@@ -44,13 +46,10 @@ public class Terminator implements Runnable {
         Log.d("Terminator finished ("+COMM.Rank()+")");
     }
 
-    public void sendTaskCompletedNotification(final Task task) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                int[] buffer = new int[] { SECONDARY_TERMINATION, task.getParentId() };
-                COMM.Send(buffer, 0, buffer.length, MPI.INT, task.getSource(), TERMINATOR.getTag());
-            }
+    public void sendTaskCompletedNotification(@NotNull final Task task) {
+        new Thread(() -> {
+            @NotNull int[] buffer = new int[] { SECONDARY_TERMINATION, task.getParentId() };
+            COMM.Send(buffer, 0, buffer.length, MPI.INT, task.getSource(), TERMINATOR.getTag());
         }).start();
     }
 
@@ -59,13 +58,10 @@ public class Terminator implements Runnable {
      * any more task requests. (Local computation is over)
      */
     public void sendTerminationNotification() {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                int[] buffer = new int[] { PRIMARY_TERMINATION, COMM.Rank() };
-                for (int i=0; i< COMM.Size(); i++) {
-                    COMM.Send(buffer, 0, buffer.length, MPI.INT, i, TERMINATOR.getTag());
-                }
+        new Thread(() -> {
+            @NotNull int[] buffer = new int[] { PRIMARY_TERMINATION, COMM.Rank() };
+            for (int i=0; i< COMM.Size(); i++) {
+                COMM.Send(buffer, 0, buffer.length, MPI.INT, i, TERMINATOR.getTag());
             }
         }).start();
     }
@@ -73,6 +69,7 @@ public class Terminator implements Runnable {
     /**
      * Start new thread with terminator running.
      */
+    @NotNull
     public Terminator execute() {
         if (thread != null) {
             throw new IllegalStateException("Can't execute same terminator twice");

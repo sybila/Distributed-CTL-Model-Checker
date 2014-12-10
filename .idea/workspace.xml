@@ -2,70 +2,98 @@
 <project version="4">
   <component name="ArtifactsWorkspaceSettings">
     <artifacts-to-build>
-      <artifact name="Parametrized CTL Model Checker:jar" />
+      <artifact name="CTL Parser:jar" />
     </artifacts-to-build>
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b2c88c94-0774-47dd-8579-b5352f88ed5f" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/ModelChecker.class" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/cz/muni/fi/ModelChecker.java" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/native/hs_err_pid6421.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/native/hs_err_pid6451.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/native/hs_err_pid6486.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/native/hs_err_pid6554.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/native/hs_err_pid6588.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/native/hs_err_pid6611.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/native/hs_err_pid6674.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/native/hs_err_pid6753.log" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$AllFutureContext.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$AndContext.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$ExistsFutureContext.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$ExistsUntilContext.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$NegationContext.class" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/src/cz/muni/fi/NativeModelLoader.java" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/operator/BinaryOperator.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/operator/BinaryOperator.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CTL Parser/out/CTL Parser.jar" afterPath="$PROJECT_DIR$/CTL Parser/out/CTL Parser.jar" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CTL Parser" afterPath="$PROJECT_DIR$/CTL Parser" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarBaseListener.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarBaseListener.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarLexer.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarLexer.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarListener.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarListener.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$AllFutureContext.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$AllFutureContext.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$AndContext.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$AndContext.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$ExistsFutureContext.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$ExistsFutureContext.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$ExistsUntilContext.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$ExistsUntilContext.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$ExpressionContext.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$ExpressionContext.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$FormulaContext.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$FormulaContext.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$NegationContext.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$NegationContext.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$PropContext.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$PropContext.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$PropositionContext.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser$PropositionContext.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarParser.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/parser/CTLParser.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/parser/CTLParser.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/test/CTL Parser/cz/muni/fi/ctl/parser/CTLParserTests.class" afterPath="$PROJECT_DIR$/out/test/CTL Parser/cz/muni/fi/ctl/parser/CTLParserTests.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/proposition/Contradiction.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/proposition/Contradiction.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/DistributedModelChecker.class" afterPath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/DistributedModelChecker.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Dot Graph Loader/cz/muni/fi/dot/DotParser.class" afterPath="$PROJECT_DIR$/out/production/Dot Graph Loader/cz/muni/fi/dot/DotParser.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/proposition/FloatProposition$1.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/proposition/FloatProposition$1.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/proposition/FloatProposition$Operator.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/proposition/FloatProposition$Operator.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/proposition/FloatProposition.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/proposition/FloatProposition.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/Formula.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/Formula.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/checker/FormulaChecker.class" afterPath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/checker/FormulaChecker.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/FormulaImpl.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/FormulaImpl.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/checker/FormulaVerificator.class" afterPath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/checker/FormulaVerificator.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Dot Graph Loader/cz/muni/fi/graph/Graph.class" afterPath="$PROJECT_DIR$/out/production/Dot Graph Loader/cz/muni/fi/graph/Graph.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/graph/Graph.class" afterPath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/graph/Graph.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Dot Graph Loader/cz/muni/fi/GraphUtils.class" afterPath="$PROJECT_DIR$/out/production/Dot Graph Loader/cz/muni/fi/GraphUtils.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Utility/cz/muni/fi/ctl/util/Log.class" afterPath="$PROJECT_DIR$/out/production/Utility/cz/muni/fi/ctl/util/Log.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/JNIDemo.class" afterPath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/JNIDemo.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/MPIDemo.class" afterPath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/MPIDemo.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Dot Graph Loader/cz/muni/fi/Main.class" afterPath="$PROJECT_DIR$/out/production/Dot Graph Loader/cz/muni/fi/Main.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/Main.class" afterPath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/Main.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/model/Model.class" afterPath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/model/Model.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Utility/cz/adamh/utils/NativeUtils.class" afterPath="$PROJECT_DIR$/out/production/Utility/cz/adamh/utils/NativeUtils.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Dot Graph Loader/cz/muni/fi/graph/Node.class" afterPath="$PROJECT_DIR$/out/production/Dot Graph Loader/cz/muni/fi/graph/Node.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/operator/NullaryOperator.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/operator/NullaryOperator.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/operator/Operator.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/operator/Operator.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/graph/Node.class" afterPath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/graph/Node.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/graph/NodeFactory.class" afterPath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/graph/NodeFactory.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Dot Graph Loader/cz/muni/fi/graph/ParameterSet.class" afterPath="$PROJECT_DIR$/out/production/Dot Graph Loader/cz/muni/fi/graph/ParameterSet.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/artifacts/Parametrized_CTL_Model_Checker_jar/Parametrized CTL Model Checker.jar" afterPath="$PROJECT_DIR$/out/artifacts/Parametrized_CTL_Model_Checker_jar/Parametrized CTL Model Checker.jar" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Dot Graph Loader/cz/muni/fi/graph/Path.class" afterPath="$PROJECT_DIR$/out/production/Dot Graph Loader/cz/muni/fi/graph/Path.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/proposition/Proposition.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/proposition/Proposition.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Dot Graph Loader/cz/muni/fi/graph/SubGraph.class" afterPath="$PROJECT_DIR$/out/production/Dot Graph Loader/cz/muni/fi/graph/SubGraph.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/checker/SecondaryTaskListener.class" afterPath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/checker/SecondaryTaskListener.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/model/StateSpacePartitioner.class" afterPath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/model/StateSpacePartitioner.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/proposition/Tautology.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/proposition/Tautology.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/checker/Terminator$1.class" afterPath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/checker/Terminator$1.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/checker/Terminator$2.class" afterPath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/checker/Terminator$2.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/checker/Terminator.class" afterPath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/checker/Terminator.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/model/TreeColorSet.class" afterPath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/model/TreeColorSet.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/operator/UnaryOperator.class" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/formula/operator/UnaryOperator.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CTL Parser/CTL Parser.iml" afterPath="$PROJECT_DIR$/CTL Parser/CTL Parser.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CTL Parser/grammar/CTLGrammar.g4" afterPath="$PROJECT_DIR$/CTL Parser/grammar/CTLGrammar.g4" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CTL Parser/grammar/CTLGrammar.tokens" afterPath="$PROJECT_DIR$/CTL Parser/grammar/CTLGrammar.tokens" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CTL Parser/antlr/cz/muni/fi/ctl/antlr/CTLGrammarBaseListener.java" afterPath="$PROJECT_DIR$/CTL Parser/antlr/cz/muni/fi/ctl/antlr/CTLGrammarBaseListener.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CTL Parser/antlr/cz/muni/fi/ctl/antlr/CTLGrammarLexer.java" afterPath="$PROJECT_DIR$/CTL Parser/antlr/cz/muni/fi/ctl/antlr/CTLGrammarLexer.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/parser/CTLParser.java" afterPath="$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/parser/CTLParser.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CTL Parser/test/cz/muni/fi/ctl/parser/CTLParserTests.java" afterPath="$PROJECT_DIR$/CTL Parser/test/cz/muni/fi/ctl/parser/CTLParserTests.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Dot Graph Loader/Dot Graph Loader.iml" afterPath="$PROJECT_DIR$/Dot Graph Loader/Dot Graph Loader.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/proposition/FloatProposition.java" afterPath="$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/proposition/FloatProposition.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/checker/VerificationTask.class" afterPath="$PROJECT_DIR$/out/production/Parametrized CTL Model Checker/cz/muni/fi/distributed/checker/VerificationTask.class" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammar.tokens" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammar.tokens" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarLexer.tokens" afterPath="$PROJECT_DIR$/out/production/CTL Parser/cz/muni/fi/ctl/antlr/CTLGrammarLexer.tokens" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/cz/muni/fi/DistributedModelChecker.java" afterPath="$PROJECT_DIR$/src/cz/muni/fi/DistributedModelChecker.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Dot Graph Loader/src/cz/muni/fi/dot/DotParser.java" afterPath="$PROJECT_DIR$/Dot Graph Loader/src/cz/muni/fi/dot/DotParser.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/FormulaChecker.java" afterPath="$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/FormulaChecker.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/FormulaVerificator.java" afterPath="$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/FormulaVerificator.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Dot Graph Loader/src/cz/muni/fi/graph/Graph.java" afterPath="$PROJECT_DIR$/Dot Graph Loader/src/cz/muni/fi/graph/Graph.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/cz/muni/fi/distributed/graph/Graph.java" afterPath="$PROJECT_DIR$/src/cz/muni/fi/distributed/graph/Graph.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Dot Graph Loader/src/cz/muni/fi/GraphUtils.java" afterPath="$PROJECT_DIR$/Dot Graph Loader/src/cz/muni/fi/GraphUtils.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/cz/muni/fi/JNIDemo.java" afterPath="$PROJECT_DIR$/src/cz/muni/fi/JNIDemo.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Utility/src/cz/muni/fi/ctl/util/Log.java" afterPath="$PROJECT_DIR$/Utility/src/cz/muni/fi/ctl/util/Log.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/cz/muni/fi/MPIDemo.java" afterPath="$PROJECT_DIR$/src/cz/muni/fi/MPIDemo.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Dot Graph Loader/src/cz/muni/fi/Main.java" afterPath="$PROJECT_DIR$/Dot Graph Loader/src/cz/muni/fi/Main.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/cz/muni/fi/Main.java" afterPath="$PROJECT_DIR$/src/cz/muni/fi/Main.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/native/Makefile" afterPath="$PROJECT_DIR$/native/Makefile" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/cz/muni/fi/model/Model.java" afterPath="$PROJECT_DIR$/src/cz/muni/fi/model/Model.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Utility/src/cz/adamh/utils/NativeUtils.java" afterPath="$PROJECT_DIR$/Utility/src/cz/adamh/utils/NativeUtils.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Dot Graph Loader/src/cz/muni/fi/graph/Node.java" afterPath="$PROJECT_DIR$/Dot Graph Loader/src/cz/muni/fi/graph/Node.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/cz/muni/fi/distributed/graph/Node.java" afterPath="$PROJECT_DIR$/src/cz/muni/fi/distributed/graph/Node.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/cz/muni/fi/distributed/graph/NodeFactory.java" afterPath="$PROJECT_DIR$/src/cz/muni/fi/distributed/graph/NodeFactory.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Dot Graph Loader/src/cz/muni/fi/graph/ParameterSet.java" afterPath="$PROJECT_DIR$/Dot Graph Loader/src/cz/muni/fi/graph/ParameterSet.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Parametrized CTL Model Checker.iml" afterPath="$PROJECT_DIR$/Parametrized CTL Model Checker.iml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Dot Graph Loader/src/cz/muni/fi/graph/Path.java" afterPath="$PROJECT_DIR$/Dot Graph Loader/src/cz/muni/fi/graph/Path.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Utility/Utility.iml" afterPath="$PROJECT_DIR$/Utility/Utility.iml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/dictionaries/daemontus.xml" afterPath="$PROJECT_DIR$/.idea/dictionaries/daemontus.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/misc.xml" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/SecondaryTaskListener.java" afterPath="$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/SecondaryTaskListener.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/cz/muni/fi/model/StateSpacePartitioner.java" afterPath="$PROJECT_DIR$/src/cz/muni/fi/model/StateSpacePartitioner.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/Terminator.java" afterPath="$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/Terminator.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/cz/muni/fi/model/TreeColorSet.java" afterPath="$PROJECT_DIR$/src/cz/muni/fi/model/TreeColorSet.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/VerificationTask.java" afterPath="$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/VerificationTask.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/native/examples/positive_feedback_ramp.bio" afterPath="$PROJECT_DIR$/native/examples/positive_feedback_ramp.bio" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="Parametrised CTL Model Checker.iws" />
@@ -127,8 +155,8 @@
         <option name="LOG_MESSAGE" value="" />
       </breakpoint>
     </breakpoint_any>
-    <breakpoint_rules converted="true" />
     <ui_properties converted="true" />
+    <breakpoint_rules converted="true" />
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="default_target" />
   <component name="FavoritesManager">
@@ -136,98 +164,12 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="FormulaVerificator.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/FormulaVerificator.java">
+      <file leaf-file-name="JNIDemo.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/JNIDemo.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1995">
-              <caret line="38" column="34" selection-start-line="38" selection-start-column="34" selection-end-line="38" selection-end-column="34" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="188" max-vertical-offset="1050">
+              <caret line="53" column="29" selection-start-line="53" selection-start-column="29" selection-end-line="53" selection-end-column="29" />
               <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="CTLGrammar.tokens" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/CTL Parser/grammar/CTLGrammar.tokens">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="630">
-              <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="CTLGrammar.g4" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/CTL Parser/grammar/CTLGrammar.g4">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.33665836" vertical-offset="0" max-vertical-offset="802">
-              <caret line="18" column="10" selection-start-line="18" selection-start-column="10" selection-end-line="18" selection-end-column="10" />
-              <folding />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="DistributedModelChecker.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/DistributedModelChecker.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="225" max-vertical-offset="585">
-              <caret line="29" column="21" selection-start-line="29" selection-start-column="21" selection-end-line="29" selection-end-column="21" />
-              <folding>
-                <element signature="imports" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="NodeFactory.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/graph/NodeFactory.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="271" max-vertical-offset="1065">
-              <caret line="58" column="22" selection-start-line="58" selection-start-column="22" selection-end-line="58" selection-end-column="22" />
-              <folding>
-                <element signature="imports" expanded="false" />
-                <element signature="e#637#638#0" expanded="false" />
-                <element signature="e#671#672#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="StateSpacePartitioner.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/model/StateSpacePartitioner.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="149" max-vertical-offset="915">
-              <caret line="35" column="25" selection-start-line="35" selection-start-column="25" selection-end-line="35" selection-end-column="25" />
-              <folding>
-                <element signature="imports" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="Node.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/graph/Node.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="225" max-vertical-offset="1245">
-              <caret line="22" column="59" selection-start-line="22" selection-start-column="59" selection-end-line="22" selection-end-column="59" />
-              <folding>
-                <element signature="imports" expanded="false" />
-                <element signature="e#872#873#0" expanded="false" />
-                <element signature="e#917#918#0" expanded="false" />
-                <element signature="e#2311#2312#0" expanded="false" />
-                <element signature="e#2378#2379#0" expanded="false" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="MPIDemo.java" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/MPIDemo.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="165" max-vertical-offset="810">
-              <caret line="28" column="16" selection-start-line="28" selection-start-column="16" selection-end-line="28" selection-end-column="16" />
-              <folding>
-                <element signature="imports" expanded="false" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -235,11 +177,9 @@
       <file leaf-file-name="NativeUtils.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Utility/src/cz/adamh/utils/NativeUtils.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="255" max-vertical-offset="1395">
-              <caret line="22" column="5" selection-start-line="22" selection-start-column="5" selection-end-line="22" selection-end-column="5" />
-              <folding>
-                <element signature="imports" expanded="false" />
-              </folding>
+            <state vertical-scroll-proportion="0.0" vertical-offset="8" max-vertical-offset="1365">
+              <caret line="71" column="26" selection-start-line="71" selection-start-column="26" selection-end-line="71" selection-end-column="26" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -247,18 +187,83 @@
       <file leaf-file-name="Log.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Utility/src/cz/muni/fi/ctl/util/Log.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="90" max-vertical-offset="255">
-              <caret line="7" column="36" selection-start-line="7" selection-start-column="36" selection-end-line="7" selection-end-column="36" />
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="300">
+              <caret line="16" column="24" selection-start-line="16" selection-start-column="24" selection-end-line="16" selection-end-column="24" />
               <folding>
-                <element signature="e#147#148#0" expanded="false" />
-                <element signature="e#190#191#0" expanded="false" />
-                <element signature="e#233#234#0" expanded="false" />
-                <element signature="e#276#277#0" expanded="false" />
-                <element signature="e#319#320#0" expanded="false" />
-                <element signature="e#362#363#0" expanded="false" />
-                <element signature="e#405#406#0" expanded="false" />
-                <element signature="e#448#449#0" expanded="false" />
+                <element signature="e#87#125#0" expanded="true" />
+                <element signature="e#186#187#0" expanded="true" />
+                <element signature="e#229#230#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SequentialModelChecker.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/SequentialModelChecker.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1635">
+              <caret line="39" column="9" selection-start-line="39" selection-start-column="9" selection-end-line="39" selection-end-column="9" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Terminator.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/Terminator.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1350">
+              <caret line="32" column="23" selection-start-line="32" selection-start-column="23" selection-end-line="32" selection-end-column="23" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="VerificationTask.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/VerificationTask.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="315">
+              <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="MPIDemo.java" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/MPIDemo.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.6072319" vertical-offset="8" max-vertical-offset="810">
+              <caret line="51" column="54" selection-start-line="51" selection-start-column="54" selection-end-line="51" selection-end-column="54" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="TaskDispatcher.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/TaskDispatcher.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="285">
+              <caret line="10" column="19" selection-start-line="10" selection-start-column="19" selection-end-line="10" selection-end-column="19" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Task.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/Task.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="285">
+              <caret line="9" column="27" selection-start-line="9" selection-start-column="27" selection-end-line="9" selection-end-column="27" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="SecondaryTaskListener.java" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/SecondaryTaskListener.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2640">
+              <caret line="36" column="25" selection-start-line="36" selection-start-column="25" selection-end-line="36" selection-end-column="25" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -271,7 +276,7 @@
     </FindUsagesManager>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/CTL Parser" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GradleLocalSettings">
     <option name="modificationStamps">
@@ -284,6 +289,18 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/FormulaVerificator.java" />
+        <option value="$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/operator/UnaryOperator.java" />
+        <option value="$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/proposition/Tautology.java" />
+        <option value="$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/proposition/Contradiction.java" />
+        <option value="$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/proposition/FloatProposition.java" />
+        <option value="$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/FormulaImpl.java" />
+        <option value="$PROJECT_DIR$/CTL Parser/antlr/cz/muni/fi/ctl/antlr/CTLGrammarLexer.tokens" />
+        <option value="$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/operator/BinaryOperator.java" />
+        <option value="$PROJECT_DIR$/src/cz/muni/fi/MPIDemo.java" />
+        <option value="$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/parser/CTLParser.java" />
+        <option value="$PROJECT_DIR$/Utility/src/cz/adamh/utils/NativeUtils.java" />
+        <option value="$PROJECT_DIR$/Utility/src/cz/muni/fi/ctl/util/Log.java" />
+        <option value="$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/Terminator.java" />
       </list>
     </option>
   </component>
@@ -325,6 +342,7 @@
       <sortByType />
     </navigator>
     <panes>
+      <pane id="PackagesPane" />
       <pane id="ProjectPane">
         <subPane>
           <PATH>
@@ -706,7 +724,6 @@
         </subPane>
       </pane>
       <pane id="Scope" />
-      <pane id="PackagesPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -734,11 +751,11 @@
     <property name="restartRequiresConfirmation" value="true" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
-      <recent name="cz.muni.fi.distributed" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/CTL Parser/antlr/cz/muni/fi/ctl/antlr" />
+    </key>
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="cz.muni.fi.distributed" />
     </key>
   </component>
   <component name="RunManager" selected="JUnit.cz.muni.fi.ctl.parser in CTL Parser">
@@ -876,6 +893,27 @@
       <envs />
       <method />
     </configuration>
+    <configuration default="true" type="JarApplication" factoryName="JAR Application">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <envs />
+      <method />
+    </configuration>
+    <configuration default="true" type="GradleRunConfiguration" factoryName="Gradle">
+      <ExternalSystemSettings>
+        <option name="executionName" />
+        <option name="externalProjectPath" />
+        <option name="externalSystemIdString" value="GRADLE" />
+        <option name="scriptParameters" />
+        <option name="taskDescriptions">
+          <list />
+        </option>
+        <option name="taskNames">
+          <list />
+        </option>
+        <option name="vmOptions" />
+      </ExternalSystemSettings>
+      <method />
+    </configuration>
     <configuration default="true" type="TestNG" factoryName="TestNG">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <module name="" />
@@ -956,6 +994,22 @@
       <patterns />
       <method />
     </configuration>
+    <configuration default="true" type="ScalaTestRunConfiguration" factoryName="ScalaTest">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
+      <extension name="scalaCoverage" />
+      <module name="" />
+      <setting name="path" value="" />
+      <setting name="package" value="" />
+      <setting name="vmparams" value="" />
+      <setting name="params" value="" />
+      <setting name="workingDirectory" value="$PROJECT_DIR$" />
+      <setting name="searchForTest" value="Across module dependencies" />
+      <setting name="testName" value="" />
+      <setting name="testKind" value="Class" />
+      <setting name="showProgressMessages" value="true" />
+      <envs />
+      <method />
+    </configuration>
     <configuration default="true" type="AndroidRunConfigurationType" factoryName="Android Application">
       <module name="" />
       <option name="ACTIVITY_CLASS" value="" />
@@ -974,22 +1028,6 @@
       <option name="CLEAR_LOGCAT" value="false" />
       <option name="SHOW_LOGCAT_AUTOMATICALLY" value="true" />
       <option name="FILTER_LOGCAT_AUTOMATICALLY" value="true" />
-      <method />
-    </configuration>
-    <configuration default="true" type="ScalaTestRunConfiguration" factoryName="ScalaTest">
-      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
-      <extension name="scalaCoverage" />
-      <module name="" />
-      <setting name="path" value="" />
-      <setting name="package" value="" />
-      <setting name="vmparams" value="" />
-      <setting name="params" value="" />
-      <setting name="workingDirectory" value="$PROJECT_DIR$" />
-      <setting name="searchForTest" value="Across module dependencies" />
-      <setting name="testName" value="" />
-      <setting name="testKind" value="Class" />
-      <setting name="showProgressMessages" value="true" />
-      <envs />
       <method />
     </configuration>
     <configuration default="false" name="JNIDemo" type="Application" factoryName="Application">
@@ -1048,17 +1086,19 @@
     <editor active="true" />
     <layout>
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
-      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" />
+      <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Changes" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Preview" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32771084" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32692307" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.24964234" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32891566" sideWeight="0.5" order="8" side_tool="true" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32650602" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
       <window_info id="Tool Output" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
@@ -1066,14 +1106,12 @@
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="SLIDING" type="SLIDING" visible="false" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.23748212" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.39903846" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.31084338" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Thumbnails" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32932693" sideWeight="0.5" order="15" side_tool="false" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.32650602" sideWeight="0.5" order="13" side_tool="false" content_ui="tabs" />
-      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
     </layout>
     <layout-to-restore>
       <window_info id="Palette&#9;" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
@@ -1084,8 +1122,8 @@
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Application Servers" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.23748212" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
-      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" weight="0.47710842" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Preview" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
@@ -1128,55 +1166,6 @@
     <option name="FILTER_TARGETS" value="false" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/operator/UnaryOperator.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.07462686" vertical-offset="0" max-vertical-offset="804">
-          <caret line="4" column="5" selection-start-line="4" selection-start-column="5" selection-end-line="4" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/operator/Operator.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="195">
-          <caret line="5" column="0" selection-start-line="5" selection-start-column="0" selection-end-line="5" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/proposition/Tautology.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.03731343" vertical-offset="0" max-vertical-offset="804">
-          <caret line="2" column="0" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/proposition/Proposition.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.3465982" vertical-offset="0" max-vertical-offset="779">
-          <caret line="27" column="31" selection-start-line="27" selection-start-column="31" selection-end-line="27" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Dot Graph Loader/src/cz/muni/fi/GraphUtils.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="46" max-vertical-offset="825">
-          <caret line="22" column="25" selection-start-line="22" selection-start-column="25" selection-end-line="22" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/proposition/Contradiction.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="240">
-          <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/Dot Graph Loader/src/cz/muni/fi/dot/DotParser.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="554" max-vertical-offset="1980">
-          <caret line="60" column="41" selection-start-line="60" selection-start-column="41" selection-end-line="60" selection-end-column="41" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Dot Graph Loader/src/cz/muni/fi/graph/SubGraph.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="405">
@@ -1219,13 +1208,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/Formula.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.2112676" vertical-offset="0" max-vertical-offset="781">
-          <caret line="13" column="29" selection-start-line="13" selection-start-column="29" selection-end-line="13" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Dot Graph Loader/src/cz/muni/fi/graph/ParameterSet.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2670">
@@ -1237,13 +1219,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.38510913" vertical-offset="0" max-vertical-offset="870">
           <caret line="20" column="33" selection-start-line="20" selection-start-column="33" selection-end-line="20" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/SequentialModelChecker.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="1128" max-vertical-offset="1635">
-          <caret line="112" column="7" selection-start-line="112" selection-start-column="7" selection-end-line="112" selection-end-column="7" />
         </state>
       </provider>
     </entry>
@@ -1261,55 +1236,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CTL Parser/antlr/cz/muni/fi/ctl/antlr/CTLGrammarBaseListener.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.031120332" vertical-offset="0" max-vertical-offset="2205">
-          <caret line="1" column="29" selection-start-line="1" selection-start-column="29" selection-end-line="1" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/CTL Parser/antlr/cz/muni/fi/ctl/antlr/CTLGrammarLexer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.031120332" vertical-offset="0" max-vertical-offset="1560">
-          <caret line="1" column="29" selection-start-line="1" selection-start-column="29" selection-end-line="1" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/CTL Parser/antlr/cz/muni/fi/ctl/antlr/CTLGrammarListener.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.062240664" vertical-offset="0" max-vertical-offset="1560">
-          <caret line="2" column="0" selection-start-line="2" selection-start-column="0" selection-end-line="2" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/CTL Parser/antlr/cz/muni/fi/ctl/antlr/CTLGrammarParser.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.031120332" vertical-offset="0" max-vertical-offset="4980">
-          <caret line="1" column="29" selection-start-line="1" selection-start-column="29" selection-end-line="1" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/parser/CTLParser.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="270" max-vertical-offset="1785">
-          <caret line="39" column="10" selection-start-line="39" selection-start-column="10" selection-end-line="39" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/VerificationTask.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="285">
-          <caret line="8" column="33" selection-start-line="8" selection-start-column="33" selection-end-line="8" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/TaskDispatcher.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="285">
-          <caret line="10" column="19" selection-start-line="10" selection-start-column="19" selection-end-line="10" selection-end-column="19" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/Tag.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="285">
@@ -1317,32 +1243,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/Task.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="285">
-          <caret line="9" column="27" selection-start-line="9" selection-start-column="27" selection-end-line="9" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/Terminator.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1290">
-          <caret line="25" column="0" selection-start-line="25" selection-start-column="0" selection-end-line="25" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/SecondaryTask.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="765">
           <caret line="47" column="16" selection-start-line="47" selection-start-column="16" selection-end-line="47" selection-end-column="16" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/JNIDemo.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.23620026" vertical-offset="11" max-vertical-offset="1050">
-          <caret line="21" column="54" selection-start-line="21" selection-start-column="54" selection-end-line="21" selection-end-column="54" />
           <folding />
         </state>
       </provider>
@@ -1358,20 +1262,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="826" max-vertical-offset="1605">
           <caret line="99" column="2" selection-start-line="99" selection-start-column="2" selection-end-line="99" selection-end-column="2" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/SecondaryTaskListener.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="1185" max-vertical-offset="2535">
-          <caret line="126" column="28" selection-start-line="126" selection-start-column="28" selection-end-line="126" selection-end-column="28" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/NativeModelLoader.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="195">
-          <caret line="4" column="0" selection-start-line="4" selection-start-column="0" selection-end-line="4" selection-end-column="0" />
         </state>
       </provider>
     </entry>
@@ -1397,6 +1287,38 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/graph/Node.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="255" max-vertical-offset="1275">
+          <caret line="26" column="59" selection-start-line="26" selection-start-column="59" selection-end-line="26" selection-end-column="59" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/model/StateSpacePartitioner.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="149" max-vertical-offset="930">
+          <caret line="36" column="25" selection-start-line="36" selection-start-column="25" selection-end-line="36" selection-end-column="25" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/graph/NodeFactory.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="331" max-vertical-offset="1170">
+          <caret line="63" column="31" selection-start-line="63" selection-start-column="31" selection-end-line="63" selection-end-column="31" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CTL Parser/grammar/CTLGrammar.g4">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="105" max-vertical-offset="975">
+          <caret line="10" column="0" selection-start-line="10" selection-start-column="0" selection-end-line="10" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/FormulaChecker.java">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.0" vertical-offset="211" max-vertical-offset="990">
@@ -1405,152 +1327,230 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/proposition/FloatProposition.java">
+    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/FormulaVerificator.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="241" max-vertical-offset="1260">
-          <caret line="75" column="0" selection-start-line="75" selection-start-column="0" selection-end-line="75" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1995">
+          <caret line="39" column="34" selection-start-line="39" selection-start-column="34" selection-end-line="39" selection-end-column="34" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/proposition/Proposition.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="465">
+          <caret line="25" column="5" selection-start-line="25" selection-start-column="5" selection-end-line="25" selection-end-column="5" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/operator/UnaryOperator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="240">
+          <caret line="12" column="0" selection-start-line="12" selection-start-column="0" selection-end-line="12" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/proposition/Contradiction.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.37313432" vertical-offset="0" max-vertical-offset="804">
+          <caret line="24" column="44" selection-start-line="24" selection-start-column="44" selection-end-line="24" selection-end-column="44" />
           <folding>
-            <element signature="e#926#927#0" expanded="false" />
-            <element signature="e#974#975#0" expanded="false" />
-            <element signature="e#1009#1010#0" expanded="false" />
-            <element signature="e#1037#1038#0" expanded="false" />
-            <element signature="e#1072#1073#0" expanded="false" />
-            <element signature="e#1103#1104#0" expanded="false" />
-            <element signature="e#1478#1479#0" expanded="false" />
-            <element signature="e#1512#1513#0" expanded="false" />
-            <element signature="e#1551#1552#0" expanded="false" />
-            <element signature="e#1593#1594#0" expanded="false" />
-            <element signature="e#1645#1646#0" expanded="false" />
-            <element signature="e#1699#1700#0" expanded="false" />
+            <element signature="e#362#363#0" expanded="true" />
+            <element signature="e#386#387#0" expanded="true" />
+            <element signature="e#441#442#0" expanded="true" />
+            <element signature="e#492#493#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/proposition/Tautology.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="435">
+          <caret line="24" column="15" selection-start-line="24" selection-start-column="15" selection-end-line="24" selection-end-column="15" />
+          <folding>
+            <element signature="e#356#357#0" expanded="true" />
+            <element signature="e#380#381#0" expanded="true" />
+            <element signature="e#435#436#0" expanded="true" />
+            <element signature="e#482#483#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/operator/NullaryOperator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="210">
+          <caret line="2" column="13" selection-start-line="2" selection-start-column="13" selection-end-line="2" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/Formula.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="315">
+          <caret line="13" column="15" selection-start-line="13" selection-start-column="15" selection-end-line="13" selection-end-column="15" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/FormulaImpl.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1410">
-          <caret line="29" column="31" selection-start-line="29" selection-start-column="31" selection-end-line="29" selection-end-column="31" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1290">
+          <caret line="19" column="7" selection-start-line="19" selection-start-column="7" selection-end-line="19" selection-end-column="7" />
           <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#385#386#0" expanded="false" />
-            <element signature="e#441#442#0" expanded="false" />
-            <element signature="e#2035#2036#0" expanded="false" />
-            <element signature="e#2112#2113#0" expanded="false" />
-            <element signature="e#2175#2176#0" expanded="false" />
-            <element signature="e#2217#2218#0" expanded="false" />
-            <element signature="e#2282#2283#0" expanded="false" />
-            <element signature="e#2349#2350#0" expanded="false" />
-            <element signature="e#2400#2401#0" expanded="false" />
-            <element signature="e#2431#2432#0" expanded="false" />
-            <element signature="e#2477#2478#0" expanded="false" />
-            <element signature="e#2550#2551#0" expanded="false" />
+            <element signature="e#1767#1768#0" expanded="true" />
+            <element signature="e#1815#1816#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Utility/src/cz/adamh/utils/NativeUtils.java">
+    <entry file="file://$PROJECT_DIR$/CTL Parser/antlr/cz/muni/fi/ctl/antlr/CTLGrammarBaseListener.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="240" max-vertical-offset="1395">
-          <caret line="22" column="5" selection-start-line="22" selection-start-column="5" selection-end-line="22" selection-end-column="5" />
+        <state vertical-scroll-proportion="0.18656716" vertical-offset="0" max-vertical-offset="3735">
+          <caret line="13" column="13" selection-start-line="13" selection-start-column="13" selection-end-line="13" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CTL Parser/antlr/cz/muni/fi/ctl/antlr/CTLGrammarLexer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.09328358" vertical-offset="0" max-vertical-offset="1590">
+          <caret line="12" column="13" selection-start-line="12" selection-start-column="13" selection-end-line="12" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CTL Parser/antlr/cz/muni/fi/ctl/antlr/CTLGrammarParser.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.09328358" vertical-offset="0" max-vertical-offset="10425">
+          <caret line="12" column="13" selection-start-line="12" selection-start-column="13" selection-end-line="12" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CTL Parser/antlr/cz/muni/fi/ctl/antlr/CTLGrammarListener.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.14925373" vertical-offset="0" max-vertical-offset="2850">
+          <caret line="9" column="17" selection-start-line="9" selection-start-column="17" selection-end-line="9" selection-end-column="17" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/proposition/FloatProposition.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1350">
+          <caret line="11" column="16" selection-start-line="11" selection-start-column="16" selection-end-line="11" selection-end-column="16" />
           <folding>
-            <element signature="imports" expanded="false" />
+            <element signature="e#1052#1053#0" expanded="true" />
+            <element signature="e#1080#1081#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/MPIDemo.java">
+    <entry file="file://$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/formula/operator/BinaryOperator.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="810">
-          <caret line="28" column="16" selection-start-line="28" selection-start-column="16" selection-end-line="28" selection-end-column="16" />
-          <folding>
-            <element signature="imports" expanded="false" />
-          </folding>
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="240">
+          <caret line="3" column="13" selection-start-line="3" selection-start-column="13" selection-end-line="3" selection-end-column="13" />
+          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Utility/src/cz/muni/fi/ctl/util/Log.java">
+    <entry file="file://$PROJECT_DIR$/CTL Parser/src/cz/muni/fi/ctl/parser/CTLParser.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="375">
-          <caret line="7" column="36" selection-start-line="7" selection-start-column="36" selection-end-line="7" selection-end-column="36" />
-          <folding>
-            <element signature="e#147#148#0" expanded="false" />
-            <element signature="e#190#191#0" expanded="false" />
-            <element signature="e#233#234#0" expanded="false" />
-            <element signature="e#276#277#0" expanded="false" />
-            <element signature="e#319#320#0" expanded="false" />
-            <element signature="e#362#363#0" expanded="false" />
-            <element signature="e#405#406#0" expanded="false" />
-            <element signature="e#448#449#0" expanded="false" />
-          </folding>
+        <state vertical-scroll-proportion="0.0" vertical-offset="300" max-vertical-offset="3210">
+          <caret line="53" column="0" selection-start-line="53" selection-start-column="0" selection-end-line="53" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/DistributedModelChecker.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="585">
-          <caret line="29" column="21" selection-start-line="29" selection-start-column="21" selection-end-line="29" selection-end-column="21" />
-          <folding>
-            <element signature="imports" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/graph/Node.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1245">
-          <caret line="22" column="59" selection-start-line="22" selection-start-column="59" selection-end-line="22" selection-end-column="59" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#872#873#0" expanded="false" />
-            <element signature="e#917#918#0" expanded="false" />
-            <element signature="e#2311#2312#0" expanded="false" />
-            <element signature="e#2378#2379#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/model/StateSpacePartitioner.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="149" max-vertical-offset="915">
-          <caret line="35" column="25" selection-start-line="35" selection-start-column="25" selection-end-line="35" selection-end-column="25" />
-          <folding>
-            <element signature="imports" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/graph/NodeFactory.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="271" max-vertical-offset="1065">
-          <caret line="58" column="22" selection-start-line="58" selection-start-column="22" selection-end-line="58" selection-end-column="22" />
-          <folding>
-            <element signature="imports" expanded="false" />
-            <element signature="e#637#638#0" expanded="false" />
-            <element signature="e#671#672#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/FormulaVerificator.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1995">
-          <caret line="38" column="34" selection-start-line="38" selection-start-column="34" selection-end-line="38" selection-end-column="34" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="600">
+          <caret line="40" column="15" selection-start-line="40" selection-start-column="15" selection-end-line="40" selection-end-column="15" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CTL Parser/grammar/CTLGrammar.tokens">
+    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/JNIDemo.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="802">
-          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="188" max-vertical-offset="1050">
+          <caret line="53" column="29" selection-start-line="53" selection-start-column="29" selection-end-line="53" selection-end-column="29" />
           <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CTL Parser/grammar/CTLGrammar.g4">
+    <entry file="file://$PROJECT_DIR$/Utility/src/cz/adamh/utils/NativeUtils.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.33665836" vertical-offset="0" max-vertical-offset="802">
-          <caret line="18" column="10" selection-start-line="18" selection-start-column="10" selection-end-line="18" selection-end-column="10" />
+        <state vertical-scroll-proportion="0.0" vertical-offset="8" max-vertical-offset="1365">
+          <caret line="71" column="26" selection-start-line="71" selection-start-column="26" selection-end-line="71" selection-end-column="26" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Utility/src/cz/muni/fi/ctl/util/Log.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="300">
+          <caret line="16" column="24" selection-start-line="16" selection-start-column="24" selection-end-line="16" selection-end-column="24" />
+          <folding>
+            <element signature="e#87#125#0" expanded="true" />
+            <element signature="e#186#187#0" expanded="true" />
+            <element signature="e#229#230#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/SequentialModelChecker.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1635">
+          <caret line="39" column="9" selection-start-line="39" selection-start-column="9" selection-end-line="39" selection-end-column="9" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/Terminator.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="1350">
+          <caret line="32" column="23" selection-start-line="32" selection-start-column="23" selection-end-line="32" selection-end-column="23" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/VerificationTask.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="315">
+          <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/TaskDispatcher.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="285">
+          <caret line="10" column="19" selection-start-line="10" selection-start-column="19" selection-end-line="10" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/Task.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="285">
+          <caret line="9" column="27" selection-start-line="9" selection-start-column="27" selection-end-line="9" selection-end-column="27" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/distributed/checker/SecondaryTaskListener.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="2640">
+          <caret line="36" column="25" selection-start-line="36" selection-start-column="25" selection-end-line="36" selection-end-column="25" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/cz/muni/fi/MPIDemo.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.6072319" vertical-offset="8" max-vertical-offset="810">
+          <caret line="51" column="54" selection-start-line="51" selection-start-column="54" selection-end-line="51" selection-end-column="54" />
           <folding />
         </state>
       </provider>

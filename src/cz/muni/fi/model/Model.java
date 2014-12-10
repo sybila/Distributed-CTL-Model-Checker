@@ -1,6 +1,7 @@
 package cz.muni.fi.model;
 
 import com.google.common.collect.Range;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +12,9 @@ import java.util.List;
 public class Model {
 
     public final String filename;
+    @NotNull
     private List<Range<Double>> variableRange = new ArrayList<>();
+    @NotNull
     private List<Range<Double>> parameterRange = new ArrayList<>();
 
     public Model(String filename) {
@@ -26,10 +29,12 @@ public class Model {
 
     private native void cppLoad(String filename);
 
+    @NotNull
     public List<Range<Double>> getVariableRange() {
         return variableRange;
     }
 
+    @NotNull
     public List<Range<Double>> getParameterRange() {
         return parameterRange;
     }

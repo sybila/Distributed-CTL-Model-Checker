@@ -1,5 +1,8 @@
 package cz.adamh.utils;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -33,19 +36,19 @@ public class NativeUtils {
      * @throws IllegalArgumentException If source file (param path) does not exist
      * @throws IllegalArgumentException If the path is not absolute or if the filename is shorter than three characters (restriction of {@see File#createTempFile(java.lang.String, java.lang.String)}).
      */
-    public static void loadLibraryFromJar(String path) throws IOException {
+    public static void loadLibraryFromJar(@NotNull String path) throws IOException {
 
         if (!path.startsWith("/")) {
             throw new IllegalArgumentException("The path has to be absolute (start with '/').");
         }
 
         // Obtain filename from path
-        String[] parts = path.split("/");
-        String filename = (parts.length > 1) ? parts[parts.length - 1] : null;
+        @NotNull String[] parts = path.split("/");
+        @Nullable String filename = (parts.length > 1) ? parts[parts.length - 1] : null;
 
         // Split filename to prexif and suffix (extension)
         String prefix = "";
-        String suffix = null;
+        @Nullable String suffix = null;
         if (filename != null) {
             parts = filename.split("\\.", 2);
             prefix = parts[0];
@@ -58,7 +61,7 @@ public class NativeUtils {
         }
 
         // Prepare temporary file
-        File temp = File.createTempFile(prefix, suffix);
+        @NotNull File temp = File.createTempFile(prefix, suffix);
         temp.deleteOnExit();
 
         if (!temp.exists()) {
@@ -66,7 +69,7 @@ public class NativeUtils {
         }
 
         // Prepare buffer for data copying
-        byte[] buffer = new byte[1024];
+        @NotNull byte[] buffer = new byte[1024];
         int readBytes;
 
         // Open and check input stream
@@ -76,14 +79,12 @@ public class NativeUtils {
         }
 
         // Open output stream and copy data between source file in JAR and the temporary file
-        OutputStream os = new FileOutputStream(temp);
-        try {
+        try (OutputStream os = new FileOutputStream(temp)) {
             while ((readBytes = is.read(buffer)) != -1) {
                 os.write(buffer, 0, readBytes);
             }
         } finally {
             // If read/write fails, close streams safely before throwing an exception
-            os.close();
             is.close();
         }
 

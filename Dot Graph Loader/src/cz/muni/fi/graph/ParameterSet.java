@@ -1,6 +1,7 @@
 package cz.muni.fi.graph;
 
 import cz.muni.fi.ctl.util.Log;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,16 +18,17 @@ public class ParameterSet {
 
     public static int limit = 10;
 
+    @NotNull
     private List<Integer> values = new ArrayList<>();
 
-    public ParameterSet(List<Integer> values) {
+    public ParameterSet(@NotNull List<Integer> values) {
         this.values.addAll(values);
     }
 
     //should be good
     //TODO: move size check before value checks
-    public void intersect(ParameterSet other) {
-        List<Integer> intersect = new ArrayList<>();
+    public void intersect(@NotNull ParameterSet other) {
+        @NotNull List<Integer> intersect = new ArrayList<>();
         int myIter = 0;
         int otherIter = 0;
         while (myIter < values.size() && otherIter < other.values.size()) {
@@ -94,8 +96,8 @@ public class ParameterSet {
     //2. Follow intervals till end
     //3. Write interval
     //4. repeat
-    public void union(ParameterSet other) {
-        List<Integer> union = new ArrayList<>(Math.max(values.size(),other.values.size()));
+    public void union(@NotNull ParameterSet other) {
+        @NotNull List<Integer> union = new ArrayList<>(Math.max(values.size(),other.values.size()));
         int myIter = 0;
         int otherIter = 0;
         int start = -1;
@@ -150,7 +152,7 @@ public class ParameterSet {
 
     //should be good
     public void invert() {
-        List<Integer> inversion = new ArrayList<>(values.size());
+        @NotNull List<Integer> inversion = new ArrayList<>(values.size());
         if (values.get(0) != 0) {   //handle start of list separately
             inversion.add(0);
             inversion.add(values.get(0) - 1);
@@ -171,6 +173,7 @@ public class ParameterSet {
         return values.size() == 0;
     }
 
+    @NotNull
     @Override
     public String toString() {
         return Arrays.toString(values.toArray());

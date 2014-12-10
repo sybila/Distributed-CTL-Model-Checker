@@ -6,6 +6,8 @@ import cz.muni.fi.graph.Graph;
 import cz.muni.fi.graph.Node;
 import cz.muni.fi.graph.ParameterSet;
 import cz.muni.fi.graph.Path;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,7 +25,7 @@ public class Main {
             printRecursive(node, 5);
         }*/
         ParameterSet.limit = 40;
-        ArrayList<Integer> a = new ArrayList<>();
+        @NotNull ArrayList<Integer> a = new ArrayList<>();
         a.add(1);
         a.add(1);
         a.add(3);
@@ -36,7 +38,7 @@ public class Main {
         a.add(15);
         a.add(17);
         a.add(22);
-        ArrayList<Integer> b = new ArrayList<>();
+        @NotNull ArrayList<Integer> b = new ArrayList<>();
         b.add(1);
         b.add(5);
         b.add(12);
@@ -45,17 +47,17 @@ public class Main {
         b.add(19);
         b.add(21);
         b.add(24);
-        ParameterSet A = new ParameterSet(a);
-        ParameterSet B = new ParameterSet(b);
+        @NotNull ParameterSet A = new ParameterSet(a);
+        @NotNull ParameterSet B = new ParameterSet(b);
         B.union(A);
         Log.d(B.toString());
     }
 
-    private static void printRecursive(Node node, int k) {
+    private static void printRecursive(@NotNull Node node, int k) {
         if (k<=1) return;
         System.out.println(node.toString());
-        for (Path path : node.getAfter()) {
-            Node n = path.getTo();
+        for (@NotNull Path path : node.getAfter()) {
+            @Nullable Node n = path.getTo();
             printRecursive(n, k-1);
         }
     }

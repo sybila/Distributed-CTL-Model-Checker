@@ -1,17 +1,17 @@
-VARS: X
+VARS: x
 
 CONSTS: k1,1; gx,0.1
 
 PARAMS: k1,0.01,10
 
-VAR_POINTS: X: 1500, 5
+VAR_POINTS: x: 1500, 5
 
-EQ: X = k1*rpcoor(X,4.9,5.1,0,1) - gx*X
+EQ: x = k1*rpcoor(x,4.9,5.1,0,1) - gx*x
 
-#THRES: X:  0, 1, 2, 6, 7, 8, 10, 3, 4, 5, 4.9, 5.1
+#THRES: x:  0, 1, 2, 6, 7, 8, 10, 3, 4, 5, 4.9, 5.1
 
-THRES: X:  0, 4.9, 5.1, 10
+THRES: x:  0, 4.9, 5.1, 10
 
-INIT: X: 0, 4.9
+INIT: x: 0, 4.9
 
 system async;

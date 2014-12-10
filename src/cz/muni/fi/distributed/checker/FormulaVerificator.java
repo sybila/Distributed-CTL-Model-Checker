@@ -8,6 +8,7 @@ import cz.muni.fi.distributed.graph.Graph;
 import cz.muni.fi.distributed.graph.Node;
 import cz.muni.fi.model.ColorSet;
 import cz.muni.fi.model.TreeColorSet;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
@@ -26,15 +27,15 @@ public class FormulaVerificator {
         this.taskId = taskId;
     }
 
-    public void processFormula(Formula formula) {
+    public void processFormula(@NotNull Formula formula) {
         if (formula.getOperator() == UnaryOperator.EXISTS_NEXT) {
             processNext(formula);
         } else if (formula.getOperator() == BinaryOperator.EXISTS_UNTIL) {
             processUntil(formula);
         } else if (formula.getOperator() == UnaryOperator.NEGATION) {
             //Map<Node, ColorSet> map = graph.factory.getAllValidNodes(formula.getSubFormulaAt(0));
-            for (Map.Entry<Integer, Node> node : graph.factory.nodeCache.entrySet()) {
-                ColorSet full = graph.getFullParamRange();
+            for (@NotNull Map.Entry<Integer, Node> node : graph.factory.nodeCache.entrySet()) {
+                @NotNull ColorSet full = graph.getFullParamRange();
                 full.subtract(node.getValue().getValidColors(formula.getSubFormulaAt(0)));
                 if (!full.isEmpty()) {
                     Log.d("Negation, add: "+formula);
@@ -50,7 +51,7 @@ public class FormulaVerificator {
                 }
             }*/
         } else if (formula.getOperator() == BinaryOperator.AND) {
-            for (Map.Entry<Integer, Node> node : graph.factory.nodeCache.entrySet()) {
+            for (@NotNull Map.Entry<Integer, Node> node : graph.factory.nodeCache.entrySet()) {
                 ColorSet full = node.getValue().getValidColors(formula.getSubFormulaAt(0));
                 full.intersect(node.getValue().getValidColors(formula.getSubFormulaAt(1)));
                 if (!full.isEmpty()) {
@@ -61,7 +62,7 @@ public class FormulaVerificator {
         }
     }
 
-    public void processFormula(Formula formula, Node my, ColorSet colorSet) {
+    public void processFormula(@NotNull Formula formula, @NotNull Node my, @NotNull ColorSet colorSet) {
         if (formula.getOperator() == UnaryOperator.EXISTS_NEXT) {
             //just add this and ignore rest - if everything is correct,
             //this should be called only with colorSets that have been
@@ -78,15 +79,15 @@ public class FormulaVerificator {
         }
     }
 
-    private void processNext(Formula formula) {
+    private void processNext(@NotNull Formula formula) {
         Formula sub = formula.getSubFormulaAt(0);
         Log.d("Process NEXT "+sub);
-        Map<Node, ColorSet> targets = graph.factory.getAllValidNodes(sub);
+        @NotNull Map<Node, ColorSet> targets = graph.factory.getAllValidNodes(sub);
      //   Log.d("Found init nodes: "+targets.size());
-        for (Map.Entry<Node, ColorSet> source : targets.entrySet()) {
-            Map<Node, ColorSet> predecessors = graph.factory.computePredecessors(source.getKey(), source.getValue());
+        for (@NotNull Map.Entry<Node, ColorSet> source : targets.entrySet()) {
+            @NotNull Map<Node, ColorSet> predecessors = graph.factory.computePredecessors(source.getKey(), source.getValue());
         //    Log.d("Predecessors found: "+predecessors.size());
-            for (Map.Entry<Node, ColorSet> predecessor : predecessors.entrySet()) {
+            for (@NotNull Map.Entry<Node, ColorSet> predecessor : predecessors.entrySet()) {
                 if (graph.isMyNode(predecessor.getKey())) {
                     //no need to intersect with source, because of how factory works
             //        Log.d("Add formula to predecessor.");
@@ -99,10 +100,10 @@ public class FormulaVerificator {
         }
     }
 
-    private void processUntil(Formula formula) {
-        Map<Node, ColorSet> initial = graph.factory.getAllValidNodes(formula.getSubFormulaAt(1));
+    private void processUntil(@NotNull Formula formula) {
+        @NotNull Map<Node, ColorSet> initial = graph.factory.getAllValidNodes(formula.getSubFormulaAt(1));
         Log.d("Process UNTIL "+formula.getSubFormulaAt(1)+" init nodes: "+initial.size());
-        for (Map.Entry<Node, ColorSet> init : initial.entrySet()) {
+        for (@NotNull Map.Entry<Node, ColorSet> init : initial.entrySet()) {
             //follow all colors valid for second formula
             if (!init.getValue().isEmpty() && !init.getKey().getValidColors(formula).encloses(init.getValue())) {
                 init.getKey().addFormula(formula, init.getValue());
@@ -112,11 +113,11 @@ public class FormulaVerificator {
     }
 
 
-    private void processUntilRecursive(Node node, Formula formula, ColorSet colorSet) {
+    private void processUntilRecursive(@NotNull Node node, @NotNull Formula formula, ColorSet colorSet) {
         //follow all colors that got us to this node
-        Map<Node, ColorSet> predecessors = graph.factory.computePredecessors(node, colorSet);
+        @NotNull Map<Node, ColorSet> predecessors = graph.factory.computePredecessors(node, colorSet);
         //Log.d("Predecessors found: "+predecessors.size());
-        for (Map.Entry<Node, ColorSet> path : predecessors.entrySet()) {
+        for (@NotNull Map.Entry<Node, ColorSet> path : predecessors.entrySet()) {
             if (graph.isMyNode(path.getKey())) {
                 //intersect transition colors with valid colors for first formula in predecessor
                 ColorSet set = path.getValue();

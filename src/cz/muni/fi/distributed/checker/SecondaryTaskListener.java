@@ -7,6 +7,7 @@ import cz.muni.fi.model.ColorSet;
 import cz.muni.fi.model.TreeColorSet;
 import mpi.Intracomm;
 import mpi.MPI;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
@@ -20,16 +21,19 @@ public class SecondaryTaskListener implements Runnable, TaskDispatcher {
 
     private static final int FINISH = -1;
     private static final int CREATE = -2;
+    @NotNull
     private final VerificationTask task;
     private final Intracomm COMM;
     private final int dimensions;
 
     private Thread thread;
     private int runningLocalTasks;
+    @NotNull
     private Map<Integer, Integer> pendingRequests = new HashMap<>();
+    @NotNull
     private Map<Integer, Task> waitingForFinish = new HashMap<>();
 
-    public SecondaryTaskListener(Intracomm comm, VerificationTask task) {
+    public SecondaryTaskListener(Intracomm comm, @NotNull VerificationTask task) {
         this.task = task;
         this.COMM = comm;
         this.dimensions = task.getGraph().model.variableCount();
@@ -42,7 +46,7 @@ public class SecondaryTaskListener implements Runnable, TaskDispatcher {
     @Override
     public void run() {
         //command buffer
-        int[] buffer = new int[3*dimensions + 3];
+        @NotNull int[] buffer = new int[3*dimensions + 3];
         while (buffer[0] != FINISH) {
             Log.d(COMM.Rank()+" Waiting for task...");
             COMM.Recv(buffer, 0, buffer.length, MPI.INT, MPI.ANY_SOURCE, DISPATCHER_COMMAND.getTag());
@@ -52,13 +56,13 @@ public class SecondaryTaskListener implements Runnable, TaskDispatcher {
                 Log.d(COMM.Rank()+" Received ("+COMM.Rank()+"): "+sender);
                 //Node source = task.getGraph().factory.getNode(Arrays.copyOfRange(buffer, 1, dimensions + 1));
                 Node dest = task.getGraph().factory.getNode(Arrays.copyOfRange(buffer, dimensions + 1, 2*dimensions + 1));
-                int[] lengths = Arrays.copyOfRange(buffer, 2*dimensions + 1, 3*dimensions + 1);
-                double[] colors = new double[sum(lengths)];
+                @NotNull int[] lengths = Arrays.copyOfRange(buffer, 2*dimensions + 1, 3*dimensions + 1);
+                @NotNull double[] colors = new double[sum(lengths)];
               //  Log.d("Waiting for data...");
                 COMM.Recv(colors, 0, colors.length, MPI.DOUBLE, sender, DISPATCHER_COMMAND.getTag());
               //  Log.d("Got data...");
                 Log.d(COMM.Rank()+" Data received: "+Arrays.toString(colors));
-                ColorSet colorSet = TreeColorSet.createFromBuffer(lengths, colors);
+                @NotNull ColorSet colorSet = TreeColorSet.createFromBuffer(lengths, colors);
                 synchronized (this) {
                     Log.d(COMM.Rank()+" Processing task: "+parentId);
                     new SecondaryTask(task, sender, parentId, dest, colorSet).executeAsync();
@@ -70,12 +74,12 @@ public class SecondaryTaskListener implements Runnable, TaskDispatcher {
     }
 
     public void finishSelf() {
-        int[] buffer = new int[3*dimensions + 3];
+        @NotNull int[] buffer = new int[3*dimensions + 3];
         buffer[0] = FINISH;
         COMM.Send(buffer, 0, buffer.length, MPI.INT, COMM.Rank(), DISPATCHER_COMMAND.getTag());
     }
 
-    private static int sum(int[] array) {
+    private static int sum(@NotNull int[] array) {
         int sum = 0;
         for (int item : array) {
             sum += item;
@@ -86,6 +90,7 @@ public class SecondaryTaskListener implements Runnable, TaskDispatcher {
     /**
      * Start new thread with terminator running.
      */
+    @NotNull
     public SecondaryTaskListener execute() {
         if (thread != null) {
             throw new IllegalStateException("Can't execute same terminator twice");
@@ -103,18 +108,18 @@ public class SecondaryTaskListener implements Runnable, TaskDispatcher {
     }
 
     @Override
-    public void dispatchNewTask(int parentTask, int destination, Node source, Node dest, ColorSet activeColors) {
-        int[] buffer = new int[3*dimensions + 3];
+    public void dispatchNewTask(int parentTask, int destination, @NotNull Node source, @NotNull Node dest, @NotNull ColorSet activeColors) {
+        @NotNull int[] buffer = new int[3*dimensions + 3];
         buffer[0] = CREATE;
         buffer[buffer.length - 2] = COMM.Rank();
         buffer[buffer.length - 1] = parentTask;
         System.arraycopy(source.coordinates, 0, buffer, 1, dimensions);
         System.arraycopy(dest.coordinates, 0, buffer, dimensions + 1, dimensions);
-        List<Double> data = new ArrayList<>(2*dimensions);
+        @NotNull List<Double> data = new ArrayList<>(2*dimensions);
         for (int i=0; i<dimensions; i++) {
             Range<Double>[] ranges = activeColors.asArrayForParam(i);
             buffer[2*dimensions + i + 1] = 2 * ranges.length;
-            for (Range<Double> range : ranges) {
+            for (@NotNull Range<Double> range : ranges) {
                 data.add(range.lowerEndpoint());
                 data.add(range.upperEndpoint());
             }
@@ -130,10 +135,11 @@ public class SecondaryTaskListener implements Runnable, TaskDispatcher {
         }
     }
 
-    private static double[] toBuffer(List<Double> integers)
+    @NotNull
+    private static double[] toBuffer(@NotNull List<Double> integers)
     {
-        double[] ret = new double[integers.size()];
-        Iterator<Double> iterator = integers.iterator();
+        @NotNull double[] ret = new double[integers.size()];
+        @NotNull Iterator<Double> iterator = integers.iterator();
         for (int i = 0; i < ret.length; i++)
         {
             ret[i] = iterator.next();
@@ -147,7 +153,7 @@ public class SecondaryTaskListener implements Runnable, TaskDispatcher {
     }
 
     @Override
-    public synchronized void onLocalTaskFinished(Task task) {
+    public synchronized void onLocalTaskFinished(@NotNull Task task) {
         Log.d(COMM.Rank()+" Local task finished: "+task.getId());
         if (pendingRequests.containsKey(task.getId())) {
             waitingForFinish.put(task.getId(), task);

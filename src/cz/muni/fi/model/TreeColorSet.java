@@ -3,6 +3,7 @@ package cz.muni.fi.model;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,19 +11,21 @@ import java.util.Set;
 
 public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSet {
 
+    @NotNull
     public static TreeColorSet createEmpty(int dimensions) {
-        TreeColorSet set = new TreeColorSet(dimensions);
+        @NotNull TreeColorSet set = new TreeColorSet(dimensions);
         for (int i=0; i<dimensions; i++) {
-            RangeSet<Double> range = TreeRangeSet.create();
+            @NotNull RangeSet<Double> range = TreeRangeSet.create();
             set.add(range);
         }
         return set;
     }
 
-    public static TreeColorSet createCopy(ColorSet set) {
-        TreeColorSet newSet = new TreeColorSet(set.size());
+    @NotNull
+    public static TreeColorSet createCopy(@NotNull ColorSet set) {
+        @NotNull TreeColorSet newSet = new TreeColorSet(set.size());
         for (RangeSet<Double> aSet : set) {
-            RangeSet<Double> range = TreeRangeSet.create(aSet);
+            @NotNull RangeSet<Double> range = TreeRangeSet.create(aSet);
             newSet.add(range);
         }
         return newSet;
@@ -35,22 +38,23 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
     public TreeColorSet() {
     }
 
-    public TreeColorSet(Collection<? extends RangeSet<Double>> c) {
+    public TreeColorSet(@NotNull Collection<? extends RangeSet<Double>> c) {
         super(c);
     }
 
     @Override
-    public void union(ColorSet set) {
+    public void union(@NotNull ColorSet set) {
         for (int i=0; i<size(); i++) {
             get(i).addAll(set.get(i));
         }
     }
 
-    public static TreeColorSet createFromBuffer(int[] lengths, double[] data) {
-        TreeColorSet newSet = new TreeColorSet(lengths.length);
+    @NotNull
+    public static TreeColorSet createFromBuffer(@NotNull int[] lengths, double[] data) {
+        @NotNull TreeColorSet newSet = new TreeColorSet(lengths.length);
         int total = 0;
         for (int length : lengths) {
-            RangeSet<Double> ranges = TreeRangeSet.create();
+            @NotNull RangeSet<Double> ranges = TreeRangeSet.create();
             for (int i = 0; i < length; i+=2) {
                 ranges.add(Range.open(data[total+i], data[total+i+1]));
             }
@@ -61,16 +65,16 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
     }
 
     @Override
-    public void intersect(ColorSet set) {
+    public void intersect(@NotNull ColorSet set) {
         for (int i=0; i<size(); i++) {
-            RangeSet<Double> diff = TreeRangeSet.create(get(i));
+            @NotNull RangeSet<Double> diff = TreeRangeSet.create(get(i));
             diff.removeAll(set.get(i));
             get(i).removeAll(diff);
         }
     }
 
     @Override
-    public void subtract(ColorSet set) {
+    public void subtract(@NotNull ColorSet set) {
         for (int i=0; i<size(); i++) {
             get(i).removeAll(set.get(i));
         }
@@ -78,14 +82,14 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
 
     @Override
     public boolean isEmpty() {
-        for (RangeSet<Double> doubleRangeSet : this) {
+        for (@NotNull RangeSet<Double> doubleRangeSet : this) {
             if (doubleRangeSet.isEmpty()) return true;
         }
         return false;
     }
 
     @Override
-    public boolean encloses(ColorSet set) {
+    public boolean encloses(@NotNull ColorSet set) {
         for (int i=0; i<size(); i++) {
             if (!get(i).enclosesAll(set.get(i))) {
                 return false;
@@ -94,6 +98,7 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
         return true;
     }
 
+    @NotNull
     @SuppressWarnings("UnusedDeclaration")
     @Override
     public Range<Double>[] asArrayForParam(int i) {
@@ -102,13 +107,14 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
         return data.toArray(new Range[data.size()]);
     }
 
+    @NotNull
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
+        @NotNull StringBuilder builder = new StringBuilder();
         builder.append("ColorSet (");
-        for (RangeSet<Double> ranges : this) {
+        for (@NotNull RangeSet<Double> ranges : this) {
             builder.append("[");
-            for (Range<Double> range : ranges.asRanges()) {
+            for (@NotNull Range<Double> range : ranges.asRanges()) {
                 builder.append("<").append(range.lowerEndpoint()).append(",").append(range.upperEndpoint()).append(">");
             }
             builder.append("] ");

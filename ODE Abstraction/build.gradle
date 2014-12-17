@@ -13,7 +13,25 @@ task resources(type: Exec) {
     executable "mkdir"
 }
 
-task compileGenerator(dependsOn: 'resources', type:Exec) {
+
+task compileGeneratorLinux(dependsOn: 'resources', type:Exec) {
+    args    "-std=c++11",
+            "-I", jdk+"/include/",
+            "-I", jdk+"/include/linux/",
+            "-c",
+            "-o", objDir+"generator.o",
+            srcDir+"generator.cpp"
+    executable compiler
+}
+
+task linkGeneratorLinux(dependsOn: 'compileGeneratorLinux', type:Exec) {
+    args    "-dynamiclib",
+            "-o", binDir+"libgenerator.so",
+            objDir+"generator.o"
+    executable compiler
+}
+
+task compileGeneratorOSX(dependsOn: 'resources', type:Exec) {
     args    "-std=c++11",
             "-I", jdk+"/include/",
             "-I", jdk+"/include/darwin/",
@@ -23,7 +41,7 @@ task compileGenerator(dependsOn: 'resources', type:Exec) {
     executable compiler
 }
 
-task linkGenerator(dependsOn: 'compileGenerator', type:Exec) {
+task linkGeneratorOSX(dependsOn: 'compileGeneratorOSX', type:Exec) {
     args    "-dynamiclib",
             "-o", binDir+"libgenerator.jnilib",
             objDir+"generator.o"

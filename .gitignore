@@ -3,6 +3,8 @@
 .gradle
 build/
 
+execution/*.jar
+execution/*.jnilib
 
 *.iml
 

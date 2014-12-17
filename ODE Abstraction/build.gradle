@@ -1,0 +1,77 @@
+//------------ CPP PART --------------
+
+ext {
+    compiler = "g++-4.9"
+    jdk = "/Library/Java/JavaVirtualMachines/jdk1.8.0_20.jdk/Contents/Home"
+    objDir = "build/objs/"
+    binDir = "build/binaries/"
+    srcDir = "src/main/cpp/"
+}
+
+task resources(type: Exec) {
+    args "-p",binDir,objDir
+    executable "mkdir"
+}
+
+task compileGenerator(dependsOn: 'resources', type:Exec) {
+    args    "-std=c++11",
+            "-I", jdk+"/include/",
+            "-I", jdk+"/include/darwin/",
+            "-c",
+            "-o", objDir+"generator.o",
+            srcDir+"generator.cpp"
+    executable compiler
+}
+
+task linkGenerator(dependsOn: 'compileGenerator', type:Exec) {
+    args    "-dynamiclib",
+            "-o", binDir+"libgenerator.jnilib",
+            objDir+"generator.o"
+    executable compiler
+}
+
+task generateFactoryIncludeFiles(dependsOn: 'fullJar', type:Exec) {
+    args    "-o", srcDir+"jni_include/NodeFactory.h",
+            "-classpath", "build/libs/ODE Abstraction-all-1.0.jar",
+            "cz.muni.fi.ode.NodeFactory"
+    executable "javah"
+}
+
+task generateModelIncludeFiles(dependsOn: 'fullJar', type:Exec) {
+    args    "-o", srcDir+"jni_include/Model.h",
+            "-classpath", "build/libs/ODE Abstraction-all-1.0.jar",
+            "cz.muni.fi.ode.OdeModel"
+    executable "javah"
+}
+
+//-------------JAVA PART--------------
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    compile 'com.intellij:annotations:5.1'
+    compile 'com.google.guava:guava:18.0'
+    compile files('../libs/mpj.jar')
+    compile project(':CTL Parser')
+    compile project(':Model Checker')
+}
+
+//create a single Jar with all dependencies
+task fullJar(type: Jar) {
+    manifest {
+        attributes  'Implementation-Title': 'Model Checker',
+                    'Implementation-Version': version,
+                    'Main-Class': 'cz.muni.fi.frontend.Main'
+    }
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}

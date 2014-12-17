@@ -1,3 +1,0 @@
-1) Nainstalovat gcc 4.9
-2) Zadeklarovat uint vsade tam kde chyba (podla chyb)
-3) Nalinkovat STL z noveho gcc (DYLD_LIBRARY_PATH)

@@ -13,11 +13,8 @@ import java.io.IOException;
 
 public class Main {
 
-    static {
-        System.loadLibrary("generator");
-    }
-
     public static void main(String[] args) {
+       	System.out.println(System.getProperty( "java.library.path" ));
         MPI.Init(args);
         FormulaParser parser = new FormulaParser();
         FormulaNormalizer normalizer = new FormulaNormalizer();
@@ -39,5 +36,9 @@ public class Main {
             e.printStackTrace();
         }
         MPI.Finalize();
+    }
+
+    static {
+        System.loadLibrary("generator");
     }
 }

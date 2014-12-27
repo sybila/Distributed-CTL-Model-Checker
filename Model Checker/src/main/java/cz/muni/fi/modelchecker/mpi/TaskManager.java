@@ -4,7 +4,7 @@ import cz.muni.fi.ctl.formula.Formula;
 import cz.muni.fi.modelchecker.FormulaVerificator;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
-import cz.muni.fi.modelchecker.mpi.termination.*;
+import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import mpi.Comm;
 
 /**
@@ -41,8 +41,8 @@ public abstract class TaskManager<T extends Node, V extends ColorSet> {
     }
 
     private void startLocalTask(int sourceNode, T external, T internal, V colors) {
-        terminator.messageReceived();
         synchronized (COUNT_LOCK) {
+            terminator.messageReceived();
             activeTasks++;
             if (activeTasks == 1) terminator.setWorking(true);
         }

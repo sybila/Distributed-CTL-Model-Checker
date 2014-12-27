@@ -31,7 +31,7 @@ public class OdeModel {
     private native void cppLoad(String filename);
 
     @NotNull
-    public List<Range<Double>> getVariableRange() {
+    public List<Range<Double>> getThresholdRanges() {
         return variableRange;
     }
 

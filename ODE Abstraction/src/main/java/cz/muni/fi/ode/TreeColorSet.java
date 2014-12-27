@@ -56,7 +56,7 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
         for (int length : lengths) {
             @NotNull RangeSet<Double> ranges = TreeRangeSet.create();
             for (int i = 0; i < length; i+=2) {
-                ranges.add(Range.open(data[total+i], data[total+i+1]));
+                ranges.add(Range.closed(data[total+i], data[total+i+1]));
             }
             newSet.add(ranges);
             total += length;

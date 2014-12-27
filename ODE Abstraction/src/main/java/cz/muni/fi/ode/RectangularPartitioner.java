@@ -5,6 +5,7 @@ import cz.muni.fi.modelchecker.StateSpacePartitioner;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class RectangularPartitioner implements StateSpacePartitioner<CoordinateNode> {
@@ -18,7 +19,7 @@ public class RectangularPartitioner implements StateSpacePartitioner<CoordinateN
         this.size = size;
         this.rank = rank;
         this.model = odeModel;
-        Range<Double> firstVar = odeModel.getVariableRange().get(0);
+        Range<Double> firstVar = odeModel.getThresholdRanges().get(0);
         if (!firstVar.hasLowerBound() || !firstVar.hasUpperBound()) {
             throw new IllegalArgumentException("Range is unbounded");
         }
@@ -28,16 +29,17 @@ public class RectangularPartitioner implements StateSpacePartitioner<CoordinateN
             if (i == size - 1) {
                 ranges.add(Range.closed(firstVar.lowerEndpoint() + interval * i, firstVar.upperEndpoint()));
             } else {
-                ranges.add(Range.closedOpen(firstVar.lowerEndpoint() + interval * i, firstVar.lowerEndpoint() + interval * (i+1)));
+                ranges.add(Range.closedOpen(firstVar.lowerEndpoint() + interval * i, firstVar.lowerEndpoint() + interval * (i + 1)));
             }
         }
+        System.out.println(rank+" "+Arrays.toString(ranges.toArray()));
     }
 
     @NotNull
     public List<Range<Double>> getMyLimit() {
         @NotNull List<Range<Double>> ret = new ArrayList<>();
         ret.add(ranges.get(rank));
-        @NotNull List<Range<Double>> params = model.getVariableRange();
+        @NotNull List<Range<Double>> params = model.getThresholdRanges();
         for (int i=1; i < params.size(); i++) {
             ret.add(params.get(i));
         }
@@ -53,5 +55,10 @@ public class RectangularPartitioner implements StateSpacePartitioner<CoordinateN
             }
         }
         throw new IllegalStateException("Node "+node.getCoordinate(0)+" does not have a parent graph");
+    }
+
+    @Override
+    public int getMyId() {
+        return rank;
     }
 }

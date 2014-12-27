@@ -156,13 +156,50 @@ JNIEXPORT jobject JNICALL Java_cz_muni_fi_ode_NodeFactory_getNativeInit(
 }
 
 
+
 /*
  * Class:     cz_muni_fi_ode_NodeFactory
- * Method:    getAllNodes
- * Signature: (Ljava/util/List;)Ljava/util/List;
+ * Method:    cacheAllNodes
+ * Signature: (Ljava/util/List;)V
  */
-JNIEXPORT jobject JNICALL Java_cz_muni_fi_ode_NodeFactory_getAllNodes(
-	JNIEnv * env, jobject jFactory, jobject retList)
-{
-	return retList;
+JNIEXPORT void JNICALL Java_cz_muni_fi_ode_NodeFactory_cacheAllNodes(
+	JNIEnv * env, jobject jFactory, jobject jColorList)
+ {
+	JVM jvm(env);
+	//create c++ wrappers around java arguments
+	auto factory = JVM::NodeFactoryClass::Instance(jFactory, &(jvm.NodeFactory));
+	auto colorList = JVM::ListClass::Instance(jColorList, &(jvm.List));
+	//transform java range list into c++ pair vector
+	std::vector<std::pair<double, double> > borders;
+	int paramsCount = colorList.size();
+	for (int i = 0; i < paramsCount; ++i)
+	{
+		auto range = JVM::RangeClass::Instance(colorList.get(i), &(jvm.Range));
+		borders.push_back(pair<double, double>(range.lowerEndPoint().doubleValue(), range.upperEndPoint().doubleValue()));
+	}
+	//compute initial states
+	vector<State> data = generator->initAP(
+		odeModel.getVariable(0), 
+		Operators::LSEQ, 
+		(double) odeModel.getThresholdsForVariable(0).back(), 
+		borders
+	);	
+	if (data.size() != 0) {
+		//create int java array and it's c++ mapping
+		int dims = data[0].getCoors().size();
+		jint * array = new jint[dims];
+		jintArray coordinates = jvm.getEnv()->NewIntArray(dims);		
+		for (int i = 0; i < data.size(); i++) {
+			State state = data[i];
+			//convert state coordinates to java array
+			for (int j = 0; j < dims; j++) {
+				array[j] = state.getCoors()[j]; 
+			}
+			//notify JVM about value update
+			jvm.getEnv()->SetIntArrayRegion(coordinates, 0, dims, array);
+			//get node object from factory
+			auto node = factory.getNode(coordinates);			
+		}	
+		delete array;
+	}
 }

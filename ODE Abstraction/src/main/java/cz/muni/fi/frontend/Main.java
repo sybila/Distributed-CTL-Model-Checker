@@ -11,11 +11,31 @@ import mpi.MPI;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.StringTokenizer;
 
 public class Main {
 
     static {
-        System.loadLibrary("generator");
+        try {
+            System.loadLibrary("generator"); // used for tests. This library in classpath only
+        } catch (UnsatisfiedLinkError e) {
+            System.out.println("Link error. Using lib from zip file.");
+            try {
+                NativeUtils.loadLibraryFromJar("/build/binaries/libgenerator.jnilib"); // during runtime. .DLL within .JAR
+            } catch (IOException e1) {
+                try {
+                    NativeUtils.loadLibraryFromJar("/build/binaries/libgenerator.so");
+                } catch (IOException e2) {
+                    //ok
+                }
+                String property = System.getProperty("java.library.path");
+                StringTokenizer parser = new StringTokenizer(property, ";");
+                while (parser.hasMoreTokens()) {
+                    System.err.println(parser.nextToken());
+                }
+                System.exit(1);
+            }
+        }
     }
 
     public static void main(String[] args) {

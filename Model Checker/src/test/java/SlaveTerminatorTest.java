@@ -1,5 +1,8 @@
 /**
- * Created by daemontus on 27/12/14.
+ * Test class for slave terminator.
  */
 public class SlaveTerminatorTest {
+
+
+
 }

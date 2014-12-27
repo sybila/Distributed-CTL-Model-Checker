@@ -75,6 +75,7 @@ repositories {
 
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
+    compile fileTree(dir: 'build/binaries/', include: ['*.zip'])
     compile 'com.intellij:annotations:5.1'
     compile 'com.google.guava:guava:18.0'
     compile files('../libs/mpj.jar')
@@ -82,8 +83,14 @@ dependencies {
     compile project(':Model Checker')
 }
 
+task nativezip(type: Exec) {
+    //TODO: this does not work
+    //args    binDir+"natives.zip", binDir+"lib*"
+    executable "zip"
+}
+
 //create a single Jar with all dependencies
-task fullJar(type: Jar) {
+task fullJar(dependsOn: nativezip, type: Jar) {
     manifest {
         attributes  'Implementation-Title': 'Model Checker',
                     'Implementation-Version': version,

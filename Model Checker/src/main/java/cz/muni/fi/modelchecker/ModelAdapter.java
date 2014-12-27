@@ -2,12 +2,11 @@ package cz.muni.fi.modelchecker;
 
 import cz.muni.fi.ctl.formula.Formula;
 import cz.muni.fi.modelchecker.graph.ColorSet;
-import cz.muni.fi.modelchecker.graph.ColoredNode;
 import cz.muni.fi.modelchecker.graph.Node;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
-import java.util.Set;
+
 
 /**
  * Manages required node actions.

@@ -64,13 +64,16 @@ public class MpiTaskManager extends TaskManager<CoordinateNode,TreeColorSet> {
                 data.add(range.upperEndpoint());
             }
         }
-        COMM.Send(buffer, 0, buffer.length, MPI.INT, destinationNode, TAG);
-        COMM.Send(toBuffer(data), 0, data.size(), MPI.DOUBLE, destinationNode, TAG);
+        synchronized (this) {   //ensure message ordering
+            COMM.Send(buffer, 0, buffer.length, MPI.INT, destinationNode, TAG);
+            COMM.Send(toBuffer(data), 0, data.size(), MPI.DOUBLE, destinationNode, TAG);
+        }
     }
 
     @Override
     protected boolean tryReceivingTask(TaskStarter<CoordinateNode, TreeColorSet> taskStarter) {
         @NotNull int[] buffer = new int[3*dimensions + 3];
+        //no need to synchronize - this method is only called from one thread
         COMM.Recv(buffer, 0, buffer.length, MPI.INT, MPI.ANY_SOURCE, TAG);
         if (buffer[0] == CREATE) {
             int sender = buffer[buffer.length - 2];

@@ -1,8 +1,5 @@
 package cz.muni.fi.modelchecker.mpi.termination;
 
-import mpi.Comm;
-import mpi.MPI;
-
 /**
  * Terminator running on a machine that has rank 0
  * Uses Safra's algorithm(http://fmt.cs.utwente.nl/courses/cdp/slides/cdp-8-mpi-2-4up.pdf) for termination detection.
@@ -14,49 +11,56 @@ public class MasterTerminator implements Terminator {
 
     private boolean working = false;
     private boolean waitingForToken = false;
+    private boolean finalized = false;
 
     private final int tokenSource;
     private final int tokenDestination;
-    private final Comm COMM;
+    private final TokenMessenger messenger;
 
-    public MasterTerminator(Comm comm) {
-        COMM = comm;
-        int rank = MPI.COMM_WORLD.Rank();
-        int size = MPI.COMM_WORLD.Size();
-        tokenSource = (rank + 1) % size;
-        tokenDestination = size - 1;
-        if (rank != 0) {
+    public MasterTerminator(TokenMessenger messenger) {
+        if (messenger.getMyId() != 0) {
             throw new IllegalStateException("Cannot launch master terminator on slave machine");
         }
+        this.messenger = messenger;
+        int size = messenger.getProcessCount();
+        tokenSource = (messenger.getMyId() + 1) % size;
+        tokenDestination = size - 1;
     }
 
     private synchronized void initProbe() {
         //status = White
+      //  System.out.println("Init Probe");
         flag = false;
         waitingForToken = true;
-        COMM.Isend(new int[] {0,0}, 0, 2, MPI.INT, tokenDestination, -1);
+        messenger.sendTokenAsync(tokenDestination, new Token(0,0));
     }
 
     private synchronized void initTermination() {
-        COMM.Isend(new int[] {2,0}, 0, 2, MPI.INT, tokenDestination, -1);
+        messenger.sendTokenAsync(tokenDestination, new Token(2,0));
     }
 
     @Override
     public synchronized void setWorking(boolean working) {
+        if (finalized) throw new IllegalStateException("Called setWorking on finalized master terminator");
         this.working = working;
         if (!working && !waitingForToken) {
             //if node is idle and no token is already in the system
+            //Note: It is ok to send a probe even when main task has not finished yet, because
+            //probe will return only after all main tasks are finished and if any messages
+            //are sent/received during this period, flag/count will reflect this and process won't terminate
             initProbe();
         }
     }
 
     @Override
     public synchronized void messageSent() {
+        if (finalized) throw new IllegalStateException("Called messageSent on finalized master terminator");
         count++;
     }
 
     @Override
     public synchronized void messageReceived() {
+        if (finalized) throw new IllegalStateException("Called messageReceived on finalized master terminator");
         count--;
         //status = Black
         flag = true;
@@ -64,36 +68,37 @@ public class MasterTerminator implements Terminator {
 
     @Override
     public void waitForTermination() {
+        if (finalized) throw new IllegalStateException("Called waitForTermination on finalized master terminator");
         Thread t = new Thread(() -> {
             synchronized (MasterTerminator.this) {
-                if (!working) initProbe();
+                if (!working && !waitingForToken) initProbe();
             }
-            int[] buffer = new int[2];
-            while (buffer[0] != 2) {
-                COMM.Recv(buffer, 0, buffer.length, MPI.INT, tokenSource, -1);
+            Token token = messenger.waitForToken(tokenSource);
+            while (token.flag < 2) {
                 synchronized (MasterTerminator.this) {
-                    if (buffer[0] < 2) {
-                        if (!waitingForToken) {
-                            throw new IllegalStateException("Master received a token he was not waiting for!");
-                        }
-                        waitingForToken = false;
-                        if (!flag && buffer[0] == 0 && buffer[1] + count == 0) {
-                            //if termination criteria are met, finish this whole thing
-                            //Slaves should pass this and return it to us (that will terminate this while loop)
-                            initTermination();
-                        } else {
-                            if (!working) {
-                                //if node is idle, just go for another round
-                                initProbe();
-                            } //if we are working, just wait - setWorking will init the probe
-                        }
+                    if (!waitingForToken) {
+                        throw new IllegalStateException("Master received a token he was not waiting for!");
+                    }
+                 //   System.out.println("Probe returned to master: "+flag+" "+token.flag+" "+count+" "+token.count);
+                    waitingForToken = false;
+                    if (!flag && token.flag == 0 && token.count + count == 0) {
+                        //if termination criteria are met, finish this whole thing
+                        //Slaves should pass this and return it to us (that will terminate this while loop)
+                        initTermination();
+                    } else {
+                        if (!working) {
+                            //if node is idle, just go for another round
+                            initProbe();
+                        } //if we are working, just wait - setWorking will init the probe
                     }
                 }
+                token = messenger.waitForToken(tokenSource);
             }
         });
         t.start();
         try {
             t.join();
+            finalized = true;
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

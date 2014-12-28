@@ -1,8 +1,8 @@
 //------------ CPP PART --------------
 
 ext {
-    compiler = "g++-4.9"
-    jdk = "/Library/Java/JavaVirtualMachines/jdk1.8.0_20.jdk/Contents/Home"
+    compiler = "g++"
+    jdk = "/usr/lib/jvm/default-java"
     objDir = "build/objs/"
     binDir = "build/binaries/"
     srcDir = "src/main/cpp/"
@@ -16,6 +16,7 @@ task resources(type: Exec) {
 
 task compileGeneratorLinux(dependsOn: 'resources', type:Exec) {
     args    "-std=c++11",
+	    "-fPIC",
             "-I", jdk+"/include/",
             "-I", jdk+"/include/linux/",
             "-c",
@@ -25,7 +26,10 @@ task compileGeneratorLinux(dependsOn: 'resources', type:Exec) {
 }
 
 task linkGeneratorLinux(dependsOn: 'compileGeneratorLinux', type:Exec) {
-    args    "-dynamiclib",
+    args    "-shared",
+//	    "-Wl,-soname,hello.so",
+//	    "-static",
+//	    "-lc",
             "-o", binDir+"libgenerator.so",
             objDir+"generator.o"
     executable compiler

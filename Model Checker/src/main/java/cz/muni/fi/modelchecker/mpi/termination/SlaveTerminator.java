@@ -1,45 +1,36 @@
 package cz.muni.fi.modelchecker.mpi.termination;
 
-import mpi.Comm;
-import mpi.MPI;
-
-import java.util.Arrays;
-
 /**
  * Terminator running on a machine that has rank different than 0.
  * Uses Safra's algorithm(http://fmt.cs.utwente.nl/courses/cdp/slides/cdp-8-mpi-2-4up.pdf) for termination detection.
  */
 public class SlaveTerminator implements Terminator {
 
-    private boolean flag = false;
+    private int flag = 0;
     private int count = 0;
 
-    private boolean working = true;
-    private int[] pendingToken = null;
+    private boolean working = false;
+    private Token pendingToken = null;
 
     private final int tokenSource;
     private final int tokenDestination;
-    private final Comm COMM;
+    private final TokenMessenger messenger;
 
-    public SlaveTerminator(Comm comm) {
-        COMM = comm;
-        int rank = MPI.COMM_WORLD.Rank();
-        int size = MPI.COMM_WORLD.Size();
-        tokenSource = (rank + 1) % size;
+    public SlaveTerminator(TokenMessenger messenger) {
+        this.messenger = messenger;
+        int rank = messenger.getMyId();
+        tokenSource = (rank + 1) % messenger.getProcessCount();
         tokenDestination = rank - 1;
-        if (tokenDestination < 0){
+        if (tokenDestination < 0) {
             throw new IllegalStateException("Cannot launch slave terminator on master machine");
         }
     }
 
-    private synchronized void processToken(int[] token) {
-        //update token and send it to next node
-        token[0] = (token[0] == 1 || flag) ? 1 : 0;
-        token[1] = token[1] + count;
+    private synchronized void processToken(Token token) {
         //non blocking send (so that we do not end up stuck in synchronized section)
-        COMM.Isend(token, 0, token.length, MPI.INT, tokenDestination, -1);
+        messenger.sendTokenAsync(tokenDestination, new Token(Math.min(token.flag + flag, 1), token.count + count));
         //status = White
-        flag = false;
+        flag = 0;
     }
 
     @Override
@@ -51,27 +42,26 @@ public class SlaveTerminator implements Terminator {
     public synchronized void messageReceived() {
         count--;
         //status = Black
-        flag = true;
+        flag = 1;
     }
 
     @Override
     public void waitForTermination() {
         Thread t = new Thread(() -> {
-            int[] buffer = new int[2];
-            while (buffer[0] != 2) {
-                COMM.Recv(buffer, 0, buffer.length, MPI.INT, tokenSource, -1);
-                if (buffer[0] < 2) {    //if this is a valid token
-                    synchronized (SlaveTerminator.this) {
-                        if (working) {  //if node is active, save token for later
-                            pendingToken = Arrays.copyOf(buffer, 2);
-                        } else { //else pass token to next node right away
-                            processToken(Arrays.copyOf(buffer,2));
-                        }
+            Token token = messenger.waitForToken(tokenSource);
+            while (token.flag < 2) {
+                synchronized (SlaveTerminator.this) {
+                 //   System.out.println(messenger.getMyId()+" probe received: "+flag+" "+token.flag+" "+count+" "+token.count);
+                    if (working) {  //if node is active, save token for later
+                        pendingToken = token;
+                    } else { //else pass token to next node right away
+                        processToken(token);
                     }
                 }
+                token = messenger.waitForToken(tokenSource);
             }
             //termination message has been received - we pass this to next node and finish ourselves
-            COMM.Isend(buffer, 0, 2, MPI.INT, tokenDestination, -1);
+            messenger.sendTokenAsync(tokenDestination, token);
         });
         t.start();
         try {

@@ -33,10 +33,10 @@ JNIEXPORT jobject JNICALL Java_cz_muni_fi_ode_NodeFactory_getNativeInit
 
 /*
  * Class:     cz_muni_fi_ode_NodeFactory
- * Method:    getAllNodes
- * Signature: (Ljava/util/List;)Ljava/util/List;
+ * Method:    cacheAllNodes
+ * Signature: (Ljava/util/List;)V
  */
-JNIEXPORT jobject JNICALL Java_cz_muni_fi_ode_NodeFactory_getAllNodes
+JNIEXPORT void JNICALL Java_cz_muni_fi_ode_NodeFactory_cacheAllNodes
   (JNIEnv *, jobject, jobject);
 
 #ifdef __cplusplus

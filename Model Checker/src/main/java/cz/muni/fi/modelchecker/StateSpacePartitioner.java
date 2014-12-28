@@ -16,4 +16,5 @@ public interface StateSpacePartitioner<T extends Node> {
      */
     int getNodeOwner(@NotNull T node) throws IllegalArgumentException;
 
+    int getMyId();
 }

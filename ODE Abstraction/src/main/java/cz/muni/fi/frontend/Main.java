@@ -26,14 +26,13 @@ public class Main {
                 try {
                     NativeUtils.loadLibraryFromJar("/build/binaries/libgenerator.so");
                 } catch (IOException e2) {
-                    //ok
+                    String property = System.getProperty("java.library.path");
+                    StringTokenizer parser = new StringTokenizer(property, ";");
+                    while (parser.hasMoreTokens()) {
+                        System.err.println(parser.nextToken());
+                    }
+                    System.exit(1);
                 }
-                String property = System.getProperty("java.library.path");
-                StringTokenizer parser = new StringTokenizer(property, ";");
-                while (parser.hasMoreTokens()) {
-                    System.err.println(parser.nextToken());
-                }
-                System.exit(1);
             }
         }
     }

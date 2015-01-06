@@ -44,7 +44,9 @@ public class ModelChecker<N extends Node, C extends ColorSet> {
         //return from proposition or from formula that has been already processed
         if (formula instanceof Proposition || processedFormulas.contains(formula)) return;
         //process formulas recursively
-        formula.getSubFormulas().forEach(this::verify);
+        for (Formula sub : formula.getSubFormulas()) {
+            verify(sub);
+        }
         System.out.println(MPI.COMM_WORLD.Rank()+" Verification started: "+formula);
         //prepare terminator
         Terminator terminator = MPI.COMM_WORLD.Rank() == 0 ? new MasterTerminator(new MPITokenMessenger(COMM)) : new SlaveTerminator(new MPITokenMessenger(COMM));

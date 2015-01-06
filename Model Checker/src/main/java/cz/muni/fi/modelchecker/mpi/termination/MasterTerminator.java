@@ -69,30 +69,33 @@ public class MasterTerminator implements Terminator {
     @Override
     public void waitForTermination() {
         if (finalized) throw new IllegalStateException("Called waitForTermination on finalized master terminator");
-        Thread t = new Thread(() -> {
-            synchronized (MasterTerminator.this) {
-                if (!working && !waitingForToken) initProbe();
-            }
-            Token token = messenger.waitForToken(tokenSource);
-            while (token.flag < 2) {
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
                 synchronized (MasterTerminator.this) {
-                    if (!waitingForToken) {
-                        throw new IllegalStateException("Master received a token he was not waiting for!");
-                    }
-                 //   System.out.println("Probe returned to master: "+flag+" "+token.flag+" "+count+" "+token.count);
-                    waitingForToken = false;
-                    if (!flag && token.flag == 0 && token.count + count == 0) {
-                        //if termination criteria are met, finish this whole thing
-                        //Slaves should pass this and return it to us (that will terminate this while loop)
-                        initTermination();
-                    } else {
-                        if (!working) {
-                            //if node is idle, just go for another round
-                            initProbe();
-                        } //if we are working, just wait - setWorking will init the probe
-                    }
+                    if (!working && !waitingForToken) initProbe();
                 }
-                token = messenger.waitForToken(tokenSource);
+                Token token = messenger.waitForToken(tokenSource);
+                while (token.flag < 2) {
+                    synchronized (MasterTerminator.this) {
+                        if (!waitingForToken) {
+                            throw new IllegalStateException("Master received a token he was not waiting for!");
+                        }
+                        //   System.out.println("Probe returned to master: "+flag+" "+token.flag+" "+count+" "+token.count);
+                        waitingForToken = false;
+                        if (!flag && token.flag == 0 && token.count + count == 0) {
+                            //if termination criteria are met, finish this whole thing
+                            //Slaves should pass this and return it to us (that will terminate this while loop)
+                            initTermination();
+                        } else {
+                            if (!working) {
+                                //if node is idle, just go for another round
+                                initProbe();
+                            } //if we are working, just wait - setWorking will init the probe
+                        }
+                    }
+                    token = messenger.waitForToken(tokenSource);
+                }
             }
         });
         t.start();

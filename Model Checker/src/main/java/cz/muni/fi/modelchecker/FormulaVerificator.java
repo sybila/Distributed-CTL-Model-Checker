@@ -103,11 +103,12 @@ public class FormulaVerificator<N extends Node, C extends ColorSet> {
     }
 
     private void processUntil(@NotNull Formula formula) {
-        model.initialNodes(formula.getSubFormulaAt(1)).entrySet().stream()
-                .filter //add formula to all initial nodes
-                        (initial -> model.addFormula(initial.getKey(), formula, initial.getValue()))
-                .forEach //process recursively only nodes that have been modified by previous change
-                        (initial -> processUntilRecursive(initial.getKey(), formula, initial.getValue()));
+        for (Map.Entry<N, C> initial : model.initialNodes(formula.getSubFormulaAt(1)).entrySet()) {
+            if (model.addFormula(initial.getKey(), formula, initial.getValue())) {  //add formula to all initial nodes
+                //process recursively only nodes that have been modified by previous change
+                processUntilRecursive(initial.getKey(), formula, initial.getValue());
+            }
+        }
     }
 
 

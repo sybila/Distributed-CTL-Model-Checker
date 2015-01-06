@@ -47,21 +47,24 @@ public class SlaveTerminator implements Terminator {
 
     @Override
     public void waitForTermination() {
-        Thread t = new Thread(() -> {
-            Token token = messenger.waitForToken(tokenSource);
-            while (token.flag < 2) {
-                synchronized (SlaveTerminator.this) {
-                 //   System.out.println(messenger.getMyId()+" probe received: "+flag+" "+token.flag+" "+count+" "+token.count);
-                    if (working) {  //if node is active, save token for later
-                        pendingToken = token;
-                    } else { //else pass token to next node right away
-                        processToken(token);
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                Token token = messenger.waitForToken(tokenSource);
+                while (token.flag < 2) {
+                    synchronized (SlaveTerminator.this) {
+                        //   System.out.println(messenger.getMyId()+" probe received: "+flag+" "+token.flag+" "+count+" "+token.count);
+                        if (working) {  //if node is active, save token for later
+                            pendingToken = token;
+                        } else { //else pass token to next node right away
+                            processToken(token);
+                        }
                     }
+                    token = messenger.waitForToken(tokenSource);
                 }
-                token = messenger.waitForToken(tokenSource);
+                //termination message has been received - we pass this to next node and finish ourselves
+                messenger.sendTokenAsync(tokenDestination, token);
             }
-            //termination message has been received - we pass this to next node and finish ourselves
-            messenger.sendTokenAsync(tokenDestination, token);
         });
         t.start();
         try {

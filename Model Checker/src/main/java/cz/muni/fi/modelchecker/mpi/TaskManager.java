@@ -27,10 +27,18 @@ public abstract class TaskManager<T extends Node, V extends ColorSet> {
     }
 
     public void startListening() {
-        new Thread(() -> {
-            boolean hasTask = true;
-            while (hasTask) {
-                hasTask = tryReceivingTask(this::startLocalTask);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                boolean hasTask = true;
+                while (hasTask) {
+                    hasTask = tryReceivingTask(new TaskStarter<T, V>() {
+                        @Override
+                        public void startLocalTask(int sourceNode, T external, T internal, V colors) {
+                            TaskManager.this.startLocalTask(sourceNode, external, internal, colors);
+                        }
+                    });
+                }
             }
         }).start();
     }
@@ -40,17 +48,20 @@ public abstract class TaskManager<T extends Node, V extends ColorSet> {
         sendTask(destinationNode, internal, external, colors);
     }
 
-    private void startLocalTask(int sourceNode, T external, T internal, V colors) {
+    private void startLocalTask(int sourceNode, T external, final T internal, final V colors) {
         synchronized (COUNT_LOCK) {
             terminator.messageReceived();
             activeTasks++;
             if (activeTasks == 1) terminator.setWorking(true);
         }
-        new Thread(() -> {
-            verificator.processFormula(activeFormula, internal, colors);
-            synchronized (COUNT_LOCK) {
-                activeTasks--;
-                if (activeTasks == 0) terminator.setWorking(false);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                verificator.processFormula(activeFormula, internal, colors);
+                synchronized (COUNT_LOCK) {
+                    activeTasks--;
+                    if (activeTasks == 0) terminator.setWorking(false);
+                }
             }
         }).start();
     }

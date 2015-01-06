@@ -55,13 +55,13 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
     @Override
     public synchronized Map<CoordinateNode, TreeColorSet> predecessorsFor(@NotNull CoordinateNode to, @NotNull TreeColorSet borders) {
       //  System.out.println("Get predecessors nodes: "+Arrays.toString(to.coordinates)+" "+ MPI.COMM_WORLD.Rank());
-        return getNativePredecessors(to.coordinates, borders, new HashMap<>());
+        return getNativePredecessors(to.coordinates, borders, new HashMap<CoordinateNode, TreeColorSet>());
     }
 
     @NotNull
     @Override
     public synchronized Map<CoordinateNode, TreeColorSet> successorsFor(@NotNull CoordinateNode from, @NotNull TreeColorSet borders) {
-        return getNativeSuccessors(from.coordinates, borders, new HashMap<>());
+        return getNativeSuccessors(from.coordinates, borders, new HashMap<CoordinateNode, TreeColorSet>());
     }
 
     @NotNull
@@ -88,7 +88,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
                     proposition.getVariable(),
                     proposition.getNativeOperator(),
                     proposition.getThreshold(),
-                    partitioner.getMyLimit(), new HashMap<>());
+                    partitioner.getMyLimit(), new HashMap<CoordinateNode, TreeColorSet>());
             for (Map.Entry<CoordinateNode, TreeColorSet> entry : values.entrySet()) {
                 entry.getKey().addFormula(proposition, entry.getValue());
             }
@@ -142,7 +142,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
                     proposition.getVariable(),
                     proposition.getNativeOperator(),
                     proposition.getThreshold(),
-                    partitioner.getMyLimit(), new HashMap<>());
+                    partitioner.getMyLimit(), new HashMap<CoordinateNode, TreeColorSet>());
             for (Map.Entry<CoordinateNode, TreeColorSet> entry : values.entrySet()) {
                 entry.getKey().addFormula(proposition, entry.getValue());
             }

@@ -1,8 +1,5 @@
 package cz.muni.fi.modelchecker.mpi.termination;
 
-import cz.muni.fi.modelchecker.mpi.termination.SlaveTerminator;
-import cz.muni.fi.modelchecker.mpi.termination.Token;
-import cz.muni.fi.modelchecker.mpi.termination.TokenMessenger;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Rule;
 import org.junit.Test;

@@ -63,9 +63,8 @@ ParameterSpace::ParameterSpace(const ParameterSpace& copy) {
 }	
 
 ParameterSpace::ParameterSpace(vector<list<pair<double, double> > > data) {
-	this->ps = data;
+  this->ps = data;
 }
-
 
 
 void ParameterSpace::setParamRange(size_t paramIndex, pair<double,double> paramRange) {
@@ -449,7 +448,8 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 		bool upperPositiveDirection = false;
 		bool upperNegativeDirection = false;		
 	
-		if(s.getCoors().at(v) != 0) {
+//		if(s.getCoors().at(v) != 0) 
+		{
 			//I want to check lower state in this dimension only if state 's' is not at the bottom in this dimension
 
 			vector<vector<size_t> > vertices = getRightVertices(s, v, true);
@@ -474,7 +474,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 					if(abs(denom) != 0) {
 					
 						paramValues.push_back(derivationValue/(-denom) == -0 ? 0 : derivationValue/(-denom));
-						//cerr << dataModel.getParamName(paramIndex) << " = " << derivationValue << "/" << -denom << " = " << paramValues.back() << endl;
+						cerr << dataModel.getParamName(paramIndex) << " = " << derivationValue << "/" << -denom << " = " << paramValues.back() << endl;
 						
 						if(s.getColors().getParamSpace().at(paramIndex).empty())
 							cerr << "Error: no interval for parameter " << dataModel.getParamName(paramIndex) << endl;
@@ -549,7 +549,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 						} */
 						
 					} else {	// abs(denom) == 0 (ERGO: it might be at border of state space)
-						//cerr << "derivation = " << derivationValue << " --> parameter unknown" << endl;					
+						cerr << "derivation = " << derivationValue << " --> parameter unknown" << endl;					
 						if(derivationValue < 0) {
 							lowerNegativeDirection = true;
 							
@@ -567,7 +567,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 						} 						
 					}
 				} else {	// paramIndex == -1 (ERGO: no unknown parameter in equation)
-				//	cerr << "derivation = " << derivationValue << endl;					
+					cerr << "derivation = " << derivationValue << endl;					
 					if(derivationValue < 0) {
 						lowerNegativeDirection = true;
 					} else {
@@ -576,118 +576,61 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 				}
 			}
 			
-		//	cerr << "most left  param value on lower facet: " << mostLeftOneValue << endl;
-		//	cerr << "most right param value on lower facet: " << mostRightOneValue << endl;
+			cerr << "most left  param value on lower facet: " << mostLeftOneValue << endl;
+			cerr << "most right param value on lower facet: " << mostRightOneValue << endl;
 		
-			if(!isSucc) {
-				//If I want predecessors of state 's'
+			if(s.getCoors().at(v) != 0)	{
+				if(!isSucc) {
+					//If I want predecessors of state 's'
 				
-				if(lowerPositiveDirection) {
-					//There exists edge from lower state to state 's'
-
-					vector<size_t> newStateCoors(s.getCoors());
-					newStateCoors.at(v) = newStateCoors.at(v) - 1;
-
-					ParameterSpace newPS;
-					if(paramIndex != -1) {
-						//Parameter space needs to be cut for this edge
-//						newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,oneParamValue);
-						newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,mostLeftOneValue,mostRightOneValue);						
-					} else {
-						//Edge is for whole parameter space						
-						newPS = ParameterSpace(s.getColors());
-					}
-				
-					State newState(s.getDims(),newStateCoors,newPS);
-					
-					returnedStates.push_back(newState);
-				}
-/*				
-				if(paramIndex != -1) {
-					if(oneParamValue > 0 && s.getColors().getParamSpace().at(paramIndex).back().second >= oneParamValue) {
-						//There exists edge from lower state to state 's'
-
-						vector<size_t> newStateCoors(s.getCoors());
-						newStateCoors.at(v) = newStateCoors.at(v) - 1;
-
-						//Parameter space needs to be cut for this edge
-						ParameterSpace newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,oneParamValue);
-					
-						State newState(s.getDims(),newStateCoors,newPS);
-						
-						returnedStates.push_back(newState);
-					}
-				} else {
 					if(lowerPositiveDirection) {
 						//There exists edge from lower state to state 's'
 
 						vector<size_t> newStateCoors(s.getCoors());
 						newStateCoors.at(v) = newStateCoors.at(v) - 1;
 
-						//Edge is for whole parameter space						
-						ParameterSpace newPS(s.getColors());
-					
-						State newState(s.getDims(),newStateCoors,newPS);
-						
-						returnedStates.push_back(newState);
-					}
-				} */
-			} else {
-				//If I want successors of state 's'
-				if(lowerNegativeDirection) {
-					//There exists edge from lower state to state 's'
-
-					vector<size_t> newStateCoors(s.getCoors());
-					newStateCoors.at(v) = newStateCoors.at(v) - 1;
-
-					ParameterSpace newPS;
-					if(paramIndex != -1) {
-						//Parameter space needs to be cut for this edge
-//						newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,oneParamValue);
-						newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,mostLeftOneValue,mostRightOneValue);
-					} else {
-						//Edge is for whole parameter space						
-						newPS = ParameterSpace(s.getColors());
-					}
+						ParameterSpace newPS;
+						if(paramIndex != -1) {
+							//Parameter space needs to be cut for this edge
+	//						newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,oneParamValue);
+							newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,mostLeftOneValue,mostRightOneValue);						
+						} else {
+							//Edge is for whole parameter space						
+							newPS = ParameterSpace(s.getColors());
+						}
 				
-					State newState(s.getDims(),newStateCoors,newPS);
-					
-					returnedStates.push_back(newState);
-				}
-/*				
-				if(paramIndex != -1) {
-					if(oneParamValue < 0 && s.getColors().getParamSpace().at(paramIndex).front().first <= abs(oneParamValue)) {
-						//There exists edge from state 's' to lower state
-
-						vector<size_t> newStateCoors(s.getCoors());
-						newStateCoors.at(v) = newStateCoors.at(v) - 1;
-
-						//Parameter space needs to be cut for this edge
-						ParameterSpace newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,oneParamValue);
-					
 						State newState(s.getDims(),newStateCoors,newPS);
-						
+					
 						returnedStates.push_back(newState);
 					}
 				} else {
+					//If I want successors of state 's'
 					if(lowerNegativeDirection) {
-						//There exists edge from state 's' to lower state
+						//There exists edge from lower state to state 's'
 
 						vector<size_t> newStateCoors(s.getCoors());
 						newStateCoors.at(v) = newStateCoors.at(v) - 1;
 
-						//Edge is for whole parameter space						
-						ParameterSpace newPS(s.getColors());
-					
+						ParameterSpace newPS;
+						if(paramIndex != -1) {
+							//Parameter space needs to be cut for this edge
+	//						newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,oneParamValue);
+							newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,mostLeftOneValue,mostRightOneValue);
+						} else {
+							//Edge is for whole parameter space						
+							newPS = ParameterSpace(s.getColors());
+						}
+				
 						State newState(s.getDims(),newStateCoors,newPS);
-						
+					
 						returnedStates.push_back(newState);
 					}
-				}	*/
+				}
 			}
 		}		
 		
-		if(s.getCoors().at(v) != dataModel.getThresholdsForVariable(v).size() -2) {
+//		if(s.getCoors().at(v) != dataModel.getThresholdsForVariable(v).size() -2) 
+		{
 			//I want to check upper state in this dimension only if state 's' is not at the top in this dimension
 		
 			vector<vector<size_t> > vertices = getRightVertices(s, v, false);			
@@ -711,7 +654,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 				
 					if(abs(denom) != 0) {
 						paramValues.push_back(derivationValue/(denom != 0.0 ? -denom : 1) == -0 ? 0 : derivationValue/(denom != 0.0 ? -denom : 1));
-						//cerr << dataModel.getParamName(paramIndex) << " = " << derivationValue << "/" << -denom << " = " << paramValues.back() << endl;
+						cerr << dataModel.getParamName(paramIndex) << " = " << derivationValue << "/" << -denom << " = " << paramValues.back() << endl;
 						
 						if(s.getColors().getParamSpace().at(paramIndex).empty())
 							cerr << "Error: no interval for parameter " << dataModel.getParamName(paramIndex) << endl;
@@ -786,7 +729,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 						} */
 						
 					} else {	// abs(denom) == 0 (ERGO: it might be at border of state space)
-					//	cerr << "derivation = " << derivationValue << " --> parameter unknown" << endl;					
+						cerr << "derivation = " << derivationValue << " --> parameter unknown" << endl;					
 						if(derivationValue < 0) {
 							upperNegativeDirection = true;
 							
@@ -805,7 +748,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 					}
 					
 				} else {	// paramIndex == -1 (ERGO: no unknown parameter in equation)
-					//cerr << "derivation = " << derivationValue << endl;					
+					cerr << "derivation = " << derivationValue << endl;					
 					if(derivationValue < 0) {
 						upperNegativeDirection = true;
 					} else {
@@ -814,115 +757,57 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 				}
 			}
 			
-			//cerr << "most left  param value on upper facet: " << mostLeftOneValue << endl;
-			//cerr << "most right param value on upper facet: " << mostRightOneValue << endl;
+			cerr << "most left  param value on upper facet: " << mostLeftOneValue << endl;
+			cerr << "most right param value on upper facet: " << mostRightOneValue << endl;
 		
-			if(!isSucc) {
-				//If I want predecessors of state 's'
+			if(s.getCoors().at(v) != dataModel.getThresholdsForVariable(v).size() -2) {		
+				if(!isSucc) {
+					//If I want predecessors of state 's'
 				
-				if(upperNegativeDirection) {
-					//There exists edge from lower state to state 's'
-
-					vector<size_t> newStateCoors(s.getCoors());
-					newStateCoors.at(v) = newStateCoors.at(v) + 1;
-
-					ParameterSpace newPS;
-					if(paramIndex != -1) {
-						//Parameter space needs to be cut for this edge
-//						newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,oneParamValue);
-						newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,mostLeftOneValue,mostRightOneValue);						
-					} else {
-						//Edge is for whole parameter space						
-						newPS = ParameterSpace(s.getColors());
-					}
-				
-					State newState(s.getDims(),newStateCoors,newPS);
-					
-					returnedStates.push_back(newState);
-				}
-/*				
-				if(paramIndex != -1) {
-					if(oneParamValue < 0 && s.getColors().getParamSpace().at(paramIndex).front().first <= abs(oneParamValue)) {
-						//There exists edge from upper state to state 's'
-
-						vector<size_t> newStateCoors(s.getCoors());
-						newStateCoors.at(v) = newStateCoors.at(v) + 1;
-
-						//Parameter space needs to be cut for this edge
-						ParameterSpace newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,oneParamValue);
-					
-						State newState(s.getDims(),newStateCoors,newPS);
-						
-						returnedStates.push_back(newState);
-					}
-				} else {
 					if(upperNegativeDirection) {
-						//There exists edge from upper state to state 's'
+						//There exists edge from lower state to state 's'
 
 						vector<size_t> newStateCoors(s.getCoors());
 						newStateCoors.at(v) = newStateCoors.at(v) + 1;
 
-						//Edge is for whole parameter space						
-						ParameterSpace newPS(s.getColors());
-					
-						State newState(s.getDims(),newStateCoors,newPS);
-						
-						returnedStates.push_back(newState);
-					}
-				} */
-			} else {
-				//If I want successors of state 's'
+						ParameterSpace newPS;
+						if(paramIndex != -1) {
+							//Parameter space needs to be cut for this edge
+	//						newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,oneParamValue);
+							newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,mostLeftOneValue,mostRightOneValue);						
+						} else {
+							//Edge is for whole parameter space						
+							newPS = ParameterSpace(s.getColors());
+						}
 				
-				if(upperPositiveDirection) {
-					//There exists edge from lower state to state 's'
-
-					vector<size_t> newStateCoors(s.getCoors());
-					newStateCoors.at(v) = newStateCoors.at(v) + 1;
-
-					ParameterSpace newPS;
-					if(paramIndex != -1) {
-						//Parameter space needs to be cut for this edge
-//						newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,oneParamValue);
-						newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,mostLeftOneValue,mostRightOneValue);						
-					} else {
-						//Edge is for whole parameter space						
-						newPS = ParameterSpace(s.getColors());
-					}
-				
-					State newState(s.getDims(),newStateCoors,newPS);
-					
-					returnedStates.push_back(newState);
-				}
-/*				
-				if(paramIndex != -1) {
-					if(oneParamValue > 0 && s.getColors().getParamSpace().at(paramIndex).back().second >= oneParamValue) {
-						//There exists edge from state 's' to upper state
-
-						vector<size_t> newStateCoors(s.getCoors());
-						newStateCoors.at(v) = newStateCoors.at(v) + 1;
-
-						//Parameter space needs to be cut for this edge
-						ParameterSpace newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,oneParamValue);
-					
 						State newState(s.getDims(),newStateCoors,newPS);
-						
+					
 						returnedStates.push_back(newState);
 					}
 				} else {
+					//If I want successors of state 's'
+				
 					if(upperPositiveDirection) {
-						//There exists edge from state 's' upper state
+						//There exists edge from lower state to state 's'
 
 						vector<size_t> newStateCoors(s.getCoors());
 						newStateCoors.at(v) = newStateCoors.at(v) + 1;
 
-						//Edge is for whole parameter space						
-						ParameterSpace newPS(s.getColors());
-					
+						ParameterSpace newPS;
+						if(paramIndex != -1) {
+							//Parameter space needs to be cut for this edge
+	//						newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,oneParamValue);
+							newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,mostLeftOneValue,mostRightOneValue);						
+						} else {
+							//Edge is for whole parameter space						
+							newPS = ParameterSpace(s.getColors());
+						}
+				
 						State newState(s.getDims(),newStateCoors,newPS);
-						
+					
 						returnedStates.push_back(newState);
 					}
-				}	*/
+				}
 			}
 		}
 		

@@ -2,7 +2,7 @@
 
 ext {
     compiler = "g++-4.9"
-    jdk = "/Library/Java/JavaVirtualMachines/jdk1.8.0_20.jdk/Contents/Home"
+    jdk = "/Library/Java/JavaVirtualMachines/jdk1.8.0_25.jdk/Contents/Home"
     objDir = "build/objs/"
     binDir = "build/binaries/"
     srcDir = "src/main/cpp/"
@@ -84,8 +84,7 @@ dependencies {
 }
 
 task nativezip(type: Exec) {
-    //TODO: this does not work
-    //args    binDir+"natives.zip", binDir+"lib*"
+    args    binDir+"natives.zip", binDir+"libgenerator.jnilib"
     executable "zip"
 }
 

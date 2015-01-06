@@ -41,7 +41,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
         } else if (borderNodes.containsKey(hash)) {
             return borderNodes.get(hash);
         } else {
-            @NotNull CoordinateNode n = new CoordinateNode(coordinates);
+            @NotNull CoordinateNode n = new CoordinateNode(coordinates, model.parameterCount());
             if (partitioner.getNodeOwner(n) == myId) {
                 nodeCache.put(hash, n);
             } else {
@@ -54,8 +54,13 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
     @NotNull
     @Override
     public synchronized Map<CoordinateNode, TreeColorSet> predecessorsFor(@NotNull CoordinateNode to, @NotNull TreeColorSet borders) {
-      //  System.out.println("Get predecessors nodes: "+Arrays.toString(to.coordinates)+" "+ MPI.COMM_WORLD.Rank());
-        return getNativePredecessors(to.coordinates, borders, new HashMap<CoordinateNode, TreeColorSet>());
+        if (to.hasPredecessorsFor(borders)) {
+            return to.getPredecessors(borders);
+        } else {
+            Map<CoordinateNode, TreeColorSet> results = getNativePredecessors(to.coordinates, borders, new HashMap<CoordinateNode, TreeColorSet>());
+            to.savePredecessors(borders, results);
+            return results;
+        }
     }
 
     @NotNull

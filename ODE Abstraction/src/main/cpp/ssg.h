@@ -474,7 +474,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 					if(abs(denom) != 0) {
 					
 						paramValues.push_back(derivationValue/(-denom) == -0 ? 0 : derivationValue/(-denom));
-						cerr << dataModel.getParamName(paramIndex) << " = " << derivationValue << "/" << -denom << " = " << paramValues.back() << endl;
+						//cerr << dataModel.getParamName(paramIndex) << " = " << derivationValue << "/" << -denom << " = " << paramValues.back() << endl;
 						
 						if(s.getColors().getParamSpace().at(paramIndex).empty())
 							cerr << "Error: no interval for parameter " << dataModel.getParamName(paramIndex) << endl;
@@ -549,7 +549,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 						} */
 						
 					} else {	// abs(denom) == 0 (ERGO: it might be at border of state space)
-						cerr << "derivation = " << derivationValue << " --> parameter unknown" << endl;					
+						//cerr << "derivation = " << derivationValue << " --> parameter unknown" << endl;
 						if(derivationValue < 0) {
 							lowerNegativeDirection = true;
 							
@@ -567,7 +567,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 						} 						
 					}
 				} else {	// paramIndex == -1 (ERGO: no unknown parameter in equation)
-					cerr << "derivation = " << derivationValue << endl;					
+					//cerr << "derivation = " << derivationValue << endl;
 					if(derivationValue < 0) {
 						lowerNegativeDirection = true;
 					} else {
@@ -576,8 +576,8 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 				}
 			}
 			
-			cerr << "most left  param value on lower facet: " << mostLeftOneValue << endl;
-			cerr << "most right param value on lower facet: " << mostRightOneValue << endl;
+			//cerr << "most left  param value on lower facet: " << mostLeftOneValue << endl;
+			//cerr << "most right param value on lower facet: " << mostRightOneValue << endl;
 		
 			if(s.getCoors().at(v) != 0)	{
 				if(!isSucc) {
@@ -654,7 +654,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 				
 					if(abs(denom) != 0) {
 						paramValues.push_back(derivationValue/(denom != 0.0 ? -denom : 1) == -0 ? 0 : derivationValue/(denom != 0.0 ? -denom : 1));
-						cerr << dataModel.getParamName(paramIndex) << " = " << derivationValue << "/" << -denom << " = " << paramValues.back() << endl;
+						//cerr << dataModel.getParamName(paramIndex) << " = " << derivationValue << "/" << -denom << " = " << paramValues.back() << endl;
 						
 						if(s.getColors().getParamSpace().at(paramIndex).empty())
 							cerr << "Error: no interval for parameter " << dataModel.getParamName(paramIndex) << endl;
@@ -729,7 +729,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 						} */
 						
 					} else {	// abs(denom) == 0 (ERGO: it might be at border of state space)
-						cerr << "derivation = " << derivationValue << " --> parameter unknown" << endl;					
+					//	cerr << "derivation = " << derivationValue << " --> parameter unknown" << endl;
 						if(derivationValue < 0) {
 							upperNegativeDirection = true;
 							
@@ -748,7 +748,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 					}
 					
 				} else {	// paramIndex == -1 (ERGO: no unknown parameter in equation)
-					cerr << "derivation = " << derivationValue << endl;					
+				//	cerr << "derivation = " << derivationValue << endl;
 					if(derivationValue < 0) {
 						upperNegativeDirection = true;
 					} else {
@@ -757,8 +757,8 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 				}
 			}
 			
-			cerr << "most left  param value on upper facet: " << mostLeftOneValue << endl;
-			cerr << "most right param value on upper facet: " << mostRightOneValue << endl;
+			//cerr << "most left  param value on upper facet: " << mostLeftOneValue << endl;
+			//cerr << "most right param value on upper facet: " << mostRightOneValue << endl;
 		
 			if(s.getCoors().at(v) != dataModel.getThresholdsForVariable(v).size() -2) {		
 				if(!isSucc) {

@@ -1,3 +1,5 @@
+package cz.muni.fi.modelchecker.mpi.termination;
+
 import cz.muni.fi.modelchecker.mpi.termination.MasterTerminator;
 import cz.muni.fi.modelchecker.mpi.termination.Token;
 import cz.muni.fi.modelchecker.mpi.termination.TokenMessenger;
@@ -305,7 +307,7 @@ public class MasterTerminatorTest {
     }
 
     @Test
-    public void wringUse() {
+    public void wrongUse() {
         TokenMessenger messenger = new TokenMessenger() {
 
             BlockingQueue<Token> queue = new LinkedBlockingQueue<>();

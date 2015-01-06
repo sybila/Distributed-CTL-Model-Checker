@@ -4,11 +4,11 @@ package cz.muni.fi.modelchecker.mpi.termination;
  * Terminator running on a machine that has rank 0
  * Uses Safra's algorithm(http://fmt.cs.utwente.nl/courses/cdp/slides/cdp-8-mpi-2-4up.pdf) for termination detection.
  */
-public class MasterTerminator extends Terminator {
+class MasterTerminator extends Terminator {
 
     private boolean waitingForToken = false;
 
-    public MasterTerminator(TokenMessenger m) {
+    MasterTerminator(TokenMessenger m) {
         super(m, (m.getMyId() + 1) % m.getProcessCount(), m.getProcessCount() - 1);
         if (messenger.getMyId() != 0) {
             throw new IllegalStateException("Cannot launch master terminator on slave machine");

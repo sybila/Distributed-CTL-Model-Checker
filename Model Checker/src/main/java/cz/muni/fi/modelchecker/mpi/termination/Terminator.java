@@ -16,7 +16,15 @@ public abstract class Terminator {
 
     protected final TokenMessenger messenger;
 
-    public Terminator(TokenMessenger messenger, int tokenSource, int tokenDestination) {
+    public static Terminator obtain(TokenMessenger messenger) {
+        if (messenger.getMyId() == 0) {
+            return new MasterTerminator(messenger);
+        } else {
+            return new SlaveTerminator(messenger);
+        }
+    }
+
+    Terminator(TokenMessenger messenger, int tokenSource, int tokenDestination) {
         this.messenger = messenger;
         this.tokenDestination = tokenDestination;
         this.tokenSource = tokenSource;

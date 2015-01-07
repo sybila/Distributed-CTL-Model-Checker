@@ -95,7 +95,7 @@ public class MpiTaskManager extends TaskManager<CoordinateNode,TreeColorSet> {
     }
 
     public void finishSelf() {
-        @NotNull int[] buffer = new int[3*dimensions + 3];
+        @NotNull int[] buffer = new int[2*dimensions + model.parameterCount() + 3];
         buffer[0] = FINISH;
         COMM.Send(buffer, 0, buffer.length, MPI.INT, COMM.Rank(), TAG);
     }

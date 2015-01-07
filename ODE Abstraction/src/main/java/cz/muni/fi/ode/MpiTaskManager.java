@@ -68,8 +68,8 @@ public class MpiTaskManager extends TaskManager<CoordinateNode,TreeColorSet> {
             }
         }
         synchronized (this) {   //ensure message ordering
-            COMM.Send(buffer, 0, buffer.length, MPI.INT, destinationNode, TAG);
-            COMM.Send(toBuffer(data), 0, data.size(), MPI.DOUBLE, destinationNode, TAG);
+            COMM.Isend(buffer, 0, buffer.length, MPI.INT, destinationNode, TAG);
+            COMM.Isend(toBuffer(data), 0, data.size(), MPI.DOUBLE, destinationNode, TAG);
         }
     }
 

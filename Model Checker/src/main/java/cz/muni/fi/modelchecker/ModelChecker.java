@@ -6,8 +6,6 @@ import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
 import cz.muni.fi.modelchecker.mpi.TaskManager;
 import cz.muni.fi.modelchecker.mpi.termination.MPITokenMessenger;
-import cz.muni.fi.modelchecker.mpi.termination.MasterTerminator;
-import cz.muni.fi.modelchecker.mpi.termination.SlaveTerminator;
 import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import mpi.Comm;
 import mpi.MPI;
@@ -44,10 +42,12 @@ public class ModelChecker<N extends Node, C extends ColorSet> {
         //return from proposition or from formula that has been already processed
         if (formula instanceof Proposition || processedFormulas.contains(formula)) return;
         //process formulas recursively
-        formula.getSubFormulas().forEach(this::verify);
+        for (Formula sub : formula.getSubFormulas()) {
+            verify(sub);
+        }
         System.out.println(MPI.COMM_WORLD.Rank()+" Verification started: "+formula);
         //prepare terminator
-        Terminator terminator = MPI.COMM_WORLD.Rank() == 0 ? new MasterTerminator(new MPITokenMessenger(COMM)) : new SlaveTerminator(new MPITokenMessenger(COMM));
+        Terminator terminator = Terminator.obtain(new MPITokenMessenger(COMM));
         //prepare communication
         TaskManager<N,C> manager = taskManagerFactory.createTaskManager(formula, terminator, verificator, COMM);
         verificator.setTaskManager(manager);
@@ -59,7 +59,7 @@ public class ModelChecker<N extends Node, C extends ColorSet> {
         //wait for task manager termination
         //Note: we need the terminator, because we need need a guarantee that
         //new formula will be processed only after old task managers are finished
-        terminator = MPI.COMM_WORLD.Rank() == 0 ? new MasterTerminator(new MPITokenMessenger(COMM)) : new SlaveTerminator(new MPITokenMessenger(COMM));
+        terminator = Terminator.obtain(new MPITokenMessenger(COMM));
         manager.finishSelf();
         terminator.waitForTermination();
         System.out.println(COMM.Rank()+" Found: "+model.initialNodes(formula).size());

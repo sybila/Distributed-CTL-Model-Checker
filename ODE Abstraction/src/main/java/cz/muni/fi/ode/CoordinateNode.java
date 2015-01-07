@@ -17,19 +17,54 @@ public class CoordinateNode implements Node {
     @NotNull
     public Map<Formula, TreeColorSet> formulae = new HashMap<>();
 
-    public CoordinateNode(@NotNull int[] coordinates) {
+    @NotNull
+    public Map<CoordinateNode, TreeColorSet> predecessors = new HashMap<>();
+
+    @NotNull
+    public TreeColorSet computedPredecessors;
+
+    public CoordinateNode(@NotNull int[] coordinates, int parameterDimensions) {
         this.coordinates = Arrays.copyOf(coordinates, coordinates.length);
+        computedPredecessors = TreeColorSet.createEmpty(parameterDimensions);
     }
 
     public int getCoordinate(int dimension) {
         return coordinates[dimension];
     }
 
-    public TreeColorSet getValidColors(Formula formula) {
+    public synchronized boolean hasPredecessorsFor(TreeColorSet colorSet) {
+        return computedPredecessors.encloses(colorSet);
+    }
+
+    public synchronized void savePredecessors(TreeColorSet borders, Map<CoordinateNode, TreeColorSet> predecessors) {
+        for (Map.Entry<CoordinateNode, TreeColorSet> entry : predecessors.entrySet()) {
+            TreeColorSet colorSet = this.predecessors.get(entry.getKey());
+            if (colorSet != null) {
+                colorSet.union(entry.getValue());
+            } else {
+                this.predecessors.put(entry.getKey(), TreeColorSet.createCopy(entry.getValue()));
+            }
+        }
+        computedPredecessors.union(borders);
+    }
+
+    public synchronized Map<CoordinateNode, TreeColorSet> getPredecessors(TreeColorSet borders) {
+        Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
+        for (Map.Entry<CoordinateNode, TreeColorSet> entry : predecessors.entrySet()) {
+            TreeColorSet colorSet = TreeColorSet.createCopy(entry.getValue());
+            colorSet.intersect(borders);
+            if (!colorSet.isEmpty()) {
+                results.put(entry.getKey(), colorSet);
+            }
+        }
+        return results;
+    }
+
+    public synchronized TreeColorSet getValidColors(Formula formula) {
         return formulae.get(formula);
     }
 
-    public boolean addFormula(Formula formula, @NotNull TreeColorSet colors) {
+    public synchronized boolean addFormula(Formula formula, @NotNull TreeColorSet colors) {
         if (colors.isEmpty()) return false;
         TreeColorSet colorSet = formulae.get(formula);
         if (colorSet == null) {

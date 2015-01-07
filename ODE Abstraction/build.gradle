@@ -88,13 +88,12 @@ dependencies {
 }
 
 task nativezip(type: Exec) {
-    //TODO: this does not work
-    //args    binDir+"natives.zip", binDir+"lib*"
+    args    binDir+"natives.zip", binDir+"libgenerator.jnilib"
     executable "zip"
 }
 
 //create a single Jar with all dependencies
-task fullJar(dependsOn: nativezip, type: Jar) {
+task fullJar(type: Jar) {
     manifest {
         attributes  'Implementation-Title': 'Model Checker',
                     'Implementation-Version': version,

@@ -41,7 +41,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
         } else if (borderNodes.containsKey(hash)) {
             return borderNodes.get(hash);
         } else {
-            @NotNull CoordinateNode n = new CoordinateNode(coordinates);
+            @NotNull CoordinateNode n = new CoordinateNode(coordinates, model.parameterCount());
             if (partitioner.getNodeOwner(n) == myId) {
                 nodeCache.put(hash, n);
             } else {
@@ -54,14 +54,19 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
     @NotNull
     @Override
     public synchronized Map<CoordinateNode, TreeColorSet> predecessorsFor(@NotNull CoordinateNode to, @NotNull TreeColorSet borders) {
-      //  System.out.println("Get predecessors nodes: "+Arrays.toString(to.coordinates)+" "+ MPI.COMM_WORLD.Rank());
-        return getNativePredecessors(to.coordinates, borders, new HashMap<>());
+        if (to.hasPredecessorsFor(borders)) {
+            return to.getPredecessors(borders);
+        } else {
+            Map<CoordinateNode, TreeColorSet> results = getNativePredecessors(to.coordinates, borders, new HashMap<CoordinateNode, TreeColorSet>());
+            to.savePredecessors(borders, results);
+            return results;
+        }
     }
 
     @NotNull
     @Override
     public synchronized Map<CoordinateNode, TreeColorSet> successorsFor(@NotNull CoordinateNode from, @NotNull TreeColorSet borders) {
-        return getNativeSuccessors(from.coordinates, borders, new HashMap<>());
+        return getNativeSuccessors(from.coordinates, borders, new HashMap<CoordinateNode, TreeColorSet>());
     }
 
     @NotNull
@@ -88,7 +93,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
                     proposition.getVariable(),
                     proposition.getNativeOperator(),
                     proposition.getThreshold(),
-                    partitioner.getMyLimit(), new HashMap<>());
+                    partitioner.getMyLimit(), new HashMap<CoordinateNode, TreeColorSet>());
             for (Map.Entry<CoordinateNode, TreeColorSet> entry : values.entrySet()) {
                 entry.getKey().addFormula(proposition, entry.getValue());
             }
@@ -142,7 +147,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
                     proposition.getVariable(),
                     proposition.getNativeOperator(),
                     proposition.getThreshold(),
-                    partitioner.getMyLimit(), new HashMap<>());
+                    partitioner.getMyLimit(), new HashMap<CoordinateNode, TreeColorSet>());
             for (Map.Entry<CoordinateNode, TreeColorSet> entry : values.entrySet()) {
                 entry.getKey().addFormula(proposition, entry.getValue());
             }

@@ -1,6 +1,5 @@
-import cz.muni.fi.modelchecker.mpi.termination.MasterTerminator;
-import cz.muni.fi.modelchecker.mpi.termination.Token;
-import cz.muni.fi.modelchecker.mpi.termination.TokenMessenger;
+package cz.muni.fi.modelchecker.mpi.termination;
+
 import org.jetbrains.annotations.NotNull;
 import org.junit.Rule;
 import org.junit.Test;
@@ -59,28 +58,31 @@ public class MasterTerminatorTest {
                 }
             }
         };
-        MasterTerminator terminator = new MasterTerminator(messenger);
+        final MasterTerminator terminator = new MasterTerminator(messenger);
         terminator.messageSent();
         count++;    //message created in system
         terminator.messageReceived();   //message received
         terminator.setWorking(true);
-        new Thread(() -> {
-            try {
-                Thread.sleep(100);
-                count--;    //pair for first message Sent
-                terminator.messageSent();
-                terminator.setWorking(false);
-                Thread.sleep(100);
-                count++; //message created in system
-                terminator.messageReceived();   //message received
-                terminator.setWorking(true);
-                Thread.sleep(100);
-                count--;    //pair for second message Sent
-                Thread.sleep(100);
-                flag = 0;
-                terminator.setWorking(false);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(100);
+                    count--;    //pair for first message Sent
+                    terminator.messageSent();
+                    terminator.setWorking(false);
+                    Thread.sleep(100);
+                    count++; //message created in system
+                    terminator.messageReceived();   //message received
+                    terminator.setWorking(true);
+                    Thread.sleep(100);
+                    count--;    //pair for second message Sent
+                    Thread.sleep(100);
+                    flag = 0;
+                    terminator.setWorking(false);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }).start();
         terminator.waitForTermination();
@@ -121,19 +123,22 @@ public class MasterTerminatorTest {
                 }
             }
         };
-        MasterTerminator terminator = new MasterTerminator(messenger);
-        new Thread(() -> {
-            try {
-                Thread.sleep(200);
-                terminator.messageReceived();
-                terminator.setWorking(true);
-                Thread.sleep(100);
-                terminator.messageReceived();
-                Thread.sleep(100);
-                flag = 0;
-                terminator.setWorking(false);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        final MasterTerminator terminator = new MasterTerminator(messenger);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(200);
+                    terminator.messageReceived();
+                    terminator.setWorking(true);
+                    Thread.sleep(100);
+                    terminator.messageReceived();
+                    Thread.sleep(100);
+                    flag = 0;
+                    terminator.setWorking(false);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }).start();
         terminator.waitForTermination();
@@ -174,16 +179,19 @@ public class MasterTerminatorTest {
                 }
             }
         };
-        MasterTerminator terminator = new MasterTerminator(messenger);
-        new Thread(() -> {
-            try {
-                Thread.sleep(50);
-                terminator.messageSent();
-                Thread.sleep(50);
-                terminator.messageSent();
-                flag = 0;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        final MasterTerminator terminator = new MasterTerminator(messenger);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(50);
+                    terminator.messageSent();
+                    Thread.sleep(50);
+                    terminator.messageSent();
+                    flag = 0;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }).start();
         terminator.waitForTermination();
@@ -232,15 +240,18 @@ public class MasterTerminatorTest {
         terminator.messageReceived();
         terminator.waitForTermination();
         //receive before start and finish after start
-        MasterTerminator terminator2 = new MasterTerminator(messenger);
+        final MasterTerminator terminator2 = new MasterTerminator(messenger);
         terminator2.messageReceived();
         terminator2.setWorking(true);
-        new Thread(() -> {
-            try {
-                Thread.sleep(300);
-                terminator2.setWorking(false);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(300);
+                    terminator2.setWorking(false);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }).start();
         Thread.sleep(100);
@@ -293,7 +304,7 @@ public class MasterTerminatorTest {
     }
 
     @Test
-    public void wringUse() {
+    public void wrongUse() {
         TokenMessenger messenger = new TokenMessenger() {
 
             BlockingQueue<Token> queue = new LinkedBlockingQueue<>();

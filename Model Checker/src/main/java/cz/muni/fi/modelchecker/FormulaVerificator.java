@@ -8,7 +8,10 @@ import cz.muni.fi.modelchecker.graph.Node;
 import cz.muni.fi.modelchecker.mpi.TaskManager;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.AbstractMap;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 
 /**
  * Class used for model verification.
@@ -79,10 +82,12 @@ public class FormulaVerificator<N extends Node, C extends ColorSet> {
         } else if (formula.getOperator() == BinaryOperator.EXISTS_UNTIL) {
             //intersect received colors with my colors in node,
             //if this is not empty and there are new colors, run back
+            Queue<Map.Entry<N,C>> queue = new LinkedList<>();
             colorSet.intersect(model.validColorsFor(my, formula.getSubFormulaAt(0)));
             if (model.addFormula(my, formula, colorSet)) {
-                processUntilRecursive(my, formula, colorSet);
+                queue.add(new AbstractMap.SimpleEntry<>(my, colorSet));
             }
+            processUntilQueue(queue, formula);
         }
     }
 
@@ -103,29 +108,36 @@ public class FormulaVerificator<N extends Node, C extends ColorSet> {
     }
 
     private void processUntil(@NotNull Formula formula) {
-        for (Map.Entry<N, C> initial : model.initialNodes(formula.getSubFormulaAt(1)).entrySet()) {
+        Map<N, C> initialNodes = model.initialNodes(formula.getSubFormulaAt(1));
+        System.out.println("Initial nodes: "+initialNodes.size());
+        Queue<Map.Entry<N,C>> queue = new LinkedList<>();
+        for (Map.Entry<N, C> initial : initialNodes.entrySet()) {
             if (model.addFormula(initial.getKey(), formula, initial.getValue())) {  //add formula to all initial nodes
                 //process recursively only nodes that have been modified by previous change
-                processUntilRecursive(initial.getKey(), formula, initial.getValue());
+                queue.add(initial);
             }
         }
+        processUntilQueue(queue, formula);
     }
 
 
-    private void processUntilRecursive(@NotNull N node, @NotNull Formula formula, C colorSet) {
+    private void processUntilQueue(Queue<Map.Entry<N, C>> queue, Formula formula) {
         //examine all predecessors
-        for (Map.Entry<N, C> predecessor : model.predecessorsFor(node, colorSet).entrySet()) {
-            int owner = partitioner.getNodeOwner(predecessor.getKey());
-            if (myId == owner) {
-                //if predecessor is mine, intersect colors where sub formula 0 holds and add them
-                //if addition has changed anything, proceed evaluation with reduced colors
-                C colors = predecessor.getValue();
-                colors.intersect(model.validColorsFor(predecessor.getKey(), formula.getSubFormulaAt(0)));
-                if (model.addFormula(predecessor.getKey(), formula, colors)) {
-                    processUntilRecursive(predecessor.getKey(), formula, colors);
+        while (!queue.isEmpty()) {
+            Map.Entry<N,C> item = queue.remove();
+            for (Map.Entry<N, C> predecessor : model.predecessorsFor(item.getKey(), item.getValue()).entrySet()) {
+                int owner = partitioner.getNodeOwner(predecessor.getKey());
+                if (myId == owner) {
+                    //if predecessor is mine, intersect colors where sub formula 0 holds and add them
+                    //if addition has changed anything, proceed evaluation with reduced colors
+                    C colors = predecessor.getValue();
+                    colors.intersect(model.validColorsFor(predecessor.getKey(), formula.getSubFormulaAt(0)));
+                    if (model.addFormula(predecessor.getKey(), formula, colors)) {
+                        queue.add(new AbstractMap.SimpleEntry<>(predecessor.getKey(), colors));
+                    }
+                } else {
+                    taskManager.dispatchTask(owner, item.getKey(), predecessor.getKey(), predecessor.getValue());
                 }
-            } else {
-                taskManager.dispatchTask(owner, node, predecessor.getKey(), predecessor.getValue());
             }
         }
     }

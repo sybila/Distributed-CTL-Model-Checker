@@ -58,7 +58,7 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
         odeModel = parser.returnStorage();
         odeModel.RunAbstraction();
         generator = new StateSpaceGenerator(odeModel, true);
-       
+
         //read parameter ranges and add them to java model object
         std::vector<std::pair<double, double> > paramRanges = odeModel.getParamRanges();
         for (int i = 0; i < paramRanges.size(); ++i)

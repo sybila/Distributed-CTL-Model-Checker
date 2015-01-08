@@ -2,9 +2,9 @@ package cz.muni.fi.ode;
 
 import com.google.common.collect.Range;
 import cz.muni.fi.ctl.formula.Formula;
-import cz.muni.fi.modelchecker.FormulaVerificator;
 import cz.muni.fi.modelchecker.mpi.TaskManager;
 import cz.muni.fi.modelchecker.mpi.termination.Terminator;
+import cz.muni.fi.modelchecker.verification.FormulaVerificator;
 import mpi.Comm;
 import mpi.MPI;
 import org.jetbrains.annotations.NotNull;
@@ -34,10 +34,9 @@ public class MpiTaskManager extends TaskManager<CoordinateNode,TreeColorSet> {
             int dimensions,
             NodeFactory factory,
             OdeModel model,
-            Formula activeFormula,
             Terminator terminator,
             FormulaVerificator<CoordinateNode, TreeColorSet> verificator) {
-        super(activeFormula, terminator, verificator);
+        super(terminator, verificator);
         this.COMM = comm;
         this.dimensions = dimensions;
         this.factory = factory;
@@ -135,7 +134,7 @@ public class MpiTaskManager extends TaskManager<CoordinateNode,TreeColorSet> {
 
         @Override
         public TaskManager<CoordinateNode, TreeColorSet> createTaskManager(Formula formula, Terminator terminator, FormulaVerificator<CoordinateNode, TreeColorSet> verificator, Comm comm) {
-            return new MpiTaskManager(comm, dimensions, factory, model, formula, terminator, verificator);
+            return new MpiTaskManager(comm, dimensions, factory, model, terminator, verificator);
         }
     }
 }

@@ -121,4 +121,12 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
             get(i).removeAll(diff);
         }
     }
+
+    @Override
+    public void subtract(ColorSet set1) {
+        TreeColorSet set = (TreeColorSet) set1;
+        for (int i=0; i<size(); i++) {
+            get(i).removeAll(set.get(i));
+        }
+    }
 }

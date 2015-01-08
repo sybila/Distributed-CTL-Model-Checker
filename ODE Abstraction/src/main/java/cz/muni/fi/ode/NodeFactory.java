@@ -7,6 +7,7 @@ import cz.muni.fi.ctl.formula.proposition.FloatProposition;
 import cz.muni.fi.ctl.formula.proposition.Tautology;
 import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.graph.ColorSet;
+import org.antlr.v4.runtime.misc.Nullable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -53,7 +54,10 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
 
     @NotNull
     @Override
-    public synchronized Map<CoordinateNode, TreeColorSet> predecessorsFor(@NotNull CoordinateNode to, @NotNull TreeColorSet borders) {
+    public synchronized Map<CoordinateNode, TreeColorSet> predecessorsFor(@NotNull CoordinateNode to, @Nullable TreeColorSet borders) {
+        if (borders == null) {
+            borders = model.getFullColorSet();
+        }
         if (to.hasPredecessorsFor(borders)) {
             return to.getPredecessors(borders);
         } else {
@@ -65,7 +69,10 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
 
     @NotNull
     @Override
-    public synchronized Map<CoordinateNode, TreeColorSet> successorsFor(@NotNull CoordinateNode from, @NotNull TreeColorSet borders) {
+    public synchronized Map<CoordinateNode, TreeColorSet> successorsFor(@NotNull CoordinateNode from, @Nullable TreeColorSet borders) {
+        if (borders == null) {
+            borders = model.getFullColorSet();
+        }
         return getNativeSuccessors(from.coordinates, borders, new HashMap<CoordinateNode, TreeColorSet>());
     }
 
@@ -111,7 +118,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
 
     @NotNull
     @Override
-    public synchronized Map<CoordinateNode, TreeColorSet> invertNodeSet(Map<CoordinateNode, TreeColorSet> nodes) {
+    public synchronized Map<CoordinateNode, TreeColorSet> invertNodeSet(@NotNull Map<CoordinateNode, TreeColorSet> nodes) {
         if (!hasAllNodes) {
             cacheAllNodes(partitioner.getMyLimit());
             hasAllNodes = true;

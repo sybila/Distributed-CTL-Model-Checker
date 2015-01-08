@@ -7,6 +7,8 @@ import cz.muni.fi.modelchecker.graph.Node;
 import cz.muni.fi.modelchecker.mpi.TaskManager;
 import cz.muni.fi.modelchecker.mpi.termination.MPITokenMessenger;
 import cz.muni.fi.modelchecker.mpi.termination.Terminator;
+import cz.muni.fi.modelchecker.verification.FormulaVerificator;
+import cz.muni.fi.modelchecker.verification.FormulaVerificatorFactory;
 import mpi.Comm;
 import mpi.MPI;
 
@@ -22,7 +24,7 @@ public class ModelChecker<N extends Node, C extends ColorSet> {
     private final Set<Formula> processedFormulas = new HashSet<>();
 
     private final TaskManager.TaskManagerFactory<N, C> taskManagerFactory;
-    private final FormulaVerificator<N, C> verificator;
+    private final FormulaVerificatorFactory<N, C> verificatorFactory;
     private final Comm COMM;
     private final ModelAdapter<N,C> model;
 
@@ -34,7 +36,7 @@ public class ModelChecker<N extends Node, C extends ColorSet> {
         this.taskManagerFactory = taskManagerFactory;
         COMM = comm;
         this.model = model;
-        verificator = new FormulaVerificator<>(partitioner.getMyId(), model, partitioner);
+        verificatorFactory = new FormulaVerificatorFactory<>(partitioner, model, partitioner.getMyId());
     }
 
     public void verify(Formula formula) {
@@ -48,12 +50,13 @@ public class ModelChecker<N extends Node, C extends ColorSet> {
         System.out.println(MPI.COMM_WORLD.Rank()+" Verification started: "+formula);
         //prepare terminator
         Terminator terminator = Terminator.obtain(new MPITokenMessenger(COMM));
-        //prepare communication
+        //prepare communication and verificator
+        FormulaVerificator<N,C> verificator = verificatorFactory.getVerificatorForFormula(formula);
         TaskManager<N,C> manager = taskManagerFactory.createTaskManager(formula, terminator, verificator, COMM);
-        verificator.setTaskManager(manager);
+        verificator.prepareVerification(manager);
         manager.startListening();
         //process task
-        verificator.processFormula(formula);
+        verificator.verifyLocalGraph();
         //wait for task termination
         terminator.waitForTermination();
         //wait for task manager termination

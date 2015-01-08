@@ -4,6 +4,7 @@ import cz.muni.fi.ctl.formula.Formula;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 
@@ -20,7 +21,7 @@ public interface ModelAdapter<N extends Node, C extends ColorSet> {
      * @param borders Parameter bounds.
      * @return Predecessors with colors that are valid along the paths from them.
      */
-    @NotNull Map<N, C> predecessorsFor(@NotNull N to, @NotNull C borders);
+    @NotNull Map<N, C> predecessorsFor(@NotNull N to, @Nullable C borders);
 
     /**
      * Compute successors for provided node with respect to provided parametric bounds.
@@ -28,7 +29,7 @@ public interface ModelAdapter<N extends Node, C extends ColorSet> {
      * @param borders Parameter bounds.
      * @return Successors with colors that are valid along the paths to them.
      */
-    @NotNull Map<N, C> successorsFor(@NotNull N from, @NotNull C borders);
+    @NotNull Map<N, C> successorsFor(@NotNull N from, @Nullable C borders);
 
     /**
      * Find all nodes where formula is valid and for which colors.
@@ -43,7 +44,7 @@ public interface ModelAdapter<N extends Node, C extends ColorSet> {
      * @param nodes nodes and colors that should be inverted
      * @return Set of nodes with respective colors that is an inversion to given set.
      */
-    @NotNull Map<N, C> invertNodeSet(Map<N, C> nodes);
+    @NotNull Map<N, C> invertNodeSet(@NotNull Map<N, C> nodes);
 
     /**
      * Set formula on given node as valid for given parameter set.

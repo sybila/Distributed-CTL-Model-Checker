@@ -1,10 +1,10 @@
 package cz.muni.fi.modelchecker.mpi;
 
 import cz.muni.fi.ctl.formula.Formula;
-import cz.muni.fi.modelchecker.FormulaVerificator;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
 import cz.muni.fi.modelchecker.mpi.termination.Terminator;
+import cz.muni.fi.modelchecker.verification.FormulaVerificator;
 import mpi.Comm;
 
 /**
@@ -16,12 +16,10 @@ public abstract class TaskManager<T extends Node, V extends ColorSet> {
 
     private int activeTasks = 0;
 
-    private final Formula activeFormula;
     private final Terminator terminator;
     private final FormulaVerificator<T, V> verificator;
 
-    public TaskManager(Formula activeFormula, Terminator terminator, FormulaVerificator<T, V> verificator) {
-        this.activeFormula = activeFormula;
+    public TaskManager(Terminator terminator, FormulaVerificator<T, V> verificator) {
         this.terminator = terminator;
         this.verificator = verificator;
     }
@@ -48,7 +46,7 @@ public abstract class TaskManager<T extends Node, V extends ColorSet> {
         sendTask(destinationNode, internal, external, colors);
     }
 
-    private void startLocalTask(int sourceNode, T external, final T internal, final V colors) {
+    private void startLocalTask(int sourceNode, final T external, final T internal, final V colors) {
         synchronized (COUNT_LOCK) {
             terminator.messageReceived();
             activeTasks++;
@@ -57,7 +55,7 @@ public abstract class TaskManager<T extends Node, V extends ColorSet> {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                verificator.processFormula(activeFormula, internal, colors);
+                verificator.processTaskData(internal, external, colors);
                 synchronized (COUNT_LOCK) {
                     activeTasks--;
                     if (activeTasks == 0) terminator.setWorking(false);

@@ -7,4 +7,7 @@ public interface ColorSet {
 
     public void intersect(ColorSet set);
 
+    public void subtract(ColorSet set);
+
+    public boolean isEmpty();
 }

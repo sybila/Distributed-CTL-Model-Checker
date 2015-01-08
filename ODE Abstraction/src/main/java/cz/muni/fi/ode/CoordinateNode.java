@@ -17,35 +17,23 @@ public class CoordinateNode implements Node {
     @NotNull
     public Map<Formula, TreeColorSet> formulae = new HashMap<>();
 
-    @NotNull
-    public Map<CoordinateNode, TreeColorSet> predecessors = new HashMap<>();
+    public Map<CoordinateNode, TreeColorSet> predecessors;
 
-    @NotNull
-    public TreeColorSet computedPredecessors;
-
-    public CoordinateNode(@NotNull int[] coordinates, int parameterDimensions) {
+    public CoordinateNode(@NotNull int[] coordinates) {
         this.coordinates = Arrays.copyOf(coordinates, coordinates.length);
-        computedPredecessors = TreeColorSet.createEmpty(parameterDimensions);
     }
 
     public int getCoordinate(int dimension) {
         return coordinates[dimension];
     }
 
-    public synchronized boolean hasPredecessorsFor(TreeColorSet colorSet) {
-        return computedPredecessors.encloses(colorSet);
+    public synchronized boolean hasPredecessorsFor() {
+        return predecessors != null;
     }
 
-    public synchronized void savePredecessors(TreeColorSet borders, Map<CoordinateNode, TreeColorSet> predecessors) {
-        for (Map.Entry<CoordinateNode, TreeColorSet> entry : predecessors.entrySet()) {
-            TreeColorSet colorSet = this.predecessors.get(entry.getKey());
-            if (colorSet != null) {
-                colorSet.union(entry.getValue());
-            } else {
-                this.predecessors.put(entry.getKey(), TreeColorSet.createCopy(entry.getValue()));
-            }
-        }
-        computedPredecessors.union(borders);
+    public synchronized void savePredecessors(Map<CoordinateNode, TreeColorSet> predecessors) {
+        this.predecessors = new HashMap<>();
+        this.predecessors.putAll(predecessors);
     }
 
     public synchronized Map<CoordinateNode, TreeColorSet> getPredecessors(TreeColorSet borders) {

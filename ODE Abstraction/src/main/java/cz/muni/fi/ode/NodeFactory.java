@@ -42,7 +42,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
         } else if (borderNodes.containsKey(hash)) {
             return borderNodes.get(hash);
         } else {
-            @NotNull CoordinateNode n = new CoordinateNode(coordinates, model.parameterCount());
+            @NotNull CoordinateNode n = new CoordinateNode(coordinates);
             if (partitioner.getNodeOwner(n) == myId) {
                 nodeCache.put(hash, n);
             } else {
@@ -58,13 +58,11 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
         if (borders == null) {
             borders = model.getFullColorSet();
         }
-        if (to.hasPredecessorsFor(borders)) {
-            return to.getPredecessors(borders);
-        } else {
-            Map<CoordinateNode, TreeColorSet> results = getNativePredecessors(to.coordinates, borders, new HashMap<CoordinateNode, TreeColorSet>());
-            to.savePredecessors(borders, results);
-            return results;
+        if (!to.hasPredecessorsFor()) {
+            Map<CoordinateNode, TreeColorSet> results = getNativePredecessors(to.coordinates, model.getFullColorSet(), new HashMap<CoordinateNode, TreeColorSet>());
+            to.savePredecessors(results);
         }
+        return to.getPredecessors(borders);
     }
 
     @NotNull

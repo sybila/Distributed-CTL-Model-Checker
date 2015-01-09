@@ -134,7 +134,7 @@ void ParameterSpace::addParamRange(size_t paramIndex, pair<double,double> paramR
 
 ParameterSpace ParameterSpace::derivedParamSpace(const ParameterSpace& ps, int pIndex, double lpValue, double rpValue) {
 	ParameterSpace newPS(ps);
-	
+	//std::cout << "Derive c" << lpValue << " " << rpValue << std::endl;
 	if(lpValue <= ps.ps.at(pIndex).front().first && rpValue >= ps.ps.at(pIndex).back().second) {
 		//whole param interval (with index pIndex) of this param space will be in returned param space
 		return newPS;
@@ -453,7 +453,13 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 			//I want to check lower state in this dimension only if state 's' is not at the bottom in this dimension
 
 			vector<vector<size_t> > vertices = getRightVertices(s, v, true);
-
+		/*	cout << "Vertices: " << endl;
+			for (int a=0; a < vertices.size(); a++) {
+				for (int b=0; b < vertices.size(); b++) {
+					cout << vertices[a][b] << " ";
+				}
+				cout << endl;
+			}*/
 			vector<double> paramValues;
 			int paramIndex = -1;
 //			double oneParamValue = numeric_limits<double>::max();
@@ -468,7 +474,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 				double denom = 0.0;
 			
 				derivationValue = value(vertices.at(i),v,paramIndex,denom);
-			
+			//	cout << "Derivation " << derivationValue << endl;
 				if(paramIndex != -1) {
 
 					if(abs(denom) != 0) {
@@ -482,7 +488,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 						// lowest and highest values of parameter space for chosen variable
 						double lowestParamValue = s.getColors().getParamSpace().at(paramIndex).front().first;
 						double highestParamValue = s.getColors().getParamSpace().at(paramIndex).back().second;
-						
+						//std::cout << "Bounds: " << lowestParamValue << " " << highestParamValue << std::endl;
 						if(lowestParamValue > highestParamValue)
 							swap(lowestParamValue, highestParamValue);
 					
@@ -634,7 +640,13 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 			//I want to check upper state in this dimension only if state 's' is not at the top in this dimension
 		
 			vector<vector<size_t> > vertices = getRightVertices(s, v, false);			
-			
+		/*	cout << "Vertices: " << endl;
+            			for (int a=0; a < vertices.size(); a++) {
+            				for (int b=0; b < vertices.size(); b++) {
+            					cout << vertices[a][b] << " ";
+            				}
+            				cout << endl;
+            			}*/
 			vector<double> paramValues;
 			int paramIndex = -1;
 //			double oneParamValue = numeric_limits<double>::max();

@@ -77,6 +77,8 @@ public:
 		jmethodID _add;
 		jmethodID _get;
 		jmethodID _size;
+		jmethodID _constructor;
+		jclass _arrayList;
 	public:
 		class Instance : public AnyInstance<ListClass> {
 		public: 
@@ -92,9 +94,14 @@ public:
 			}
 		};
 		ListClass(JVM * jvm) : AnyClass(jvm, "java/util/List") {
+			_arrayList = _env->FindClass("java/util/ArrayList");
 			_get = _env->GetMethodID(_class, "get", "(I)Ljava/lang/Object;");
 			_add = _env->GetMethodID(_class, "add", "(Ljava/lang/Object;)Z");               
 			_size = _env->GetMethodID(_class, "size", "()I");
+			_constructor = _env->GetMethodID(_arrayList, "<init>", "()V");
+		}
+		ListClass::Instance create() {
+			return ListClass::Instance(_env->NewObject(_arrayList, _constructor), this);
 		}
 	};
 
@@ -121,6 +128,69 @@ public:
 			_get = _env->GetMethodID(_class, "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
 			_put = _env->GetMethodID(_class, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 			_size = _env->GetMethodID(_class, "size", "()I");
+		}
+	};
+
+	class SumMemberClass : public AnyClass {
+		jmethodID _constructor;
+	public:
+		class Instance : public AnyInstance<SumMemberClass> {
+		public:
+			Instance(jobject value, SumMemberClass * type) : AnyInstance(value, type) {}
+		};
+		SumMemberClass(JVM * jvm) : AnyClass(jvm, "cz/muni/fi/ode/SumMember") {
+			_constructor = _env->GetMethodID(_class, "<init>", "(DILjava/util/List;Ljava/util/List;Ljava/util/List;)V");
+		}
+		SumMemberClass::Instance create(Summember<double> source) {
+			ListClass::Instance varsList = _jvm->List.create();
+			auto vars = source.GetVars();
+			for(int i=0; i<vars.size(); i++) {
+				varsList.add(_jvm->Integer.valueOf(vars[i]).object());
+			}
+			ListClass::Instance rampsList = _jvm->List.create();
+			auto ramps = source.GetRamps();
+			for(int i=0; i<ramps.size(); i++) {
+				rampsList.add(_jvm->Ramp.create(ramps[i].dim, ramps[i].min, ramps[i].max, ramps[i].min_value, ramps[i].max_value, ramps[i].negative).object());
+			}
+			ListClass::Instance stepsList = _jvm->List.create();
+			auto steps = source.GetSteps();
+			for(int i=0; i<steps.size(); i++) {
+				stepsList.add(_jvm->Step.create(steps[i].dim, steps[i].theta, steps[i].a, steps[i].b, steps[i].positive).object());
+			}
+			return create(source.GetConstant(), source.GetParam(), varsList, rampsList, stepsList);
+		}
+		SumMemberClass::Instance create(jdouble constant, jint param, ListClass::Instance vars, ListClass::Instance ramps, ListClass::Instance steps) {
+			return SumMemberClass::Instance(_env->NewObject(_class, _constructor, constant, param, vars.object(), ramps.object(), steps.object()), this);
+		}
+	};
+
+	class RampClass : public AnyClass {
+		jmethodID _constructor;
+	public:
+		class Instance : public AnyInstance<RampClass> {
+		public:
+			Instance(jobject value, RampClass * type) : AnyInstance(value, type) {}
+		};
+		RampClass(JVM * jvm) : AnyClass(jvm, "cz/muni/fi/ode/Ramp") {
+			_constructor = _env->GetMethodID(_class, "<init>", "(IDDDDZ)V");
+		}
+		RampClass::Instance create(jint dim, jdouble min, jdouble max, jdouble min_value, jdouble max_value, jboolean negative) {
+        	return RampClass::Instance(_env->NewObject(_class, _constructor, dim, min, max, min_value, max_value, negative), this);
+        }
+	};
+
+	class StepClass : public AnyClass {
+		jmethodID _constructor;
+	public:
+		class Instance : public AnyInstance<StepClass> {
+		public:
+			Instance(jobject value, StepClass * type) : AnyInstance(value, type) {}
+		};
+		StepClass(JVM * jvm) : AnyClass(jvm, "cz/muni/fi/ode/Step") {
+			_constructor = _env->GetMethodID(_class, "<init>", "(IDDDZ)V");
+		}
+		StepClass::Instance create(jint dim, jdouble theta, jdouble a, jdouble b, jboolean positive) {
+			return StepClass::Instance(_env->NewObject(_class, _constructor, dim, theta, a, b, positive), this);
 		}
 	};
 
@@ -156,20 +226,28 @@ public:
 	class ModelClass : public AnyClass {
 		jfieldID _paramList;
 		jfieldID _varList;
+		jfieldID _thresholdList;
+		jfieldID _equationList;
 	public:
 		class Instance : public AnyInstance<ModelClass> {
 		public:
 			ListClass::Instance paramList;
 			ListClass::Instance varList;
+			ListClass::Instance thresholds;
+			ListClass::Instance equations;
 			Instance(jobject value, ModelClass * type) : 
 				AnyInstance(value, type), 
 				paramList(_type->_env->GetObjectField(_value, _type->_paramList), &(_type->_jvm->List)),
+				thresholds(_type->_env->GetObjectField(_value, _type->_thresholdList), &(_type->_jvm->List)),
+				equations(_type->_env->GetObjectField(_value, _type->_equationList), &(_type->_jvm->List)),
 				varList(_type->_env->GetObjectField(_value, _type->_varList), &(_type->_jvm->List)) {
 			}
 		};
 		ModelClass(JVM * jvm) : AnyClass(jvm, "cz/muni/fi/ode/OdeModel") {
 			_paramList = _env->GetFieldID(_class, "parameterRange", "Ljava/util/List;");        
-			_varList = _env->GetFieldID(_class, "variableRange", "Ljava/util/List;");        
+			_varList = _env->GetFieldID(_class, "variableRange", "Ljava/util/List;");
+			_thresholdList = _env->GetFieldID(_class, "thresholds", "Ljava/util/List;");
+			_equationList = _env->GetFieldID(_class, "equations", "Ljava/util/List;");
 		}
 	};
 
@@ -297,6 +375,9 @@ public:
 	ModelClass Model;
 	RangeSetClass RangeSet;
 	ColorSetClass ColorSet;
+	SumMemberClass SumMember;
+	RampClass Ramp;
+	StepClass Step;
 
 	JVM(JNIEnv * env) : _env(env),
 		Double(this),
@@ -308,7 +389,10 @@ public:
 		Node(this),
 		NodeFactory(this),
 		RangeSet(this),
-		ColorSet(this)
+		ColorSet(this),
+		SumMember(this),
+		Ramp(this),
+		Step(this)
 	 { }
 
 };

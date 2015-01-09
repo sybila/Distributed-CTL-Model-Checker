@@ -83,7 +83,7 @@ dependencies {
     compile project(':Model Checker')
 }
 
-task nativezip(type: Exec) {
+task nativezip(dependsOn: linkGeneratorOSX, type: Exec) {
     args    binDir+"natives.zip", binDir+"libgenerator.jnilib"
     executable "zip"
 }

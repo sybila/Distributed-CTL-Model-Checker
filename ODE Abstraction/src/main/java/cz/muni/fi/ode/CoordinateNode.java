@@ -84,6 +84,6 @@ public class CoordinateNode implements Node {
 
     @Override
     public String toString() {
-        return Arrays.toString(coordinates)+" formulae: "+formulae.toString();
+        return Arrays.toString(coordinates)/*+" formulae: "+formulae.toString();*/;
     }
 }

@@ -59,6 +59,23 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
         odeModel.RunAbstraction();
         generator = new StateSpaceGenerator(odeModel, true);
 
+/*
+
+				std::vector<std::list<std::pair<double, double> > > paramSpace;
+        		std::list<std::pair<double, double> > param;
+        		param.push_back(std::pair<double, double>(odeModel.getParamRanges()[0]));
+        		paramSpace.push_back(param);
+
+                for (long unsigned int i=0; i<odeModel.getThresholdsForVariable(0).size()-1; i++) {
+                	State s(1, {i}, paramSpace);
+                	vector<State> data = generator->getSucc(s);
+                	std::cout << "Succ for: " << s;
+                	for (int i = 0; i < data.size(); ++i)
+                	{
+                		std::cout << data[i];
+                	}
+                }*/
+
         //read parameter ranges and add them to java model object
         std::vector<std::pair<double, double> > paramRanges = odeModel.getParamRanges();
         for (int i = 0; i < paramRanges.size(); ++i)
@@ -69,10 +86,26 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
         //read threashold ranges and add them to javao model object
         for (int i = 0; i < odeModel.getDims(); ++i)
         {
+        	//write threshold range
         	std::vector<double> thresholds = odeModel.getThresholdsForVariable(i);
-	        auto newRange = jvm.Range.open(0, thresholds.size() - 1);
+	        auto newRange = jvm.Range.closed(0, thresholds.size() - 1);
 	        model.varList.add(newRange.object());
-        }               
+	        //copy thresholds
+        	auto tList = jvm.List.create();
+        	for (int j = 0; j < thresholds.size(); j++) {
+        		//std::cout << "T "<< i <<j << " " << thresholds[j] <<std::endl;
+        		tList.add(jvm.Double.valueOf(thresholds[j]).object());
+        	}
+        	model.thresholds.add(tList.object());
+        	//copy equation
+        	auto sumMembers = odeModel.getEquationForVariable(i);
+        	auto sList = jvm.List.create();
+        	for (int j = 0; j < sumMembers.size(); j++) {
+				//std::cout << "S "<<i<<j<<" "<<sumMembers[j]<<std::endl;
+        		sList.add(jvm.SumMember.create(sumMembers[j]).object());
+        	}
+        	model.equations.add(sList.object());
+		}
     }
 	return;
 }

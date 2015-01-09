@@ -18,12 +18,13 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
     @NotNull
     private Set<FloatProposition> revealedPropositions = new HashSet<>();
 
-    private final Map<Integer, CoordinateNode> nodeCache = new HashMap<>();
+    public final Map<Integer, CoordinateNode> nodeCache = new HashMap<>();
     private final Map<Integer, CoordinateNode> borderNodes = new HashMap<>();
     private final OdeModel model;
     private final RectangularPartitioner partitioner;
     private final int myId;
     private boolean hasAllNodes = false;
+    private StateSpaceGenerator generator;
 
     public NodeFactory(OdeModel model, RectangularPartitioner partitioner) {
         this.model = model;
@@ -59,7 +60,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
             borders = model.getFullColorSet();
         }
         if (!to.hasPredecessorsFor()) {
-            Map<CoordinateNode, TreeColorSet> results = getNativePredecessors(to.coordinates, model.getFullColorSet(), new HashMap<CoordinateNode, TreeColorSet>());
+            Map<CoordinateNode, TreeColorSet> results = generator.getPredecessors(to, model.getFullColorSet());//getNativePredecessors(to.coordinates, model.getFullColorSet(), new HashMap<CoordinateNode, TreeColorSet>());
             to.savePredecessors(results);
         }
         return to.getPredecessors(borders);
@@ -71,7 +72,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
         if (borders == null) {
             borders = model.getFullColorSet();
         }
-        return getNativeSuccessors(from.coordinates, borders, new HashMap<CoordinateNode, TreeColorSet>());
+        return generator.getSuccessors(from, borders); //getNativeSuccessors(from.coordinates, borders, new HashMap<CoordinateNode, TreeColorSet>());
     }
 
     @NotNull
@@ -172,6 +173,9 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
     @NotNull
     private native Map<CoordinateNode, TreeColorSet> getNativeInit(String var, int op, double th, List<Range<Double>> limit, Map<CoordinateNode, TreeColorSet> ret);
 
-    private native void cacheAllNodes(List<Range<Double>> limit);
+    public native void cacheAllNodes(List<Range<Double>> limit);
 
+    public void setGenerator(StateSpaceGenerator generator) {
+        this.generator = generator;
+    }
 }

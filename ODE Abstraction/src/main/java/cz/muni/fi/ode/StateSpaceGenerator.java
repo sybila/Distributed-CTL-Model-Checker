@@ -1,6 +1,7 @@
 package cz.muni.fi.ode;
 
 import com.google.common.collect.Range;
+import com.google.common.math.IntMath;
 
 import java.util.*;
 
@@ -431,41 +432,41 @@ public class StateSpaceGenerator {
     }
 
     private int[][] getRightVertices(CoordinateNode from, int dim, boolean lower) {
-        List<List<Integer>> vertices = new ArrayList<>();
-        List<Integer> coors = new ArrayList<>();
-
-        getRightVerticesRecursive(from, dim, lower, vertices, coors, 0);
-
-        int[][] res = new int[vertices.size()][model.variableCount()];
-        for (int i = 0; i < vertices.size(); i++) {
-            List<Integer> vertex = vertices.get(i);
-            for (int j = 0; j < vertex.size(); j++) {
-                res[i][j] = vertex.get(j);
-            }
-        }
-        return res;
-    }
-
-    private void getRightVerticesRecursive(CoordinateNode from, int dim, boolean lower, List<List<Integer>> vertices, List<Integer> coors, int actIndex) {
-        if (actIndex == model.variableCount()) {
-            vertices.add(new ArrayList<>(coors));
-            return;
-        }
-
-        if (actIndex == dim) {
-            if (lower) {
-                coors.add(from.coordinates[actIndex]);
+        int totalNodes = IntMath.pow(2, model.variableCount() - 1);
+        int[][] results = new int[totalNodes][model.variableCount()];
+        int[] coors = new int[model.variableCount()];
+        int[] repetitions = new int[model.variableCount()];
+        int activeIndex = 0;
+        int activeNode = 0;
+        while (activeIndex >= 0) {
+            if (activeIndex == model.variableCount()) {
+                System.arraycopy(coors, 0, results[activeNode], 0, model.variableCount());
+                activeIndex--;
+                while (activeIndex >= 0 && repetitions[activeIndex] == 0) {
+                    activeIndex--;
+                }
+                activeNode++;
+            } else if (activeIndex == dim){
+                repetitions[activeIndex] = 0;
+                if (lower) {
+                    coors[activeIndex] = from.coordinates[activeIndex];
+                } else {
+                    coors[activeIndex] = from.coordinates[activeIndex] + 1;
+                }
+                activeIndex++;
             } else {
-                coors.add(from.coordinates[actIndex] + 1);
-            }
-            getRightVerticesRecursive(from, dim, lower, vertices, coors, actIndex+1);
-            coors.remove(coors.size() - 1);
-        } else {
-            for(int i = from.coordinates[actIndex]; i < from.coordinates[actIndex] + 2; ++i) {
-                coors.add(i);
-                getRightVerticesRecursive(from, dim, lower, vertices, coors, actIndex+1);
-                coors.remove(coors.size() - 1);
+                if (repetitions[activeIndex] == 0) {
+                    repetitions[activeIndex] = 1;
+                    coors[activeIndex] = from.coordinates[activeIndex];
+                } else {
+                    repetitions[activeIndex] = 0;
+                    coors[activeIndex] = from.coordinates[activeIndex] + 1;
+                }
+                activeIndex++;
             }
         }
+
+        return results;
     }
+
 }

@@ -60,23 +60,30 @@ public class Main {
                 }
             }
 */
-            int s = 0;
+          /*  int s = 0;
             factory.cacheAllNodes(partitioner.getMyLimit());
-            System.out.println("Got nodes");
+            System.out.println("Got nodes "+Runtime.getRuntime().totalMemory()+" "+Runtime.getRuntime().maxMemory());
             int k = 0;
             int p = 0;
             int size = factory.nodeCache.size();
+
             for (Map.Entry<Integer, CoordinateNode> node : factory.nodeCache.entrySet()) {
-                Map<CoordinateNode, TreeColorSet> data = generator.getSuccessors(node.getValue(), model.getFullColorSet());
+                Map<CoordinateNode, TreeColorSet> data = factory.predecessorsFor(node.getValue(), model.getFullColorSet());
                 s += data.size();
+                System.out.println("Succ for: "+Arrays.toString(node.getValue().coordinates));
+                for (Map.Entry<CoordinateNode, TreeColorSet> entry : data.entrySet())
+                {
+                    System.out.println(Arrays.toString(node.getValue().coordinates)+"->"+Arrays.toString(entry.getKey().coordinates)+" : [("+entry.getValue().get(0).span().lowerEndpoint()+","+entry.getValue().get(0).span().upperEndpoint()+")]");
+                }
                 k++;
-                if (k > size/50) {
-                    k = 0;
-                    p += 2;
-                    System.out.println(p + "%...");
+                if (k > size/100) {
+                    break;
+                    //k = 0;
+                    //p += 1;
+                    //System.out.println(p + "%...");
                 }
             }
-            System.out.println("sum: "+s);
+            System.out.println("sum: "+s+" k: "+k);*/
 
             /*for (List<Double> thresholds : model.thresholds) {
                 for (int i=0; i<thresholds.size()-1; i++) {
@@ -91,7 +98,7 @@ public class Main {
             }*/
 
 
-          /*  TaskManager.TaskManagerFactory<CoordinateNode, TreeColorSet> taskFactory = new MpiTaskManager.MpiTaskManagerFactory(model.variableCount(), factory, model);
+            TaskManager.TaskManagerFactory<CoordinateNode, TreeColorSet> taskFactory = new MpiTaskManager.MpiTaskManagerFactory(model.variableCount(), factory, model);
             ModelChecker<CoordinateNode, TreeColorSet> modelChecker = new ModelChecker<>(factory, partitioner, taskFactory, MPI.COMM_WORLD);
             modelChecker.verify(formula);
             if (args.length >= 3 && args[args.length - 3].equals("-all")) {
@@ -105,7 +112,7 @@ public class Main {
                         System.out.println(Arrays.toString(node.coordinates)+" "+colorSet);
                     }
                 }
-            }*/
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

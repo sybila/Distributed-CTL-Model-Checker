@@ -39,12 +39,12 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
         if(pValue > 0) {
 
             pValue = Math.abs(pValue);
-            newPS.get(pIndex).remove(Range.closed(ps.get(pIndex).span().lowerEndpoint(), pValue));
+            newPS.get(pIndex).remove(Range.open(ps.get(pIndex).span().lowerEndpoint(), pValue));
 
         } else if(pValue < 0) {
 
             pValue = Math.abs(pValue);
-            newPS.get(pIndex).remove(Range.closed(pValue, ps.get(pIndex).span().upperEndpoint()));
+            newPS.get(pIndex).remove(Range.open(pValue, ps.get(pIndex).span().upperEndpoint()));
 
         }
 
@@ -55,9 +55,13 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
     public static TreeColorSet derivedColorSet(TreeColorSet ps, int pIndex, double lpValue, double rpValue) {
         TreeColorSet newPS = TreeColorSet.createCopy(ps);
      //   System.out.println("Derive space! "+lpValue+ " "+rpValue);
-        Range<Double> span = ps.get(pIndex).span();
-        newPS.get(pIndex).remove(Range.closed(Double.NEGATIVE_INFINITY, lpValue));
-        newPS.get(pIndex).remove(Range.closed(rpValue, Double.POSITIVE_INFINITY));
+        //those need to be open, because we don't want to delete singular points.
+        if (lpValue != Double.NEGATIVE_INFINITY) {
+            newPS.get(pIndex).remove(Range.open(Double.NEGATIVE_INFINITY, lpValue));
+        }
+        if (rpValue != Double.POSITIVE_INFINITY) {
+            newPS.get(pIndex).remove(Range.open(rpValue, Double.POSITIVE_INFINITY));
+        }
 
         return newPS;
     }

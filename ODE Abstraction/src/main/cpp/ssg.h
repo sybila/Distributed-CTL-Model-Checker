@@ -350,8 +350,8 @@ ostream& operator<<(ostream& out,const State& st) {
 	for(size_t i = 1; i < st.getCoors().size(); i++) {
 		out << "," << st.getCoors().at(i);
 	}
-	out << "] : ";
-	out << st.colors << endl;
+	out << "]";
+	//out << st.colors << endl;
 	return out;
 }
 

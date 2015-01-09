@@ -80,7 +80,8 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
         std::vector<std::pair<double, double> > paramRanges = odeModel.getParamRanges();
         for (int i = 0; i < paramRanges.size(); ++i)
         {
-	        auto newRange = jvm.Range.open(paramRanges[i].first, paramRanges[i].second);
+        	//closed, because we also accept singular points
+	        auto newRange = jvm.Range.closed(paramRanges[i].first, paramRanges[i].second);
 	        model.paramList.add(newRange.object());
         }
         //read threashold ranges and add them to javao model object
@@ -106,6 +107,24 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
         	}
         	model.equations.add(sList.object());
 		}
+
+	/*	std::vector<std::pair<double, double> > borders;
+		for (int i = 0; i < odeModel.getDims(); ++i)
+		{
+			borders.push_back(pair<double, double>(0, odeModel.getThresholdsForVariable(i).size() - 1));
+		}
+		vector<State> data = generator->initAP(
+			odeModel.getVariable(0),
+			Operators::LSEQ,
+			(double) odeModel.getThresholdsForVariable(0).back(),
+			borders
+		);
+		int s = 0;
+		for (int l = 0; l < data.size(); l++) {
+			vector<State> pred = generator->getPred(data[l]);
+			s += pred.size();
+		}
+		std::cout << "Native s: " << s << " " << data.size() << std::endl;*/
     }
 	return;
 }

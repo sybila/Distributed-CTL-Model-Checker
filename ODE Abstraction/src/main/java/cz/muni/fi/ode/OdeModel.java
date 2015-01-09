@@ -2,6 +2,7 @@ package cz.muni.fi.ode;
 
 import com.google.common.collect.Range;
 import cz.muni.fi.modelchecker.graph.ColorSet;
+import cz.muni.fi.ode.abstraction.SumMember;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -56,4 +57,13 @@ public class OdeModel {
         return parameterRange.size();
     }
 
+    public List<SumMember> getEquationForVariable(int dim) {
+        //TODO:
+        return null;
+    }
+
+    public double getThresholdForVarByIndex(int actualVarIndex, int i) {
+        //TODO:
+        return 0;
+    }
 }

@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.StringTokenizer;
 
 public class Main {
-
     static {
         try {
             System.loadLibrary("generator"); // used for tests. This library in classpath only
@@ -37,10 +36,11 @@ public class Main {
                 }
             }
         }
-    }
+   }
 
     public static void main(String[] args) {
-	long start = System.currentTimeMillis();
+	    long start = System.currentTimeMillis();
+       	System.out.println(System.getProperty( "java.library.path" ));
         MPI.Init(args);
         FormulaParser parser = new FormulaParser();
         FormulaNormalizer normalizer = new FormulaNormalizer();
@@ -124,5 +124,9 @@ public class Main {
 	System.err.println("Duration: "+(System.currentTimeMillis()
  - start));
 	System.exit(0);
+    }
+
+    static {
+        System.loadLibrary("generator");
     }
 }

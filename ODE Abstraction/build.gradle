@@ -70,7 +70,7 @@ task generateModelIncludeFiles(dependsOn: 'fullJar', type:Exec) {
 
 apply plugin: 'java'
 
-sourceCompatibility = 1.8
+sourceCompatibility = 1.7
 version = '1.0'
 
 repositories {

@@ -40,6 +40,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
+	long start = System.currentTimeMillis();
         MPI.Init(args);
         FormulaParser parser = new FormulaParser();
         FormulaNormalizer normalizer = new FormulaNormalizer();
@@ -116,6 +117,12 @@ public class Main {
         } catch (IOException e) {
             e.printStackTrace();
         }
+	int rank = MPI.COMM_WORLD.Rank();
+	System.out.println("Waiting for termination "+rank);
         MPI.Finalize();
+	System.out.println("Temrinated "+rank);
+	System.err.println("Duration: "+(System.currentTimeMillis()
+ - start));
+	System.exit(0);
     }
 }

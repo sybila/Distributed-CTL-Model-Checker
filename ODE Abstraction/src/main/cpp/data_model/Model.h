@@ -629,7 +629,7 @@ void Model<T>::RunAbstraction(bool useFastApproximation)
         if(groupOfSigmoids.empty() && groupOfHills.empty())
             continue;       // no need for abstraction for this variable
 
-        int numOfSegments = 5;
+        int numOfSegments = 1;
         int numOfXPoints = 0;
 
         for(int j = 0; j < var_points.size(); j++) {

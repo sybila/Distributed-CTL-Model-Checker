@@ -1,7 +1,6 @@
 package cz.muni.fi.ode;
 
 import com.google.common.collect.Range;
-import cz.muni.fi.modelchecker.graph.ColorSet;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -19,6 +18,10 @@ public class OdeModel {
     private List<Range<Double>> variableRange = new ArrayList<>();
     @NotNull
     private List<Range<Double>> parameterRange = new ArrayList<>();
+
+    public List<List<Double>> thresholds = new ArrayList<>();
+
+    public List<List<SumMember>> equations = new ArrayList<>();
 
     public OdeModel(String filename) {
         this.filename = filename;
@@ -56,4 +59,11 @@ public class OdeModel {
         return parameterRange.size();
     }
 
+    public List<SumMember> getEquationForVariable(int dim) {
+        return equations.get(dim);
+    }
+
+    public double getThresholdForVarByIndex(int actualVarIndex, int i) {
+        return thresholds.get(actualVarIndex).get(i);
+    }
 }

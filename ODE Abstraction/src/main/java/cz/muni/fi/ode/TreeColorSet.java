@@ -32,6 +32,40 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
         return newSet;
     }
 
+    @NotNull
+    public static TreeColorSet derivedColorSet(TreeColorSet ps, int pIndex, double pValue) {
+        TreeColorSet newPS = TreeColorSet.createCopy(ps);
+
+        if(pValue > 0) {
+
+            pValue = Math.abs(pValue);
+            newPS.get(pIndex).remove(Range.open(ps.get(pIndex).span().lowerEndpoint(), pValue));
+
+        } else if(pValue < 0) {
+
+            pValue = Math.abs(pValue);
+            newPS.get(pIndex).remove(Range.open(pValue, ps.get(pIndex).span().upperEndpoint()));
+
+        }
+
+        return newPS;
+    }
+
+    @NotNull
+    public static TreeColorSet derivedColorSet(TreeColorSet ps, int pIndex, double lpValue, double rpValue) {
+        TreeColorSet newPS = TreeColorSet.createCopy(ps);
+     //   System.out.println("Derive space! "+lpValue+ " "+rpValue);
+        //those need to be open, because we don't want to delete singular points.
+        if (lpValue != Double.NEGATIVE_INFINITY) {
+            newPS.get(pIndex).remove(Range.open(Double.NEGATIVE_INFINITY, lpValue));
+        }
+        if (rpValue != Double.POSITIVE_INFINITY) {
+            newPS.get(pIndex).remove(Range.open(rpValue, Double.POSITIVE_INFINITY));
+        }
+
+        return newPS;
+    }
+
     public TreeColorSet(int initialCapacity) {
         super(initialCapacity);
     }

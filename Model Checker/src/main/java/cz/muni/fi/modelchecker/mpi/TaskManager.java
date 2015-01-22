@@ -3,65 +3,46 @@ package cz.muni.fi.modelchecker.mpi;
 import cz.muni.fi.ctl.formula.Formula;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
-import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import cz.muni.fi.modelchecker.verification.FormulaVerificator;
+import cz.muni.fi.modelchecker.verification.FormulaVerificatorFactory;
 import mpi.Comm;
 
 /**
  * Manages creation of tasks requested from other network nodes.
  */
-public abstract class TaskManager<T extends Node, V extends ColorSet> {
+public abstract class TaskManager<N extends Node, C extends ColorSet> {
 
-    private final Object COUNT_LOCK = new Object();
+    private final FormulaVerificator<N, C> verificator;
 
-    private int activeTasks = 0;
-
-    private final Terminator terminator;
-    private final FormulaVerificator<T, V> verificator;
-
-    public TaskManager(Terminator terminator, FormulaVerificator<T, V> verificator) {
-        this.terminator = terminator;
+    public TaskManager(FormulaVerificator<N, C> verificator) {
         this.verificator = verificator;
+        verificator.bindTaskManager(this);
     }
 
-    public void startListening() {
+    public void startProcessing() {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 boolean hasTask = true;
                 while (hasTask) {
-                    hasTask = tryReceivingTask(new TaskStarter<T, V>() {
+                    hasTask = tryReceivingTask(new TaskStarter<N, C>() {
                         @Override
-                        public void startLocalTask(int sourceNode, T external, T internal, V colors) {
+                        public void startLocalTask(int sourceNode, N external, N internal, C colors) {
                             TaskManager.this.startLocalTask(sourceNode, external, internal, colors);
                         }
                     });
                 }
             }
         }).start();
+        verificator.verifyLocalGraph();
     }
 
-    public final void dispatchTask(int destinationNode, T internal, T external, V colors) {
-        terminator.messageSent();
+    public final void dispatchTask(int destinationNode, N internal, N external, C colors) {
         sendTask(destinationNode, internal, external, colors);
     }
 
-    private void startLocalTask(int sourceNode, final T external, final T internal, final V colors) {
-        synchronized (COUNT_LOCK) {
-            terminator.messageReceived();
-            activeTasks++;
-            if (activeTasks == 1) terminator.setWorking(true);
-        }
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                verificator.processTaskData(internal, external, colors);
-                synchronized (COUNT_LOCK) {
-                    activeTasks--;
-                    if (activeTasks == 0) terminator.setWorking(false);
-                }
-            }
-        }).start();
+    private void startLocalTask(int sourceNode, final N external, final N internal, final C colors) {
+        verificator.processTaskData(internal, external, colors);
     }
 
     /**
@@ -71,25 +52,36 @@ public abstract class TaskManager<T extends Node, V extends ColorSet> {
      * @param external external node (receiver of message)
      * @param colors color set bounding message relevance
      */
-    protected abstract void sendTask(int destinationNode, T internal, T external, V colors);
+    protected abstract void sendTask(int destinationNode, N internal, N external, C colors);
 
     /**
      * Tries to receive a full task information from sendTask. If a task has been received, returns true.
      * If data was invalid or termination message has been received, return false.
      * @return True if task has been received, false otherwise.
      */
-    protected abstract boolean tryReceivingTask(TaskStarter<T, V> taskStarter);
+    protected abstract boolean tryReceivingTask(TaskStarter<N, C> taskStarter);
 
     /**
      * Sends a message that would cause a negative result from tyeReceivingTask method.
      */
-    public abstract void finishSelf();
+    public void finishSelf() {
+        verificator.finishSelf();
+    }
 
     protected interface TaskStarter<N extends Node, C extends ColorSet> {
         public void startLocalTask(int sourceNode, N external, N internal, C colors);
     }
 
-    public interface TaskManagerFactory<N extends Node, C extends ColorSet> {
-        public TaskManager<N, C> createTaskManager(Formula formula, Terminator terminator, FormulaVerificator<N,C> verificator, Comm comm);
+    public static abstract class TaskManagerFactory<T extends Node, V extends ColorSet> {
+
+        protected final FormulaVerificatorFactory<T, V> verificatorFactory;
+        protected final Comm COMM;
+
+        protected TaskManagerFactory(FormulaVerificatorFactory<T, V> verificatorFactory, Comm comm) {
+            this.verificatorFactory = verificatorFactory;
+            COMM = comm;
+        }
+
+        public abstract TaskManager<T, V> createTaskManager(Formula formula);
     }
 }

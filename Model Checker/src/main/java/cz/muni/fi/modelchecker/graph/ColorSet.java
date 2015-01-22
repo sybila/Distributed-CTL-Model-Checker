@@ -9,5 +9,7 @@ public interface ColorSet {
 
     public void subtract(ColorSet set);
 
+    public void union(ColorSet set);
+
     public boolean isEmpty();
 }

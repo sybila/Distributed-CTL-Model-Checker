@@ -5,11 +5,7 @@ import cz.muni.fi.ctl.formula.proposition.Proposition;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
 import cz.muni.fi.modelchecker.mpi.TaskManager;
-import cz.muni.fi.modelchecker.mpi.termination.MPITokenMessenger;
-import cz.muni.fi.modelchecker.mpi.termination.Terminator;
-import cz.muni.fi.modelchecker.verification.FormulaVerificator;
-import cz.muni.fi.modelchecker.verification.FormulaVerificatorFactory;
-import mpi.Comm;
+import mpi.Intracomm;
 import mpi.MPI;
 
 import java.util.HashSet;
@@ -24,19 +20,17 @@ public class ModelChecker<N extends Node, C extends ColorSet> {
     private final Set<Formula> processedFormulas = new HashSet<>();
 
     private final TaskManager.TaskManagerFactory<N, C> taskManagerFactory;
-    private final FormulaVerificatorFactory<N, C> verificatorFactory;
-    private final Comm COMM;
+    private final Intracomm COMM;
     private final ModelAdapter<N,C> model;
 
     public ModelChecker(
             ModelAdapter<N, C> model,
             StateSpacePartitioner<N> partitioner,
             TaskManager.TaskManagerFactory<N, C> taskManagerFactory,
-            Comm comm) {
+            Intracomm comm) {
         this.taskManagerFactory = taskManagerFactory;
         COMM = comm;
         this.model = model;
-        verificatorFactory = new FormulaVerificatorFactory<>(partitioner, model, partitioner.getMyId());
     }
 
     public void verify(Formula formula) {
@@ -49,24 +43,25 @@ public class ModelChecker<N extends Node, C extends ColorSet> {
         }
         System.out.println(MPI.COMM_WORLD.Rank()+" Verification started: "+formula);
         //prepare terminator
-        Terminator terminator = Terminator.obtain(new MPITokenMessenger(COMM));
+        //Terminator terminator = Terminator.obtain(new MPITokenMessenger(COMM));
         //prepare communication and verificator
-        FormulaVerificator<N,C> verificator = verificatorFactory.getVerificatorForFormula(formula);
-        TaskManager<N,C> manager = taskManagerFactory.createTaskManager(formula, terminator, verificator, COMM);
-        verificator.prepareVerification(manager);
-        manager.startListening();
+        TaskManager<N,C> manager = taskManagerFactory.createTaskManager(formula);
+        manager.startProcessing();
         //process task
-        verificator.verifyLocalGraph();
+        manager.finishSelf();
+       // terminator.setWorking(true);
         //wait for task termination
-        terminator.waitForTermination();
+        //terminator.waitForTermination();
         //wait for task manager termination
         //Note: we need the terminator, because we need need a guarantee that
         //new formula will be processed only after old task managers are finished
-        terminator = Terminator.obtain(new MPITokenMessenger(COMM));
+        /*terminator = Terminator.obtain(new MPITokenMessenger(COMM));
         manager.finishSelf();
-        terminator.waitForTermination();
+        verificator.finishSelf();
+        terminator.waitForTermination();*/
         System.out.println(COMM.Rank()+" Found: "+model.initialNodes(formula).size());
         processedFormulas.add(formula);
+        COMM.Barrier();
     }
 
 }

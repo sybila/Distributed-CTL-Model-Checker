@@ -5,6 +5,7 @@ import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.StateSpacePartitioner;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
+import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -14,8 +15,8 @@ import java.util.Map;
  */
 public class NegationVerificator<N extends Node, C extends ColorSet> extends FormulaVerificator<N, C> {
 
-    NegationVerificator(int myId, @NotNull ModelAdapter<N, C> model, @NotNull StateSpacePartitioner<N> partitioner, Formula formula) {
-        super(myId, model, partitioner, formula);
+    NegationVerificator(int myId, @NotNull ModelAdapter<N, C> model, @NotNull StateSpacePartitioner<N> partitioner, Formula formula, Terminator terminator) {
+        super(myId, model, partitioner, formula, terminator);
     }
 
     @Override

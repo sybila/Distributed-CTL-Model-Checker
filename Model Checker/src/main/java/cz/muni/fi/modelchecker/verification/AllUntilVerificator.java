@@ -5,6 +5,7 @@ import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.StateSpacePartitioner;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
+import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -16,8 +17,8 @@ public class AllUntilVerificator<N extends Node, C extends ColorSet> extends For
 
     private Map<N, Map<N, C>> successorsAndUncoveredColors = new HashMap<>();
 
-    AllUntilVerificator(int myId, @NotNull ModelAdapter<N, C> model, @NotNull StateSpacePartitioner<N> partitioner, Formula formula) {
-        super(myId, model, partitioner, formula);
+    AllUntilVerificator(int myId, @NotNull ModelAdapter<N, C> model, @NotNull StateSpacePartitioner<N> partitioner, Formula formula, Terminator terminator) {
+        super(myId, model, partitioner, formula, terminator);
     }
 
     @Override
@@ -47,7 +48,7 @@ public class AllUntilVerificator<N extends Node, C extends ColorSet> extends For
                 if (myId == owner) {
                     processAllUntilNode(inspected.getKey(), predecessor.getKey(), predecessor.getValue(), queue);
                 } else {
-                    taskManager.dispatchTask(owner, inspected.getKey(), predecessor.getKey(), predecessor.getValue());
+                    dispatchTask(owner, inspected.getKey(), predecessor.getKey(), predecessor.getValue());
                 }
             }
         }

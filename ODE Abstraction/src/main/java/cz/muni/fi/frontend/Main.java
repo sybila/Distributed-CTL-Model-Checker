@@ -5,17 +5,16 @@ import cz.muni.fi.ctl.FormulaParser;
 import cz.muni.fi.ctl.formula.Formula;
 import cz.muni.fi.modelchecker.ModelChecker;
 import cz.muni.fi.modelchecker.mpi.TaskManager;
+import cz.muni.fi.modelchecker.verification.FormulaVerificatorFactory;
 import cz.muni.fi.ode.*;
 import mpi.MPI;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 public class Main {
+    
     static {
         try {
             System.loadLibrary("generator"); // used for tests. This library in classpath only
@@ -24,6 +23,7 @@ public class Main {
             try {
                 NativeUtils.loadLibraryFromJar("/build/binaries/libgenerator.jnilib"); // during runtime. .DLL within .JAR
             } catch (IOException e1) {
+                e1.printStackTrace();
                 try {
                     NativeUtils.loadLibraryFromJar("/build/binaries/libgenerator.so");
                 } catch (IOException e2) {
@@ -99,7 +99,8 @@ public class Main {
             }*/
 
 
-            TaskManager.TaskManagerFactory<CoordinateNode, TreeColorSet> taskFactory = new MpiTaskManager.MpiTaskManagerFactory(model.variableCount(), factory, model);
+            FormulaVerificatorFactory<CoordinateNode, TreeColorSet> verificatorFactory = new FormulaVerificatorFactory<>(partitioner, factory);
+            TaskManager.TaskManagerFactory<CoordinateNode, TreeColorSet> taskFactory = new MpiTaskManager.MpiTaskManagerFactory(model.variableCount(), factory, model, MPI.COMM_WORLD, verificatorFactory);
             ModelChecker<CoordinateNode, TreeColorSet> modelChecker = new ModelChecker<>(factory, partitioner, taskFactory, MPI.COMM_WORLD);
             modelChecker.verify(formula);
             if (args.length >= 3 && args[args.length - 3].equals("-all")) {
@@ -110,7 +111,7 @@ public class Main {
                 for (CoordinateNode node : factory.getNodes()) {
                     TreeColorSet colorSet = factory.validColorsFor(node, formula);
                     if (!colorSet.isEmpty()) {
-                        System.out.println(Arrays.toString(node.coordinates)+" "+colorSet);
+			//  System.out.println(Arrays.toString(node.coordinates)+" "+colorSet);
                     }
                 }
             }
@@ -126,7 +127,4 @@ public class Main {
 	System.exit(0);
     }
 
-    static {
-        System.loadLibrary("generator");
-    }
 }

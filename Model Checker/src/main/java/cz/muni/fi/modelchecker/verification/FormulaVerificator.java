@@ -6,6 +6,7 @@ import cz.muni.fi.modelchecker.StateSpacePartitioner;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
 import cz.muni.fi.modelchecker.mpi.TaskManager;
+import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -15,19 +16,35 @@ public abstract class FormulaVerificator<N extends Node, C extends ColorSet> {
 
     protected final StateSpacePartitioner<N> partitioner;
     protected final ModelAdapter<N, C> model;
-    protected TaskManager<N, C> taskManager;
+    private TaskManager<N, C> taskManager;
+    protected Terminator terminator;
     protected final Formula formula;
     protected final int myId;
 
-    FormulaVerificator(int myId, @NotNull ModelAdapter<N, C> model, @NotNull StateSpacePartitioner<N> partitioner, Formula formula) {
+    FormulaVerificator(
+            int myId,
+            @NotNull ModelAdapter<N, C> model,
+            @NotNull StateSpacePartitioner<N> partitioner,
+            Formula formula,
+            Terminator terminator) {
         this.model = model;
         this.partitioner = partitioner;
         this.myId = myId;
         this.formula = formula;
+        this.terminator = terminator;
     }
 
-    public void prepareVerification(TaskManager<N, C> taskManager) {
+    public final void bindTaskManager(TaskManager<N,C> taskManager) {
         this.taskManager = taskManager;
+    }
+
+    public final void dispatchTask(int destinationNode, N internal, N external, C colors) {
+        terminator.messageSent();
+        taskManager.dispatchTask(destinationNode, internal, external, colors);
+    }
+
+    public void finishSelf() {
+        terminator.waitForTermination();
     }
 
     /**

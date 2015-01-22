@@ -3,8 +3,10 @@ package cz.muni.fi.ode;
 import com.google.common.collect.Range;
 import cz.muni.fi.ctl.formula.Formula;
 import cz.muni.fi.modelchecker.mpi.TaskManager;
+import cz.muni.fi.modelchecker.mpi.termination.MPITokenMessenger;
 import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import cz.muni.fi.modelchecker.verification.FormulaVerificator;
+import cz.muni.fi.modelchecker.verification.FormulaVerificatorFactory;
 import mpi.Comm;
 import mpi.MPI;
 import org.jetbrains.annotations.NotNull;
@@ -34,9 +36,8 @@ public class MpiTaskManager extends TaskManager<CoordinateNode,TreeColorSet> {
             int dimensions,
             NodeFactory factory,
             OdeModel model,
-            Terminator terminator,
             FormulaVerificator<CoordinateNode, TreeColorSet> verificator) {
-        super(terminator, verificator);
+        super(verificator);
         this.COMM = comm;
         this.dimensions = dimensions;
         this.factory = factory;
@@ -94,6 +95,7 @@ public class MpiTaskManager extends TaskManager<CoordinateNode,TreeColorSet> {
     }
 
     public void finishSelf() {
+        super.finishSelf();
         @NotNull int[] buffer = new int[2*dimensions + model.parameterCount() + 3];
         buffer[0] = FINISH;
         COMM.Send(buffer, 0, buffer.length, MPI.INT, COMM.Rank(), TAG);
@@ -119,13 +121,19 @@ public class MpiTaskManager extends TaskManager<CoordinateNode,TreeColorSet> {
         return ret;
     }
 
-    public static class MpiTaskManagerFactory implements TaskManagerFactory<CoordinateNode, TreeColorSet> {
+    public static class MpiTaskManagerFactory extends TaskManagerFactory<CoordinateNode, TreeColorSet> {
 
         private final int dimensions;
         private final NodeFactory factory;
         private final OdeModel model;
 
-        public MpiTaskManagerFactory(int dimensions, NodeFactory factory, OdeModel model) {
+        public MpiTaskManagerFactory(
+                int dimensions,
+                NodeFactory factory,
+                OdeModel model,
+                Comm comm,
+                FormulaVerificatorFactory<CoordinateNode, TreeColorSet> verificatorFactory) {
+            super(verificatorFactory, comm);
             this.dimensions = dimensions;
             this.factory = factory;
             this.model = model;
@@ -133,8 +141,8 @@ public class MpiTaskManager extends TaskManager<CoordinateNode,TreeColorSet> {
 
 
         @Override
-        public TaskManager<CoordinateNode, TreeColorSet> createTaskManager(Formula formula, Terminator terminator, FormulaVerificator<CoordinateNode, TreeColorSet> verificator, Comm comm) {
-            return new MpiTaskManager(comm, dimensions, factory, model, terminator, verificator);
+        public TaskManager<CoordinateNode, TreeColorSet> createTaskManager(Formula formula) {
+            return new MpiTaskManager(COMM, dimensions, factory, model, verificatorFactory.getVerificatorForFormula(formula, Terminator.obtain(new MPITokenMessenger(COMM))));
         }
     }
 }

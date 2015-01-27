@@ -1,12 +1,8 @@
 package cz.muni.fi.ode;
 
 import com.google.common.collect.Range;
-import cz.muni.fi.ctl.formula.Formula;
-import cz.muni.fi.modelchecker.mpi.TaskManager;
-import cz.muni.fi.modelchecker.mpi.termination.MPITokenMessenger;
-import cz.muni.fi.modelchecker.mpi.termination.Terminator;
-import cz.muni.fi.modelchecker.verification.FormulaVerificator;
-import cz.muni.fi.modelchecker.verification.FormulaVerificatorFactory;
+import cz.muni.fi.modelchecker.mpi.tasks.BlockingTaskMessenger;
+import cz.muni.fi.modelchecker.mpi.tasks.OnTaskListener;
 import mpi.Comm;
 import mpi.MPI;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +15,7 @@ import java.util.List;
 /**
  * Listens for secondary task requests, executes them and keeps track of finished requests
  */
-public class MpiTaskManager extends TaskManager<CoordinateNode,TreeColorSet> {
+public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, TreeColorSet> {
 
     private static final int TAG = 1;
 
@@ -31,13 +27,11 @@ public class MpiTaskManager extends TaskManager<CoordinateNode,TreeColorSet> {
     private final NodeFactory factory;
     private final OdeModel model;
 
-    public MpiTaskManager(
+    public MpiTaskMessenger(
             Comm comm,
             int dimensions,
             NodeFactory factory,
-            OdeModel model,
-            FormulaVerificator<CoordinateNode, TreeColorSet> verificator) {
-        super(verificator);
+            OdeModel model) {
         this.COMM = comm;
         this.dimensions = dimensions;
         this.factory = factory;
@@ -51,7 +45,7 @@ public class MpiTaskManager extends TaskManager<CoordinateNode,TreeColorSet> {
 
 
     @Override
-    protected void sendTask(int destinationNode, CoordinateNode internal, CoordinateNode external, TreeColorSet colors) {
+    public void sendTask(int destinationNode, CoordinateNode internal, CoordinateNode external, TreeColorSet colors) {
         @NotNull int[] buffer = new int[2*dimensions + model.parameterCount() + 3];
         buffer[0] = CREATE;
         buffer[buffer.length - 2] = COMM.Rank();
@@ -74,7 +68,7 @@ public class MpiTaskManager extends TaskManager<CoordinateNode,TreeColorSet> {
     }
 
     @Override
-    protected boolean tryReceivingTask(TaskStarter<CoordinateNode, TreeColorSet> taskStarter) {
+    protected boolean blockingReceiveTask(OnTaskListener<CoordinateNode, TreeColorSet> taskListener) {
         @NotNull int[] buffer = new int[2*dimensions + model.parameterCount() + 3];
         //no need to synchronize - this method is only called from one thread
         COMM.Recv(buffer, 0, buffer.length, MPI.INT, MPI.ANY_SOURCE, TAG);
@@ -87,15 +81,15 @@ public class MpiTaskManager extends TaskManager<CoordinateNode,TreeColorSet> {
             double[] colors = new double[sum(lengths)];
             COMM.Recv(colors, 0, colors.length, MPI.DOUBLE, sender, TAG);
             TreeColorSet colorSet = TreeColorSet.createFromBuffer(lengths, colors);
-            taskStarter.startLocalTask(sender, source, dest, colorSet);
+            taskListener.onTask(sender, source, dest, colorSet);
             return true;
         } else {
             return false;
         }
     }
 
+    @Override
     public void finishSelf() {
-        super.finishSelf();
         @NotNull int[] buffer = new int[2*dimensions + model.parameterCount() + 3];
         buffer[0] = FINISH;
         COMM.Send(buffer, 0, buffer.length, MPI.INT, COMM.Rank(), TAG);
@@ -121,28 +115,4 @@ public class MpiTaskManager extends TaskManager<CoordinateNode,TreeColorSet> {
         return ret;
     }
 
-    public static class MpiTaskManagerFactory extends TaskManagerFactory<CoordinateNode, TreeColorSet> {
-
-        private final int dimensions;
-        private final NodeFactory factory;
-        private final OdeModel model;
-
-        public MpiTaskManagerFactory(
-                int dimensions,
-                NodeFactory factory,
-                OdeModel model,
-                Comm comm,
-                FormulaVerificatorFactory<CoordinateNode, TreeColorSet> verificatorFactory) {
-            super(verificatorFactory, comm);
-            this.dimensions = dimensions;
-            this.factory = factory;
-            this.model = model;
-        }
-
-
-        @Override
-        public TaskManager<CoordinateNode, TreeColorSet> createTaskManager(Formula formula) {
-            return new MpiTaskManager(COMM, dimensions, factory, model, verificatorFactory.getVerificatorForFormula(formula, Terminator.obtain(new MPITokenMessenger(COMM))));
-        }
-    }
 }

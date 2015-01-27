@@ -4,8 +4,9 @@ import cz.muni.fi.ctl.FormulaNormalizer;
 import cz.muni.fi.ctl.FormulaParser;
 import cz.muni.fi.ctl.formula.Formula;
 import cz.muni.fi.modelchecker.ModelChecker;
-import cz.muni.fi.modelchecker.mpi.TaskManager;
-import cz.muni.fi.modelchecker.verification.FormulaVerificatorFactory;
+import cz.muni.fi.modelchecker.mpi.tasks.TaskMessenger;
+import cz.muni.fi.modelchecker.mpi.termination.MPITokenMessenger;
+import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import cz.muni.fi.ode.*;
 import mpi.MPI;
 
@@ -98,10 +99,9 @@ public class Main {
                 }
             }*/
 
-
-            FormulaVerificatorFactory<CoordinateNode, TreeColorSet> verificatorFactory = new FormulaVerificatorFactory<>(partitioner, factory);
-            TaskManager.TaskManagerFactory<CoordinateNode, TreeColorSet> taskFactory = new MpiTaskManager.MpiTaskManagerFactory(model.variableCount(), factory, model, MPI.COMM_WORLD, verificatorFactory);
-            ModelChecker<CoordinateNode, TreeColorSet> modelChecker = new ModelChecker<>(factory, partitioner, taskFactory, MPI.COMM_WORLD);
+            TaskMessenger<CoordinateNode, TreeColorSet> taskMessenger = new MpiTaskMessenger(MPI.COMM_WORLD, model.variableCount(), factory, model);
+            Terminator.TerminatorFactory terminatorFactory = new Terminator.TerminatorFactory(new MPITokenMessenger(MPI.COMM_WORLD));
+            ModelChecker<CoordinateNode, TreeColorSet> modelChecker = new ModelChecker<>(factory, partitioner, taskMessenger, terminatorFactory);
             modelChecker.verify(formula);
             if (args.length >= 3 && args[args.length - 3].equals("-all")) {
                 for (CoordinateNode node : factory.getNodes()) {

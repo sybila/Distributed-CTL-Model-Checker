@@ -67,16 +67,18 @@ public class TerminatorIntegrationTest {
 
         slaveTerminator1.messageSent();
         slaveTerminator3.messageReceived();
-        slaveTerminator3.setWorking(true);
         slaveTerminator1.messageSent();
         slaveTerminator2.messageSent();
 
+        slaveTerminator3.setDone();
+
         slaveTerminator3.messageReceived();
         slaveTerminator4.messageReceived();
-        slaveTerminator4.setWorking(true);
 
         masterTerminator.messageSent();
         masterTerminator.messageSent();
+
+        masterTerminator.setDone();
 
         Thread t1 = new Thread(new Runnable() {
             @Override
@@ -122,24 +124,24 @@ public class TerminatorIntegrationTest {
             @Override
             public void run() {
                 try {
+                    slaveTerminator2.setDone();
                     slaveTerminator3.messageReceived();
                     slaveTerminator3.messageSent();
                     slaveTerminator1.messageSent();
                     Thread.sleep(150);
                     masterTerminator.messageReceived();
                     slaveTerminator4.messageSent();
-                    slaveTerminator4.setWorking(false);
+                    slaveTerminator4.setDone();
                     slaveTerminator2.messageReceived();
                     Thread.sleep(50);
-                    slaveTerminator2.setWorking(true);
                     masterTerminator.messageReceived();
                     slaveTerminator1.messageReceived();
                     Thread.sleep(120);
-                    slaveTerminator1.setWorking(true);
-                    slaveTerminator3.setWorking(false);
-                    slaveTerminator1.setWorking(false);
+                    slaveTerminator3.setDone();
+                    masterTerminator.setDone();
+                    slaveTerminator1.setDone();
                     Thread.sleep(44);
-                    slaveTerminator2.setWorking(false);
+                    slaveTerminator2.setDone();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

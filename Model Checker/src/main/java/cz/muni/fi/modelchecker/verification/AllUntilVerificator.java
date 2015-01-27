@@ -5,6 +5,8 @@ import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.StateSpacePartitioner;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
+import cz.muni.fi.modelchecker.mpi.tasks.OnTaskListener;
+import cz.muni.fi.modelchecker.mpi.tasks.TaskMessenger;
 import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,15 +15,38 @@ import java.util.*;
 /**
  * Verificator for all until operator.
  */
-public class AllUntilVerificator<N extends Node, C extends ColorSet> extends FormulaVerificator<N, C> {
+public class AllUntilVerificator<N extends Node, C extends ColorSet> implements FormulaProcessor, OnTaskListener<N, C> {
 
     private Map<N, Map<N, C>> successorsAndUncoveredColors = new HashMap<>();
 
-    AllUntilVerificator(int myId, @NotNull ModelAdapter<N, C> model, @NotNull StateSpacePartitioner<N> partitioner, Formula formula, Terminator terminator) {
-        super(myId, model, partitioner, formula, terminator);
+
+    private final Terminator.TerminatorFactory terminatorFactory;
+    private final StateSpacePartitioner<N> partitioner;
+    private final ModelAdapter<N, C> model;
+    private final Formula formula;
+    private final TaskMessenger<N, C> taskMessenger;
+    private final int myId;
+
+    private Terminator terminator;
+
+    private final Map<N,C> queue = new HashMap<>();
+    private boolean terminated;
+
+    AllUntilVerificator(
+            @NotNull ModelAdapter<N, C> model,
+            @NotNull StateSpacePartitioner<N> partitioner,
+            Formula formula,
+            Terminator.TerminatorFactory terminatorFactory,
+            TaskMessenger<N, C> taskMessenger
+    ) {
+        this.terminatorFactory = terminatorFactory;
+        this.partitioner = partitioner;
+        this.model = model;
+        this.formula = formula;
+        this.taskMessenger = taskMessenger;
+        this.myId = partitioner.getMyId();
     }
 
-    @Override
     public void verifyLocalGraph() {
         Queue<Map.Entry<N,C>> queue = new LinkedList<>();
         //enqueue all nodes where second formula holds, but do not mark them as true yet
@@ -29,7 +54,6 @@ public class AllUntilVerificator<N extends Node, C extends ColorSet> extends For
         processAllUntilQueue(queue);
     }
 
-    @Override
     public void processTaskData(@NotNull N internal, @NotNull N external, @NotNull C candidates) {
         Queue<Map.Entry<N, C>> queue = new LinkedList<>();
         processAllUntilNode(external, internal, candidates, queue);
@@ -48,7 +72,7 @@ public class AllUntilVerificator<N extends Node, C extends ColorSet> extends For
                 if (myId == owner) {
                     processAllUntilNode(inspected.getKey(), predecessor.getKey(), predecessor.getValue(), queue);
                 } else {
-                    dispatchTask(owner, inspected.getKey(), predecessor.getKey(), predecessor.getValue());
+                    //dispatchTask(owner, inspected.getKey(), predecessor.getKey(), predecessor.getValue());
                 }
             }
         }
@@ -85,5 +109,15 @@ public class AllUntilVerificator<N extends Node, C extends ColorSet> extends For
                 queue.add(new AbstractMap.SimpleEntry<>(predecessor, candidates));
             }
         }
+    }
+
+    @Override
+    public void verify() {
+
+    }
+
+    @Override
+    public void onTask(int sourceProcess, N external, N internal, C colors) {
+
     }
 }

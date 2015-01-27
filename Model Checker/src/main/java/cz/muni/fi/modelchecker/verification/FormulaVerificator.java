@@ -1,62 +1,52 @@
 package cz.muni.fi.modelchecker.verification;
 
 import cz.muni.fi.ctl.formula.Formula;
+import cz.muni.fi.ctl.formula.operator.BinaryOperator;
+import cz.muni.fi.ctl.formula.operator.Operator;
+import cz.muni.fi.ctl.formula.operator.UnaryOperator;
 import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.StateSpacePartitioner;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
-import cz.muni.fi.modelchecker.mpi.TaskManager;
+import cz.muni.fi.modelchecker.mpi.tasks.TaskMessenger;
 import cz.muni.fi.modelchecker.mpi.termination.Terminator;
-import org.jetbrains.annotations.NotNull;
 
 /**
- * Abstract formula verificator - a blueprint for verification of various operators
+ * Creates new verificator for given formula.
  */
-public abstract class FormulaVerificator<N extends Node, C extends ColorSet> {
+public class FormulaVerificator<N extends Node, C extends ColorSet> {
 
-    protected final StateSpacePartitioner<N> partitioner;
-    protected final ModelAdapter<N, C> model;
-    private TaskManager<N, C> taskManager;
-    protected Terminator terminator;
-    protected final Formula formula;
-    protected final int myId;
+    private final StateSpacePartitioner<N> partitioner;
+    private final ModelAdapter<N, C> model;
+    private final TaskMessenger<N, C> taskMessenger;
+    private final Terminator.TerminatorFactory terminatorFactory;
 
-    FormulaVerificator(
-            int myId,
-            @NotNull ModelAdapter<N, C> model,
-            @NotNull StateSpacePartitioner<N> partitioner,
-            Formula formula,
-            Terminator terminator) {
-        this.model = model;
+
+    public FormulaVerificator(ModelAdapter<N, C> model, StateSpacePartitioner<N> partitioner, TaskMessenger<N, C> taskMessenger, Terminator.TerminatorFactory terminatorFactory) {
         this.partitioner = partitioner;
-        this.myId = myId;
-        this.formula = formula;
-        this.terminator = terminator;
+        this.model = model;
+        this.taskMessenger = taskMessenger;
+        this.terminatorFactory = terminatorFactory;
     }
 
-    public final void bindTaskManager(TaskManager<N,C> taskManager) {
-        this.taskManager = taskManager;
+    public void verifyFormula(Formula formula) {
+        Operator operator = formula.getOperator();
+        FormulaProcessor processor;
+        if (operator == UnaryOperator.NEGATION) {
+            processor = new NegationVerificator<>(model, formula);
+        } else if(operator == BinaryOperator.AND) {
+            processor = new AndVerificator<>(model, formula);
+        } else if(operator == BinaryOperator.OR) {
+            processor = new OrVerificator<>(model, formula);
+        } else if(operator == BinaryOperator.EXISTS_UNTIL) {
+            processor = new ExistsUntilVerificator<>(model, partitioner, formula, terminatorFactory, taskMessenger);
+        } else if(operator == BinaryOperator.ALL_UNTIL) {
+            processor = new AllUntilVerificator<>(model, partitioner, formula, terminatorFactory, taskMessenger);
+        } else if(operator == UnaryOperator.EXISTS_NEXT) {
+            processor = new NextVerificator<>(model, partitioner, formula, terminatorFactory, taskMessenger);
+        } else {
+            throw new IllegalArgumentException("Cannot verify operator: "+operator);
+        }
+        processor.verify();
     }
-
-    public final void dispatchTask(int destinationNode, N internal, N external, C colors) {
-        terminator.messageSent();
-        taskManager.dispatchTask(destinationNode, internal, external, colors);
-    }
-
-    public void finishSelf() {
-        terminator.waitForTermination();
-    }
-
-    /**
-     * Process formula without any extra data.
-     * (this is usually executed from root task on each network node)
-     */
-    public abstract void verifyLocalGraph();
-
-    /**
-     * Process formula, but start from given node and parameters.
-     * (usually executed by secondary task requested from another node)
-     */
-    public abstract void processTaskData(@NotNull N internal, @NotNull N external, @NotNull C candidates);
-
 }

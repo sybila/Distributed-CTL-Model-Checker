@@ -62,7 +62,6 @@ public class MasterTerminatorTest {
         terminator.messageSent();
         count++;    //message created in system
         terminator.messageReceived();   //message received
-        terminator.setWorking(true);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -70,16 +69,15 @@ public class MasterTerminatorTest {
                     Thread.sleep(100);
                     count--;    //pair for first message Sent
                     terminator.messageSent();
-                    terminator.setWorking(false);
+                    terminator.setDone();
                     Thread.sleep(100);
                     count++; //message created in system
                     terminator.messageReceived();   //message received
-                    terminator.setWorking(true);
                     Thread.sleep(100);
                     count--;    //pair for second message Sent
                     Thread.sleep(100);
                     flag = 0;
-                    terminator.setWorking(false);
+                    terminator.setDone();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -130,12 +128,11 @@ public class MasterTerminatorTest {
                 try {
                     Thread.sleep(200);
                     terminator.messageReceived();
-                    terminator.setWorking(true);
                     Thread.sleep(100);
                     terminator.messageReceived();
                     Thread.sleep(100);
                     flag = 0;
-                    terminator.setWorking(false);
+                    terminator.setDone();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -189,6 +186,7 @@ public class MasterTerminatorTest {
                     Thread.sleep(50);
                     terminator.messageSent();
                     flag = 0;
+                    terminator.setDone();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -234,21 +232,19 @@ public class MasterTerminatorTest {
         //receive and finish work before start
         MasterTerminator terminator = new MasterTerminator(messenger);
         terminator.messageReceived();
-        terminator.setWorking(true);
         Thread.sleep(100);
-        terminator.setWorking(false);
         terminator.messageReceived();
+        terminator.setDone();
         terminator.waitForTermination();
         //receive before start and finish after start
         final MasterTerminator terminator2 = new MasterTerminator(messenger);
         terminator2.messageReceived();
-        terminator2.setWorking(true);
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    Thread.sleep(300);
-                    terminator2.setWorking(false);
+                    Thread.sleep(400);
+                    terminator2.setDone();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -300,6 +296,7 @@ public class MasterTerminatorTest {
         terminator.messageSent();
         Thread.sleep(100);
         terminator.messageSent();
+        terminator.setDone();
         terminator.waitForTermination();
     }
 
@@ -336,13 +333,16 @@ public class MasterTerminatorTest {
             }
         };
         MasterTerminator terminator = new MasterTerminator(messenger);
+        terminator.setDone();
+        exception.expect(IllegalStateException.class);
+        terminator.messageSent();
         terminator.waitForTermination();
         exception.expect(IllegalStateException.class);
         terminator.messageReceived();
         exception.expect(IllegalStateException.class);
         terminator.messageSent();
         exception.expect(IllegalStateException.class);
-        terminator.setWorking(true);
+        terminator.setDone();
         exception.expect(IllegalStateException.class);
         terminator.waitForTermination();
         exception.expect(IllegalStateException.class);
@@ -403,6 +403,7 @@ public class MasterTerminatorTest {
             }
         };
         MasterTerminator terminator = new MasterTerminator(messenger);
+        terminator.setDone();
         terminator.waitForTermination();
         messenger = new TokenMessenger() {
 
@@ -435,6 +436,7 @@ public class MasterTerminatorTest {
             }
         };
         terminator = new MasterTerminator(messenger);
+        terminator.setDone();
         terminator.waitForTermination();
     }
 

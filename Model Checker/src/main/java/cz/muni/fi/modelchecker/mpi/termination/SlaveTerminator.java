@@ -24,8 +24,9 @@ class SlaveTerminator extends Terminator {
 
     @Override
     public void terminationLoop() {
+        //wait for token from master
         Token token = messenger.waitForToken(tokenSource);
-        while (token.flag < 2) {
+        while (token.flag < 2) {    //while this is not terminating token
             synchronized (SlaveTerminator.this) {
                 if (working) {  //if node is active, save token for later
                     pendingToken = token;
@@ -40,9 +41,9 @@ class SlaveTerminator extends Terminator {
     }
 
     @Override
-    public synchronized void setWorking(boolean working) {
-        super.setWorking(working);
-        if (!working && pendingToken != null) {
+    public synchronized void setDone() {
+        super.setDone();
+        if (pendingToken != null) { //working is false here
             //node is idle and has unprocessed tokens
             processToken(pendingToken);
             pendingToken = null;

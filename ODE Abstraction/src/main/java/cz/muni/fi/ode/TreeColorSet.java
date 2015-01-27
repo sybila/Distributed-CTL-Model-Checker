@@ -35,7 +35,6 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
     @NotNull
     public static TreeColorSet derivedColorSet(TreeColorSet ps, int pIndex, double pValue) {
         TreeColorSet newPS = TreeColorSet.createCopy(ps);
-
         if(pValue > 0) {
 
             pValue = Math.abs(pValue);

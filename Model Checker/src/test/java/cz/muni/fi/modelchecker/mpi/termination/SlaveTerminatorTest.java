@@ -58,12 +58,14 @@ public class SlaveTerminatorTest {
                     Thread.sleep(200);
                     terminator.messageReceived();
                     terminator.messageReceived();
+                    terminator.setDone();
                     flag = 1;
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
         }).start();
+        terminator.setDone();
         terminator.waitForTermination();
     }
 
@@ -84,7 +86,10 @@ public class SlaveTerminatorTest {
 
             @Override
             public synchronized void sendTokenAsync(int destination, @NotNull Token token) {
-                if (flag == 2 && token.flag != 0) {
+                if (    (flag != 2 && token.flag == 2) ||   //terminates too soon
+                        (flag == 2 && token.flag != 2 && token.count != 2) || //count decreased
+                        (flag == 2 && token.flag == 2 && token.count != 0) //termination token has been tempered with
+                    ) {
                     throw new IllegalStateException("Wrong token: "+token.flag+" "+token.count);
                 }
                 if (token.count == 2) {
@@ -111,6 +116,7 @@ public class SlaveTerminatorTest {
                     terminator.messageSent();
                     terminator.messageSent();
                     flag = 1;
+                    terminator.setDone();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -175,6 +181,7 @@ public class SlaveTerminatorTest {
         terminator.messageReceived();
         terminator.messageSent();
         terminator.messageReceived();
+        terminator.setDone();
         terminator.waitForTermination();
     }
 
@@ -232,6 +239,7 @@ public class SlaveTerminatorTest {
         terminator.messageReceived();
         terminator.messageReceived();
         terminator.messageReceived();
+        terminator.setDone();
         terminator.waitForTermination();
     }
 
@@ -288,6 +296,7 @@ public class SlaveTerminatorTest {
         SlaveTerminator terminator = new SlaveTerminator(messenger);
         terminator.messageSent();
         terminator.messageSent();
+        terminator.setDone();
         terminator.waitForTermination();
     }
 
@@ -342,6 +351,7 @@ public class SlaveTerminatorTest {
             }
         };
         SlaveTerminator terminator = new SlaveTerminator(messenger);
+        terminator.setDone();
         terminator.waitForTermination();
     }
 
@@ -372,13 +382,16 @@ public class SlaveTerminatorTest {
             }
         };
         SlaveTerminator terminator = new SlaveTerminator(messenger);
+        terminator.setDone();
+        exception.expect(IllegalStateException.class);
+        terminator.messageSent();
         terminator.waitForTermination();
         exception.expect(IllegalStateException.class);
         terminator.messageReceived();
         exception.expect(IllegalStateException.class);
         terminator.messageSent();
         exception.expect(IllegalStateException.class);
-        terminator.setWorking(true);
+        terminator.setDone();
         exception.expect(IllegalStateException.class);
         terminator.waitForTermination();
         exception.expect(IllegalStateException.class);

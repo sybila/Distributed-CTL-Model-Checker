@@ -2,6 +2,8 @@ package cz.muni.fi.modelchecker.mpi.termination;
 
 /**
  * Class that covers common functionality of slave and master terminators.
+ * Note: All terminators are initially marked as working. So even if no
+ * messages are received an only local work has been performed, you should call setDone.
  */
 public abstract class Terminator {
 
@@ -9,61 +11,84 @@ public abstract class Terminator {
     protected int count = 0;
 
     protected boolean finalized = false;
-    protected boolean working = false;
+    protected boolean working = true;
 
     protected final int tokenSource;
     protected final int tokenDestination;
 
     protected final TokenMessenger messenger;
 
-    public static Terminator obtain(TokenMessenger messenger) {
-        if (messenger.getMyId() == 0) {
-            return new MasterTerminator(messenger);
-        } else {
-            return new SlaveTerminator(messenger);
+    /**
+     * Create a new terminator based on given token passing interface.
+     */
+    public static class TerminatorFactory {
+        private TokenMessenger messenger;
+
+        public TerminatorFactory(TokenMessenger messenger) {
+            this.messenger = messenger;
+        }
+        public Terminator createNew() {
+            if (messenger.getMyId() == 0) {
+                return new MasterTerminator(messenger);
+            } else {
+                return new SlaveTerminator(messenger);
+            }
         }
     }
 
+    /** Package private constructor - new terminators should be created using static factory. */
     Terminator(TokenMessenger messenger, int tokenSource, int tokenDestination) {
         this.messenger = messenger;
         this.tokenDestination = tokenDestination;
         this.tokenSource = tokenSource;
     }
 
-    public synchronized void setWorking(boolean working) {
-        if (finalized) throw new IllegalStateException("Called setWorking on finalized master terminator");
-        this.working = working;
+    /**
+     * Tell terminator that local work is done and he can resume operations. (i.e. after message has been received)
+     */
+    public synchronized void setDone() {
+        if (finalized) throw new IllegalStateException("Called setDone on finalized master terminator");
+        this.working = false;
     }
 
-    public synchronized void messageSent() {
+    /**
+     * Indicate that message has been sent from this process.
+     * @throws IllegalStateException Thrown when idle terminator is indicated that message has been sent.
+     * This should not happen, since only local work should be the source of messages.
+     */
+    public synchronized void messageSent() throws IllegalStateException {
         if (finalized) throw new IllegalStateException("Called messageSent on finalized master terminator");
+        if (!working) throw new IllegalStateException("Terminator that is not working is sending messages. This is suspicious.");
         count++;
     }
 
+    /**
+     * Indicate that message has been received and this process is currently processing it.
+     * WARNING: In order for terminator to properly finish, any sequence of
+     * messageReceived calls must end with at least one setDone call.
+     */
     public synchronized void messageReceived() {
         if (finalized) throw new IllegalStateException("Called messageReceived on finalized master terminator");
         count--;
         //status = Black
         flag = 1;
+        working = true;
     }
 
+    /**
+     * Start termination detection process and wait for successful termination.
+     * Terminator can receive/send messages even before this call and will keep them as internal info about process,
+     * but only after this call will it start to exchange info with other processes.
+     */
     public void waitForTermination() {
         if (finalized) throw new IllegalStateException("Called waitForTermination on finalized master terminator");
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                terminationLoop();
-            }
-        });
-        t.start();
-        try {
-            t.join();
-            finalized = true;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        terminationLoop();
+        finalized = true;
     }
 
+    /**
+     * This method actually detects the termination by exchanging info with other processes until fix point is reached.
+     */
     protected abstract void terminationLoop();
 
 }

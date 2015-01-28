@@ -47,6 +47,14 @@ public class FormulaVerificator<N extends Node, C extends ColorSet> {
         } else {
             throw new IllegalArgumentException("Cannot verify operator: "+operator);
         }
-        processor.verify();
+
+        if (operator == BinaryOperator.EXISTS_UNTIL || operator == BinaryOperator.ALL_UNTIL || operator == UnaryOperator.EXISTS_NEXT) {
+            processor.verify();
+        } else {
+            Terminator terminator = terminatorFactory.createNew();
+            processor.verify();
+            terminator.setDone();
+            terminator.waitForTermination();
+        }
     }
 }

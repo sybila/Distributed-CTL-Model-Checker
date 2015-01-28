@@ -89,10 +89,11 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Tree
     }
 
     @Override
-    public void finishSelf() {
+    protected void finishSelf() {
         @NotNull int[] buffer = new int[2*dimensions + model.parameterCount() + 3];
         buffer[0] = FINISH;
-        COMM.Send(buffer, 0, buffer.length, MPI.INT, COMM.Rank(), TAG);
+        //we have to finish other nodes because we can't send messages to ourselves (BUG)
+        COMM.Isend(buffer, 0, buffer.length, MPI.INT, (COMM.Rank() + 1) % COMM.Size(), TAG);
     }
 
     private static int sum(@NotNull int[] array) {

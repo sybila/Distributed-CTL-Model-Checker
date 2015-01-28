@@ -86,7 +86,6 @@ public class ExistsUntilVerificator<N extends Node, C extends ColorSet> implemen
 
         //wait for the work to finish
         terminator.waitForTermination();
-
         //finalize worker thread and task messenger session
         terminator = terminatorFactory.createNew();
         taskMessenger.closeSession();
@@ -102,7 +101,6 @@ public class ExistsUntilVerificator<N extends Node, C extends ColorSet> implemen
         }
         terminator.setDone();
         terminator.waitForTermination();
-
     }
 
     @Override

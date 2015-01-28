@@ -12,6 +12,7 @@ import mpi.MPI;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 
 public class Main {
@@ -39,13 +40,17 @@ public class Main {
         }
    }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
 	    long start = System.currentTimeMillis();
        	System.out.println(System.getProperty( "java.library.path" ));
         MPI.Init(args);
+
+
+
         FormulaParser parser = new FormulaParser();
         FormulaNormalizer normalizer = new FormulaNormalizer();
         try {
+            System.out.println("Arg: "+args[args.length - 1]);
             Formula formula = parser.parse(new File(args[args.length - 1]));
             formula = normalizer.normalize(formula);
             System.out.println("Normalized form: "+formula);
@@ -55,63 +60,22 @@ public class Main {
             NodeFactory factory = new NodeFactory(model, partitioner);
             StateSpaceGenerator generator = new StateSpaceGenerator(model, true, factory);
             factory.setGenerator(generator);
-/*
-            for (List<SumMember> members : model.equations) {
-                for (SumMember member : members) {
-                    System.out.println(member.toString());
-                }
-            }
-*/
-          /*  int s = 0;
-            factory.cacheAllNodes(partitioner.getMyLimit());
-            System.out.println("Got nodes "+Runtime.getRuntime().totalMemory()+" "+Runtime.getRuntime().maxMemory());
-            int k = 0;
-            int p = 0;
-            int size = factory.nodeCache.size();
 
-            for (Map.Entry<Integer, CoordinateNode> node : factory.nodeCache.entrySet()) {
-                Map<CoordinateNode, TreeColorSet> data = factory.predecessorsFor(node.getValue(), model.getFullColorSet());
-                s += data.size();
-                System.out.println("Succ for: "+Arrays.toString(node.getValue().coordinates));
-                for (Map.Entry<CoordinateNode, TreeColorSet> entry : data.entrySet())
-                {
-                    System.out.println(Arrays.toString(node.getValue().coordinates)+"->"+Arrays.toString(entry.getKey().coordinates)+" : [("+entry.getValue().get(0).span().lowerEndpoint()+","+entry.getValue().get(0).span().upperEndpoint()+")]");
-                }
-                k++;
-                if (k > size/100) {
-                    break;
-                    //k = 0;
-                    //p += 1;
-                    //System.out.println(p + "%...");
-                }
-            }
-            System.out.println("sum: "+s+" k: "+k);*/
-
-            /*for (List<Double> thresholds : model.thresholds) {
-                for (int i=0; i<thresholds.size()-1; i++) {
-                    CoordinateNode node = factory.getNode(new int[]{i});
-                    Map<CoordinateNode, TreeColorSet> data = generator.getSuccessors(node, model.getFullColorSet());
-                    System.out.println("Succ for: "+node);
-                    for (Map.Entry<CoordinateNode, TreeColorSet> entry : data.entrySet())
-                    {
-                        System.out.println(entry.getKey()+" "+entry.getValue());
-                    }
-                }
-            }*/
+            Terminator.TerminatorFactory terminatorFactory = new Terminator.TerminatorFactory(new MPITokenMessenger(MPI.COMM_WORLD));
 
             TaskMessenger<CoordinateNode, TreeColorSet> taskMessenger = new MpiTaskMessenger(MPI.COMM_WORLD, model.variableCount(), factory, model);
-            Terminator.TerminatorFactory terminatorFactory = new Terminator.TerminatorFactory(new MPITokenMessenger(MPI.COMM_WORLD));
+
             ModelChecker<CoordinateNode, TreeColorSet> modelChecker = new ModelChecker<>(factory, partitioner, taskMessenger, terminatorFactory);
             modelChecker.verify(formula);
-            if (args.length >= 3 && args[args.length - 3].equals("-all")) {
+            if (args.length >= 3 && args[args.length - 3].equals("--all")) {
                 for (CoordinateNode node : factory.getNodes()) {
                     System.out.println(node.toString());
                 }
-            } else {
+            } else if (args.length >= 3 && !args[args.length - 3].equals("--none")) {
                 for (CoordinateNode node : factory.getNodes()) {
                     TreeColorSet colorSet = factory.validColorsFor(node, formula);
                     if (!colorSet.isEmpty()) {
-			//  System.out.println(Arrays.toString(node.coordinates)+" "+colorSet);
+			            System.out.println(Arrays.toString(node.coordinates)+" "+colorSet);
                     }
                 }
             }

@@ -4,9 +4,6 @@ import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
 import org.jetbrains.annotations.NotNull;
 
-/**
- * Created by daemontus on 27/01/15.
- */
 public abstract class BlockingTaskMessenger<N extends Node, C extends ColorSet> implements TaskMessenger<N, C> {
 
     private Thread listener;

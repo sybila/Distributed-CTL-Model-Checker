@@ -23,18 +23,19 @@ public class RectangularPartitioner implements StateSpacePartitioner<CoordinateN
         if (!firstVar.hasLowerBound() || !firstVar.hasUpperBound()) {
             throw new IllegalArgumentException("Range is unbounded");
         }
-        double intervalDouble = firstVar.upperEndpoint() - firstVar.lowerEndpoint();
-        int interval = (int) Math.ceil(intervalDouble / size);
-        //System.out.println("Interval: "+interval);
-        if (interval * size - interval >= firstVar.upperEndpoint()) {
-            interval -= 1;
+        int tokens = (int) (firstVar.upperEndpoint() - firstVar.lowerEndpoint());
+        int[] intSize = new int[size];
+        for (int i = 0; tokens > 0; i = (i+1)%size, tokens--) {
+            intSize[i]++;
         }
+        double lower = firstVar.lowerEndpoint();
         for (int i = 0; i<size; i++) {
             if (i == size - 1) {
-                ranges.add(Range.closed(firstVar.lowerEndpoint() + interval * i, firstVar.upperEndpoint()));
+                ranges.add(Range.closed(lower, firstVar.upperEndpoint()));
             } else {
-                ranges.add(Range.closedOpen(firstVar.lowerEndpoint() + interval * i, firstVar.lowerEndpoint() + interval * (i + 1)));
+                ranges.add(Range.closedOpen(lower, lower + intSize[i]));
             }
+            lower += intSize[i];
         }
         System.out.println(rank+" "+Arrays.toString(ranges.toArray()));
     }

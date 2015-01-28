@@ -63,6 +63,7 @@ public class AllUntilVerificator<N extends Node, C extends ColorSet> implements 
                 if (myId == owner) {
                     processAllUntilNode(inspected.getKey(), predecessor.getKey(), predecessor.getValue());
                 } else {
+                    terminator.messageSent();
                     taskMessenger.sendTask(owner, inspected.getKey(), predecessor.getKey(), predecessor.getValue());
                 }
             }
@@ -71,34 +72,36 @@ public class AllUntilVerificator<N extends Node, C extends ColorSet> implements 
 
     //candidates represents colors that are pushed down to predecessor node but only through given edge
     //only one node can be processed at a time, because we need to synchronize access to successors
-    private synchronized void processAllUntilNode(N inspected, N predecessor, C candidates) {
-        //if local successor cache does not contain given node, we have to compute the successors first
-        if (!successorsAndUncoveredColors.containsKey(predecessor)) {
-            successorsAndUncoveredColors.put(predecessor, model.successorsFor(predecessor, null));
-        }
-        Map<N, C> predecessorsSuccessors = successorsAndUncoveredColors.get(predecessor);
-        //subtract colors pushed from inspected node from colors on edge between him and his predecessor
-        C inspectedEdgeColors = predecessorsSuccessors.get(inspected);
-        if (inspectedEdgeColors != null) {  //can be null in case of a self loop on a node
-            inspectedEdgeColors.subtract(candidates);
-            //if the whole edge is now covered, remove it from uncovered colors
-            if (inspectedEdgeColors.isEmpty()) {
-                predecessorsSuccessors.remove(inspected);
+    private void processAllUntilNode(N inspected, N predecessor, C candidates) {
+        synchronized (queue) {  //bit overkill, but meh
+            //if local successor cache does not contain given node, we have to compute the successors first
+            if (!successorsAndUncoveredColors.containsKey(predecessor)) {
+                successorsAndUncoveredColors.put(predecessor, model.successorsFor(predecessor, null));
             }
-        }
-        //go through all edges from predecessor and subtract uncovered colors from our candidate
-        for (C uncoveredEdgeColors : predecessorsSuccessors.values()) {
-            candidates.subtract(uncoveredEdgeColors);
-            if (candidates.isEmpty()) { //if candidate is already empty, just stop
-                break;
+            Map<N, C> predecessorsSuccessors = successorsAndUncoveredColors.get(predecessor);
+            //subtract colors pushed from inspected node from colors on edge between him and his predecessor
+            C inspectedEdgeColors = predecessorsSuccessors.get(inspected);
+            if (inspectedEdgeColors != null) {  //can be null in case of a self loop on a node
+                inspectedEdgeColors.subtract(candidates);
+                //if the whole edge is now covered, remove it from uncovered colors
+                if (inspectedEdgeColors.isEmpty()) {
+                    predecessorsSuccessors.remove(inspected);
+                }
             }
-        }
-        //if there are colors covered by every edge, intersect them
-        //with valid colors for sub formula 0, add them as valid and enqueue them for inspection
-        if (!candidates.isEmpty()) {
-            candidates.intersect(model.validColorsFor(predecessor, formula.getSubFormulaAt(0)));
-            if (model.addFormula(predecessor, formula, candidates)) {
-                addToQueue(predecessor, candidates);
+            //go through all edges from predecessor and subtract uncovered colors from our candidate
+            for (C uncoveredEdgeColors : predecessorsSuccessors.values()) {
+                candidates.subtract(uncoveredEdgeColors);
+                if (candidates.isEmpty()) { //if candidate is already empty, just stop
+                    break;
+                }
+            }
+            //if there are colors covered by every edge, intersect them
+            //with valid colors for sub formula 0, add them as valid and enqueue them for inspection
+            if (!candidates.isEmpty()) {
+                candidates.intersect(model.validColorsFor(predecessor, formula.getSubFormulaAt(0)));
+                if (model.addFormula(predecessor, formula, candidates)) {
+                    addToQueue(predecessor, candidates);
+                }
             }
         }
     }

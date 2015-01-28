@@ -36,7 +36,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
         return nodeCache.values();
     }
 
-    public CoordinateNode getNode(@NotNull int[] coordinates) {
+    public synchronized CoordinateNode getNode(@NotNull int[] coordinates) {
         int hash = Arrays.hashCode(coordinates);
         if (nodeCache.containsKey(hash)) {
             return nodeCache.get(hash);
@@ -55,7 +55,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
 
     @NotNull
     @Override
-    public Map<CoordinateNode, TreeColorSet> predecessorsFor(@NotNull CoordinateNode to, @Nullable TreeColorSet borders) {
+    public synchronized Map<CoordinateNode, TreeColorSet> predecessorsFor(@NotNull CoordinateNode to, @Nullable TreeColorSet borders) {
         if (borders == null) {
             borders = model.getFullColorSet();
         }
@@ -68,7 +68,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
 
     @NotNull
     @Override
-    public Map<CoordinateNode, TreeColorSet> successorsFor(@NotNull CoordinateNode from, @Nullable TreeColorSet borders) {
+    public synchronized Map<CoordinateNode, TreeColorSet> successorsFor(@NotNull CoordinateNode from, @Nullable TreeColorSet borders) {
         if (borders == null) {
             borders = model.getFullColorSet();
         }
@@ -77,7 +77,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
 
     @NotNull
     @Override
-    public Map<CoordinateNode, TreeColorSet> initialNodes(@NotNull Formula formula) {
+    public synchronized Map<CoordinateNode, TreeColorSet> initialNodes(@NotNull Formula formula) {
         if (formula instanceof Tautology) {
             if (!hasAllNodes) {
                 cacheAllNodes(partitioner.getMyLimit());
@@ -117,7 +117,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
 
     @NotNull
     @Override
-    public Map<CoordinateNode, TreeColorSet> invertNodeSet(@NotNull Map<CoordinateNode, TreeColorSet> nodes) {
+    public synchronized Map<CoordinateNode, TreeColorSet> invertNodeSet(@NotNull Map<CoordinateNode, TreeColorSet> nodes) {
         if (!hasAllNodes) {
             cacheAllNodes(partitioner.getMyLimit());
             hasAllNodes = true;
@@ -137,13 +137,13 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
     }
 
     @Override
-    public boolean addFormula(@NotNull CoordinateNode node, @NotNull Formula formula, @NotNull TreeColorSet parameters) {
+    public synchronized boolean addFormula(@NotNull CoordinateNode node, @NotNull Formula formula, @NotNull TreeColorSet parameters) {
         return node.addFormula(formula, parameters);
     }
 
     @NotNull
     @Override
-    public TreeColorSet validColorsFor(@NotNull CoordinateNode node, @NotNull Formula formula) {
+    public synchronized TreeColorSet validColorsFor(@NotNull CoordinateNode node, @NotNull Formula formula) {
         if (formula instanceof Tautology) return model.getFullColorSet();
         if (formula instanceof Contradiction) return TreeColorSet.createEmpty(model.parameterCount());
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {

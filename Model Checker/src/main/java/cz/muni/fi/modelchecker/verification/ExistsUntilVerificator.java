@@ -53,14 +53,12 @@ public class ExistsUntilVerificator<N extends Node, C extends ColorSet> implemen
         taskMessenger.startSession(this);
 
         //fill queue with initial nodes
-        synchronized (queue) {
-            Map<N, C> initialNodes = model.initialNodes(formula.getSubFormulaAt(1));
-            System.out.println("Initial nodes: "+initialNodes.size());
-            for (Map.Entry<N, C> initial : initialNodes.entrySet()) {
-                if (model.addFormula(initial.getKey(), formula, initial.getValue())) {  //add formula to all initial nodes
-                    //process only nodes that have been modified by previous change
-                    addToQueue(initial.getKey(), initial.getValue());
-                }
+        Map<N, C> initialNodes = model.initialNodes(formula.getSubFormulaAt(1));
+        System.out.println("Initial nodes: "+initialNodes.size());
+        for (Map.Entry<N, C> initial : initialNodes.entrySet()) {
+            if (model.addFormula(initial.getKey(), formula, initial.getValue())) {  //add formula to all initial nodes
+                //process only nodes that have been modified by previous change
+                addToQueue(initial.getKey(), initial.getValue());
             }
         }
 
@@ -124,23 +122,19 @@ public class ExistsUntilVerificator<N extends Node, C extends ColorSet> implemen
         //examine all predecessors
         while (!queue.isEmpty()) {
             Map.Entry<N,C> inspected;
-            Map<N, C> predecessors;
             synchronized (queue) {
                 inspected = queue.entrySet().iterator().next();
                 queue.remove(inspected.getKey());
-                predecessors = model.predecessorsFor(inspected.getKey(), inspected.getValue());
             }
-            for (Map.Entry<N, C> predecessor : predecessors.entrySet()) {
+            for (Map.Entry<N, C> predecessor : model.predecessorsFor(inspected.getKey(), inspected.getValue()).entrySet()) {
                 int owner = partitioner.getNodeOwner(predecessor.getKey());
                 if (myId == owner) {
                     //if predecessor is mine, intersect colors where sub formula 0 holds and add them
                     //if addition has changed anything, proceed evaluation with reduced colors
                     C candidates = predecessor.getValue();
-                    synchronized (queue) {
-                        candidates.intersect(model.validColorsFor(predecessor.getKey(), formula.getSubFormulaAt(0)));
-                        if (model.addFormula(predecessor.getKey(), formula, candidates)) {
-                            addToQueue(predecessor.getKey(), candidates);
-                        }
+                    candidates.intersect(model.validColorsFor(predecessor.getKey(), formula.getSubFormulaAt(0)));
+                    if (model.addFormula(predecessor.getKey(), formula, candidates)) {
+                        addToQueue(predecessor.getKey(), candidates);
                     }
                 } else {
                     terminator.messageSent();

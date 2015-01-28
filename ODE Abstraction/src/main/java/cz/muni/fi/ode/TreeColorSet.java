@@ -33,8 +33,8 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
     }
 
     @NotNull
-    public static TreeColorSet derivedColorSet(TreeColorSet ps, int pIndex, double pValue) {
-        TreeColorSet newPS = TreeColorSet.createCopy(ps);
+    public static TreeColorSet derivedColorSet(@NotNull TreeColorSet ps, int pIndex, double pValue) {
+        @NotNull TreeColorSet newPS = TreeColorSet.createCopy(ps);
         if(pValue > 0) {
 
             pValue = Math.abs(pValue);
@@ -51,8 +51,8 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
     }
 
     @NotNull
-    public static TreeColorSet derivedColorSet(TreeColorSet ps, int pIndex, double lpValue, double rpValue) {
-        TreeColorSet newPS = TreeColorSet.createCopy(ps);
+    public static TreeColorSet derivedColorSet(@NotNull TreeColorSet ps, int pIndex, double lpValue, double rpValue) {
+        @NotNull TreeColorSet newPS = TreeColorSet.createCopy(ps);
      //   System.out.println("Derive space! "+lpValue+ " "+rpValue);
         //those need to be open, because we don't want to delete singular points.
         if (lpValue != Double.NEGATIVE_INFINITY) {
@@ -78,7 +78,7 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
 
     @Override
     public void union(@NotNull ColorSet set1) {
-        TreeColorSet set = (TreeColorSet) set1;
+        @NotNull TreeColorSet set = (TreeColorSet) set1;
         for (int i=0; i<size(); i++) {
             get(i).addAll(set.get(i));
         }
@@ -149,7 +149,7 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
 
     @Override
     public void intersect(ColorSet set1) {
-        TreeColorSet set = (TreeColorSet) set1;
+        @NotNull TreeColorSet set = (TreeColorSet) set1;
         for (int i=0; i<size(); i++) {
             @NotNull RangeSet<Double> diff = TreeRangeSet.create(get(i));
             diff.removeAll(set.get(i));
@@ -159,7 +159,7 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
 
     @Override
     public void subtract(ColorSet set1) {
-        TreeColorSet set = (TreeColorSet) set1;
+        @NotNull TreeColorSet set = (TreeColorSet) set1;
         for (int i=0; i<size(); i++) {
             get(i).removeAll(set.get(i));
         }

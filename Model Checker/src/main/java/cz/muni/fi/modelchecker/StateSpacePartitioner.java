@@ -16,5 +16,8 @@ public interface StateSpacePartitioner<T extends Node> {
      */
     int getNodeOwner(@NotNull T node) throws IllegalArgumentException;
 
+    /**
+     * @return Id of my sub graph (so that I can tell whether a node is mine)
+     */
     int getMyId();
 }

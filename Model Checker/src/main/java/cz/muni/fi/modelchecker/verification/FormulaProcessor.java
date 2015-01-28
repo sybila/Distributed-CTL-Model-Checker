@@ -1,10 +1,11 @@
 package cz.muni.fi.modelchecker.verification;
 
 /**
- * Created by daemontus on 27/01/15.
+ * Object responsible for verification of one operator over given model.
  */
-public interface FormulaProcessor {
+interface FormulaProcessor {
 
+    /** Use available data to compute new information. */
     public void verify();
 
 }

@@ -2,11 +2,12 @@ package cz.muni.fi.ode;
 
 import com.google.common.collect.Range;
 import com.google.common.math.IntMath;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
 /**
- * Created by daemontus on 09/01/15.
+ * Generates the state space from provided ODE model.
  */
 public class StateSpaceGenerator {
 
@@ -20,19 +21,22 @@ public class StateSpaceGenerator {
         this.factory = factory;
     }
 
-    public Map<CoordinateNode, TreeColorSet> getPredecessors(CoordinateNode from, TreeColorSet borders) {
+    @NotNull
+    public Map<CoordinateNode, TreeColorSet> getPredecessors(@NotNull CoordinateNode from, @NotNull TreeColorSet borders) {
         return getDirectedEdges(from, borders, false, true);
     }
 
-    public Map<CoordinateNode, TreeColorSet> getSuccessors(CoordinateNode from, TreeColorSet borders) {
+    @NotNull
+    public Map<CoordinateNode, TreeColorSet> getSuccessors(@NotNull CoordinateNode from, @NotNull TreeColorSet borders) {
         return getDirectedEdges(from, borders, true, true);
     }
 
     private int paramIndex;
     private double denom;
 
-    private Map<CoordinateNode, TreeColorSet> getDirectedEdges(CoordinateNode from, TreeColorSet border, boolean successors, boolean biggestConvexHullOfParamSubspace) {
-        Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
+    @NotNull
+    private Map<CoordinateNode, TreeColorSet> getDirectedEdges(@NotNull CoordinateNode from, @NotNull TreeColorSet border, boolean successors, boolean biggestConvexHullOfParamSubspace) {
+        @NotNull Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
 
         boolean hasSelfLoop = true;
 
@@ -43,7 +47,7 @@ public class StateSpaceGenerator {
             boolean upperPositiveDirection = false;
             boolean upperNegativeDirection = false;
 
-            int[][] vertices = getRightVertices(from, v, true);
+            @NotNull int[][] vertices = getRightVertices(from, v, true);
 
           /*  System.out.println("Vertices: ");
             for (int[] vertex : vertices) {
@@ -53,7 +57,7 @@ public class StateSpaceGenerator {
                 System.out.println();
             }*/
 
-            List<Double> paramValues = new ArrayList<>();
+            @NotNull List<Double> paramValues = new ArrayList<>();
             paramIndex = -1;
 
             double mostRightOneValue = Double.POSITIVE_INFINITY;
@@ -158,7 +162,7 @@ public class StateSpaceGenerator {
 
                     if(lowerPositiveDirection) {
                         //There exists edge from lower state to state 's'
-                        int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
+                        @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
                         newStateCoors[v] = newStateCoors[v] - 1;
 
                         TreeColorSet newPS;
@@ -178,7 +182,7 @@ public class StateSpaceGenerator {
                     if(lowerNegativeDirection) {
                         //There exists edge from lower state to state 's'
 
-                        int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
+                        @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
                         newStateCoors[v] = newStateCoors[v] - 1;
 
                         TreeColorSet newPS;
@@ -311,7 +315,7 @@ public class StateSpaceGenerator {
 
                     if(upperNegativeDirection) {
                         //There exists edge from lower state to state 's'
-                        int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
+                        @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
                         newStateCoors[v] = newStateCoors[v] + 1;
 
                         TreeColorSet newPS;
@@ -333,7 +337,7 @@ public class StateSpaceGenerator {
                     if(upperPositiveDirection) {
                         //There exists edge from lower state to state 's'
 
-                        int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
+                        @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
                         newStateCoors[v] = newStateCoors[v] + 1;
 
                         TreeColorSet newPS;
@@ -374,7 +378,7 @@ public class StateSpaceGenerator {
         paramIndex = -1;
 
         List<SumMember> equation = model.getEquationForVariable(dim);
-        for (SumMember sumMember : equation) {
+        for (@NotNull SumMember sumMember : equation) {
             //adding value of constant in actual summember 's' of equation for variable 'dim'
             double underSum = sumMember.getConstant();
 
@@ -392,7 +396,7 @@ public class StateSpaceGenerator {
             //cerr << "start of evalueting of ramps\n";
 
             //adding enumerated ramps for actual summember 's' of equation for variable 'dim'
-            for (Ramp ramp : sumMember.getRamps()) {
+            for (@NotNull Ramp ramp : sumMember.getRamps()) {
                 //cerr << "ramp: " << dataModel.getSumForVarByIndex(dim, s).GetRamps().at(r) << endl;
                 int rampVarIndex = ramp.dim - 1;
                 //cerr << "ramp var index: " << rampVarIndex << endl;
@@ -403,7 +407,7 @@ public class StateSpaceGenerator {
             }
 
             //adding enumerated step functions for actual summember 's' of equation for variable 'dim'
-            for (Step step : sumMember.getSteps()) {
+            for (@NotNull Step step : sumMember.getSteps()) {
                 int stepVarIndex = step.dim - 1;
                 double thres = model.getThresholdForVarByIndex(stepVarIndex, vertex[stepVarIndex]);
                 underSum *= step.value(thres);
@@ -431,11 +435,12 @@ public class StateSpaceGenerator {
         return sum;
     }
 
-    private int[][] getRightVertices(CoordinateNode from, int dim, boolean lower) {
+    @NotNull
+    private int[][] getRightVertices(@NotNull CoordinateNode from, int dim, boolean lower) {
         int totalNodes = IntMath.pow(2, model.variableCount() - 1);
-        int[][] results = new int[totalNodes][model.variableCount()];
-        int[] coors = new int[model.variableCount()];
-        int[] repetitions = new int[model.variableCount()];
+        @NotNull int[][] results = new int[totalNodes][model.variableCount()];
+        @NotNull int[] coors = new int[model.variableCount()];
+        @NotNull int[] repetitions = new int[model.variableCount()];
         int activeIndex = 0;
         int activeNode = 0;
         while (activeIndex >= 0) {

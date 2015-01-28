@@ -11,15 +11,16 @@ import org.junit.rules.ExpectedException;
 public class SlaveTerminatorTest {
 
 
+    @NotNull
     @Rule
-    public ExpectedException exception = ExpectedException.none();
+    public final ExpectedException exception = ExpectedException.none();
 
-    int flag;
+    private int flag;
 
     @Test
     public void manyForwardsMessagesReceivedAfter() {
         flag = 0;
-        TokenMessenger messenger = new TokenMessenger() {
+        @NotNull TokenMessenger messenger = new TokenMessenger() {
             @Override
             public int getProcessCount() {
                 return 2;
@@ -50,7 +51,7 @@ public class SlaveTerminatorTest {
                 }
             }
         };
-        final SlaveTerminator terminator = new SlaveTerminator(messenger);
+        @NotNull final SlaveTerminator terminator = new SlaveTerminator(messenger);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -73,7 +74,7 @@ public class SlaveTerminatorTest {
     @Test
     public void manyForwardsMessagesSentAfter() {
         flag = 0;
-        TokenMessenger messenger = new TokenMessenger() {
+        @NotNull TokenMessenger messenger = new TokenMessenger() {
             @Override
             public int getProcessCount() {
                 return 2;
@@ -107,7 +108,7 @@ public class SlaveTerminatorTest {
                 }
             }
         };
-        final SlaveTerminator terminator = new SlaveTerminator(messenger);
+        @NotNull final SlaveTerminator terminator = new SlaveTerminator(messenger);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -127,7 +128,7 @@ public class SlaveTerminatorTest {
 
     @Test
     public void oneForwardMessagesSentAndReceivedBefore() {
-        TokenMessenger messenger = new TokenMessenger() {
+        @NotNull TokenMessenger messenger = new TokenMessenger() {
             int counter = 0;
             @Override
             public int getProcessCount() {
@@ -175,7 +176,7 @@ public class SlaveTerminatorTest {
                 }
             }
         };
-        SlaveTerminator terminator = new SlaveTerminator(messenger);
+        @NotNull SlaveTerminator terminator = new SlaveTerminator(messenger);
         terminator.messageReceived();
         terminator.messageSent();
         terminator.messageReceived();
@@ -187,7 +188,7 @@ public class SlaveTerminatorTest {
 
     @Test
     public void oneForwardMessagesReceivedBefore() {
-        TokenMessenger messenger = new TokenMessenger() {
+        @NotNull TokenMessenger messenger = new TokenMessenger() {
             int counter = 0;
             @Override
             public int getProcessCount() {
@@ -235,7 +236,7 @@ public class SlaveTerminatorTest {
                 }
             }
         };
-        SlaveTerminator terminator = new SlaveTerminator(messenger);
+        @NotNull SlaveTerminator terminator = new SlaveTerminator(messenger);
         terminator.messageReceived();
         terminator.messageReceived();
         terminator.messageReceived();
@@ -245,7 +246,7 @@ public class SlaveTerminatorTest {
 
     @Test
     public void oneForwardMessagesSentBefore() {
-        TokenMessenger messenger = new TokenMessenger() {
+        @NotNull TokenMessenger messenger = new TokenMessenger() {
             int counter = 0;
             @Override
             public int getProcessCount() {
@@ -293,7 +294,7 @@ public class SlaveTerminatorTest {
                 }
             }
         };
-        SlaveTerminator terminator = new SlaveTerminator(messenger);
+        @NotNull SlaveTerminator terminator = new SlaveTerminator(messenger);
         terminator.messageSent();
         terminator.messageSent();
         terminator.setDone();
@@ -302,7 +303,7 @@ public class SlaveTerminatorTest {
 
     @Test
     public void oneForwardNoMessages() {
-        TokenMessenger messenger = new TokenMessenger() {
+        @NotNull TokenMessenger messenger = new TokenMessenger() {
             int counter = 0;
             @Override
             public int getProcessCount() {
@@ -350,14 +351,14 @@ public class SlaveTerminatorTest {
                 }
             }
         };
-        SlaveTerminator terminator = new SlaveTerminator(messenger);
+        @NotNull SlaveTerminator terminator = new SlaveTerminator(messenger);
         terminator.setDone();
         terminator.waitForTermination();
     }
 
     @Test
     public void wrongUse() {
-        TokenMessenger messenger = new TokenMessenger() {
+        @NotNull TokenMessenger messenger = new TokenMessenger() {
             @Override
             public int getProcessCount() {
                 return 2;
@@ -381,7 +382,7 @@ public class SlaveTerminatorTest {
                 return new Token(2,0);
             }
         };
-        SlaveTerminator terminator = new SlaveTerminator(messenger);
+        @NotNull SlaveTerminator terminator = new SlaveTerminator(messenger);
         terminator.setDone();
         exception.expect(IllegalStateException.class);
         terminator.messageSent();

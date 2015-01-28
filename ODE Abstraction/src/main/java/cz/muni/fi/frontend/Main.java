@@ -9,6 +9,7 @@ import cz.muni.fi.modelchecker.mpi.termination.MPITokenMessenger;
 import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import cz.muni.fi.ode.*;
 import mpi.MPI;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,7 +31,7 @@ public class Main {
                     NativeUtils.loadLibraryFromJar("/build/binaries/libgenerator.so");
                 } catch (IOException e2) {
                     String property = System.getProperty("java.library.path");
-                    StringTokenizer parser = new StringTokenizer(property, ";");
+                    @NotNull StringTokenizer parser = new StringTokenizer(property, ";");
                     while (parser.hasMoreTokens()) {
                         System.err.println(parser.nextToken());
                     }
@@ -40,40 +41,40 @@ public class Main {
         }
    }
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(@NotNull String[] args) throws InterruptedException {
 	    long start = System.currentTimeMillis();
        	System.out.println(System.getProperty( "java.library.path" ));
         MPI.Init(args);
 
 
 
-        FormulaParser parser = new FormulaParser();
-        FormulaNormalizer normalizer = new FormulaNormalizer();
+        @NotNull FormulaParser parser = new FormulaParser();
+        @NotNull FormulaNormalizer normalizer = new FormulaNormalizer();
         try {
             System.out.println("Arg: "+args[args.length - 1]);
-            Formula formula = parser.parse(new File(args[args.length - 1]));
+            @NotNull Formula formula = parser.parse(new File(args[args.length - 1]));
             formula = normalizer.normalize(formula);
             System.out.println("Normalized form: "+formula);
-            OdeModel model = new OdeModel(args[args.length - 2]);
+            @NotNull OdeModel model = new OdeModel(args[args.length - 2]);
             model.load();
-            RectangularPartitioner partitioner = new RectangularPartitioner(model, MPI.COMM_WORLD.Size(), MPI.COMM_WORLD.Rank());
-            NodeFactory factory = new NodeFactory(model, partitioner);
-            StateSpaceGenerator generator = new StateSpaceGenerator(model, true, factory);
+            @NotNull RectangularPartitioner partitioner = new RectangularPartitioner(model, MPI.COMM_WORLD.Size(), MPI.COMM_WORLD.Rank());
+            @NotNull NodeFactory factory = new NodeFactory(model, partitioner);
+            @NotNull StateSpaceGenerator generator = new StateSpaceGenerator(model, true, factory);
             factory.setGenerator(generator);
 
-            Terminator.TerminatorFactory terminatorFactory = new Terminator.TerminatorFactory(new MPITokenMessenger(MPI.COMM_WORLD));
+            @NotNull Terminator.TerminatorFactory terminatorFactory = new Terminator.TerminatorFactory(new MPITokenMessenger(MPI.COMM_WORLD));
 
-            TaskMessenger<CoordinateNode, TreeColorSet> taskMessenger = new MpiTaskMessenger(MPI.COMM_WORLD, model.variableCount(), factory, model);
+            @NotNull TaskMessenger<CoordinateNode, TreeColorSet> taskMessenger = new MpiTaskMessenger(MPI.COMM_WORLD, model.variableCount(), factory, model);
 
-            ModelChecker<CoordinateNode, TreeColorSet> modelChecker = new ModelChecker<>(factory, partitioner, taskMessenger, terminatorFactory);
+            @NotNull ModelChecker<CoordinateNode, TreeColorSet> modelChecker = new ModelChecker<>(factory, partitioner, taskMessenger, terminatorFactory);
             modelChecker.verify(formula);
             if (args.length >= 3 && args[args.length - 3].equals("--all")) {
-                for (CoordinateNode node : factory.getNodes()) {
+                for (@NotNull CoordinateNode node : factory.getNodes()) {
                     System.out.println(node.toString());
                 }
             } else if (args.length >= 3 && !args[args.length - 3].equals("--none")) {
-                for (CoordinateNode node : factory.getNodes()) {
-                    TreeColorSet colorSet = factory.validColorsFor(node, formula);
+                for (@NotNull CoordinateNode node : factory.getNodes()) {
+                    @NotNull TreeColorSet colorSet = factory.validColorsFor(node, formula);
                     if (!colorSet.isEmpty()) {
 			            System.out.println(Arrays.toString(node.coordinates)+" "+colorSet);
                     }

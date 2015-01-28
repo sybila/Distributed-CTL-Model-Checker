@@ -1,5 +1,7 @@
 package cz.muni.fi.ode;
 
+import org.jetbrains.annotations.NotNull;
+
 public class Step {
 
     final int dim;		//Warning: index of var_name from Model.h but indexing from 1 (not 0)
@@ -28,9 +30,10 @@ public class Step {
         return value < theta ? a : b;
     }
 
+    @NotNull
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
+        @NotNull StringBuilder builder = new StringBuilder();
         if (positive) {
             builder.append("H(-)(");
         } else {

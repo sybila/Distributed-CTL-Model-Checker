@@ -45,7 +45,7 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Tree
 
 
     @Override
-    public void sendTask(int destinationNode, CoordinateNode internal, CoordinateNode external, TreeColorSet colors) {
+    public void sendTask(int destinationNode, @NotNull CoordinateNode internal, @NotNull CoordinateNode external, @NotNull TreeColorSet colors) {
         @NotNull int[] buffer = new int[2*dimensions + model.parameterCount() + 3];
         buffer[0] = CREATE;
         buffer[buffer.length - 2] = COMM.Rank();
@@ -54,7 +54,7 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Tree
         System.arraycopy(external.coordinates, 0, buffer, dimensions + 1, dimensions);
         @NotNull List<Double> data = new ArrayList<>(2*dimensions);
         for (int i=0; i<model.parameterCount(); i++) {
-            Range<Double>[] ranges = colors.asArrayForParam(i);
+            @NotNull Range<Double>[] ranges = colors.asArrayForParam(i);
             buffer[2*dimensions + i + 1] = 2 * ranges.length;
             for (@NotNull Range<Double> range : ranges) {
                 data.add(range.lowerEndpoint());
@@ -68,7 +68,7 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Tree
     }
 
     @Override
-    protected boolean blockingReceiveTask(OnTaskListener<CoordinateNode, TreeColorSet> taskListener) {
+    protected boolean blockingReceiveTask(@NotNull OnTaskListener<CoordinateNode, TreeColorSet> taskListener) {
         @NotNull int[] buffer = new int[2*dimensions + model.parameterCount() + 3];
         //no need to synchronize - this method is only called from one thread
         COMM.Recv(buffer, 0, buffer.length, MPI.INT, MPI.ANY_SOURCE, TAG);
@@ -77,10 +77,10 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Tree
             //int parentId = buffer[buffer.length - 1];
             CoordinateNode source = factory.getNode(Arrays.copyOfRange(buffer, 1, dimensions + 1));
             CoordinateNode dest = factory.getNode(Arrays.copyOfRange(buffer, dimensions + 1, 2 * dimensions + 1));
-            int[] lengths = Arrays.copyOfRange(buffer, 2*dimensions + 1, 2*dimensions + model.parameterCount() + 1);
-            double[] colors = new double[sum(lengths)];
+            @NotNull int[] lengths = Arrays.copyOfRange(buffer, 2*dimensions + 1, 2*dimensions + model.parameterCount() + 1);
+            @NotNull double[] colors = new double[sum(lengths)];
             COMM.Recv(colors, 0, colors.length, MPI.DOUBLE, sender, TAG);
-            TreeColorSet colorSet = TreeColorSet.createFromBuffer(lengths, colors);
+            @NotNull TreeColorSet colorSet = TreeColorSet.createFromBuffer(lengths, colors);
             taskListener.onTask(sender, source, dest, colorSet);
             return true;
         } else {

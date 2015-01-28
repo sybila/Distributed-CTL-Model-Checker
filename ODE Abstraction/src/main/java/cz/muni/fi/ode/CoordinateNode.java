@@ -15,9 +15,9 @@ public class CoordinateNode implements Node {
     public final int[] coordinates;
 
     @NotNull
-    public Map<Formula, TreeColorSet> formulae = new HashMap<>();
+    private final Map<Formula, TreeColorSet> formulae = new HashMap<>();
 
-    public Map<CoordinateNode, TreeColorSet> predecessors;
+    private Map<CoordinateNode, TreeColorSet> predecessors;
 
     public CoordinateNode(@NotNull int[] coordinates) {
         this.coordinates = Arrays.copyOf(coordinates, coordinates.length);
@@ -31,15 +31,16 @@ public class CoordinateNode implements Node {
         return predecessors != null;
     }
 
-    public synchronized void savePredecessors(Map<CoordinateNode, TreeColorSet> predecessors) {
+    public synchronized void savePredecessors(@NotNull Map<CoordinateNode, TreeColorSet> predecessors) {
         this.predecessors = new HashMap<>();
         this.predecessors.putAll(predecessors);
     }
 
+    @NotNull
     public synchronized Map<CoordinateNode, TreeColorSet> getPredecessors(TreeColorSet borders) {
-        Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
-        for (Map.Entry<CoordinateNode, TreeColorSet> entry : predecessors.entrySet()) {
-            TreeColorSet colorSet = TreeColorSet.createCopy(entry.getValue());
+        @NotNull Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
+        for (@NotNull Map.Entry<CoordinateNode, TreeColorSet> entry : predecessors.entrySet()) {
+            @NotNull TreeColorSet colorSet = TreeColorSet.createCopy(entry.getValue());
             colorSet.intersect(borders);
             if (!colorSet.isEmpty()) {
                 results.put(entry.getKey(), colorSet);
@@ -82,6 +83,7 @@ public class CoordinateNode implements Node {
         return false;
     }
 
+    @NotNull
     @Override
     public String toString() {
         return Arrays.toString(coordinates) +" formulae: "+formulae.toString();

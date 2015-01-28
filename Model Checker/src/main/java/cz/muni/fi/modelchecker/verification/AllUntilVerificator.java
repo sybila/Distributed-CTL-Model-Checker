@@ -5,7 +5,6 @@ import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.StateSpacePartitioner;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
-import cz.muni.fi.modelchecker.mpi.tasks.OnTaskListener;
 import cz.muni.fi.modelchecker.mpi.tasks.TaskMessenger;
 import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import org.jetbrains.annotations.NotNull;
@@ -16,63 +15,23 @@ import java.util.Map;
 /**
  * Verificator for all until operator.
  */
-public class AllUntilVerificator<N extends Node, C extends ColorSet> implements FormulaProcessor, OnTaskListener<N, C> {
+class AllUntilVerificator<N extends Node, C extends ColorSet> extends MergeQueueProcessor<N, C> {
 
     private final Map<N, Map<N, C>> successorsAndUncoveredColors = new HashMap<>();
-
-
-    private final Terminator.TerminatorFactory terminatorFactory;
-    private final StateSpacePartitioner<N> partitioner;
-    private final ModelAdapter<N, C> model;
-    private final Formula formula;
-    private final TaskMessenger<N, C> taskMessenger;
-    private final int myId;
-
-    private Terminator terminator;
-
-    private final Map<N,C> queue = new HashMap<>();
-    private boolean terminated;
 
     AllUntilVerificator(
             @NotNull ModelAdapter<N, C> model,
             @NotNull StateSpacePartitioner<N> partitioner,
-            Formula formula,
-            Terminator.TerminatorFactory terminatorFactory,
-            TaskMessenger<N, C> taskMessenger
+            @NotNull Formula formula,
+            @NotNull Terminator.TerminatorFactory terminatorFactory,
+            @NotNull TaskMessenger<N, C> taskMessenger
     ) {
-        this.terminatorFactory = terminatorFactory;
-        this.partitioner = partitioner;
-        this.model = model;
-        this.formula = formula;
-        this.taskMessenger = taskMessenger;
-        this.myId = partitioner.getMyId();
-    }
-
-    private void processAllUntilQueue() {
-        while (!queue.isEmpty()) {
-            Map.Entry<N,C> inspected;
-            synchronized (queue) {
-                inspected = queue.entrySet().iterator().next();
-                queue.remove(inspected.getKey());
-            }
-            //go through all predecessors of an inspected node and
-            //1) push new color to them through given edge
-            //2) test if the AU actually holds now in the predecessor, if so, enqueue him for further inspection
-            for (Map.Entry<N,C> predecessor : model.predecessorsFor(inspected.getKey(), inspected.getValue()).entrySet()) {
-                int owner = partitioner.getNodeOwner(predecessor.getKey());
-                if (myId == owner) {
-                    processAllUntilNode(inspected.getKey(), predecessor.getKey(), predecessor.getValue());
-                } else {
-                    terminator.messageSent();
-                    taskMessenger.sendTask(owner, inspected.getKey(), predecessor.getKey(), predecessor.getValue());
-                }
-            }
-        }
+        super(model, partitioner, formula, terminatorFactory, taskMessenger);
     }
 
     //candidates represents colors that are pushed down to predecessor node but only through given edge
     //only one node can be processed at a time, because we need to synchronize access to successors
-    private void processAllUntilNode(N inspected, N predecessor, C candidates) {
+    private void processAllUntilNode(N inspected, @NotNull N predecessor, @NotNull C candidates) {
         synchronized (queue) {  //bit overkill, but meh
             //if local successor cache does not contain given node, we have to compute the successors first
             if (!successorsAndUncoveredColors.containsKey(predecessor)) {
@@ -107,59 +66,7 @@ public class AllUntilVerificator<N extends Node, C extends ColorSet> implements 
     }
 
     @Override
-    public void verify() {
-        terminated = false;
-        terminator = terminatorFactory.createNew();
-        taskMessenger.startSession(this);
-
-        //enqueue all nodes where second formula holds, but do not mark them as true yet
-        for(Map.Entry<N, C> entry : model.initialNodes(formula.getSubFormulaAt(1)).entrySet()) {
-           addToQueue(entry.getKey(), entry.getValue());
-        }
-
-        //start worker thread to process all queue entries
-        Thread worker = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (!terminated) {
-                    processAllUntilQueue();
-                    synchronized (queue) {
-                        if (queue.isEmpty() && !terminated) {
-                            try {
-                                terminator.setDone();
-                                queue.wait();
-                            } catch (InterruptedException e) {
-                                //OK?
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }
-            }
-        });
-        worker.start();
-
-        //wait for the work to finish
-        terminator.waitForTermination();
-        //finalize worker thread and task messenger session
-        terminator = terminatorFactory.createNew();
-        taskMessenger.closeSession();
-        synchronized (queue) {
-            terminated = true;
-            queue.notify();
-        }
-        try {
-            worker.join();
-        } catch (InterruptedException e) {
-            //OK?
-            e.printStackTrace();
-        }
-        terminator.setDone();
-        terminator.waitForTermination();
-    }
-
-    @Override
-    public void onTask(int sourceProcess, N external, N internal, C candidates) {
+    public void onTask(int sourceProcess, N external, @NotNull N internal, @NotNull C candidates) {
         synchronized (queue) {  //must be synchronized because we are accessing model
             processAllUntilNode(external, internal, candidates);
             queue.notify();
@@ -167,13 +74,33 @@ public class AllUntilVerificator<N extends Node, C extends ColorSet> implements 
         }
     }
 
-    /** Add data to the "merge queue" */
-    private void addToQueue(N node, C colors) {
-        synchronized (queue) {
-            if (queue.containsKey(node)) {
-                queue.get(node).union(colors);
-            } else {
-                queue.put(node, colors);
+    @Override
+    protected void prepareQueue() {
+        //enqueue all nodes where second formula holds, but do not mark them as true yet
+        for(@NotNull Map.Entry<N, C> entry : model.initialNodes(formula.getSubFormulaAt(1)).entrySet()) {
+            addToQueue(entry.getKey(), entry.getValue());
+        }
+    }
+
+    @Override
+    protected void processQueue() {
+        while (!queue.isEmpty()) {
+            Map.Entry<N,C> inspected;
+            synchronized (queue) {
+                inspected = queue.entrySet().iterator().next();
+                queue.remove(inspected.getKey());
+            }
+            //go through all predecessors of an inspected node and
+            //1) push new color to them through given edge
+            //2) test if the AU actually holds now in the predecessor, if so, enqueue him for further inspection
+            for (@NotNull Map.Entry<N,C> predecessor : model.predecessorsFor(inspected.getKey(), inspected.getValue()).entrySet()) {
+                int owner = partitioner.getNodeOwner(predecessor.getKey());
+                if (myId == owner) {
+                    processAllUntilNode(inspected.getKey(), predecessor.getKey(), predecessor.getValue());
+                } else {
+                    terminator.messageSent();
+                    taskMessenger.sendTask(owner, inspected.getKey(), predecessor.getKey(), predecessor.getValue());
+                }
             }
         }
     }

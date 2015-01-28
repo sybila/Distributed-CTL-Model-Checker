@@ -12,6 +12,8 @@ import java.util.Map;
 /**
  * Manages required node actions.
  * Creation, caching, proposition evaluation and predecessors/successors computation.
+ * WARNING: Every model adapter is responsible for it's own synchronization. All methods can (and will)
+ * be accessed from multiple threads during computation, often concurrently.
  */
 public interface ModelAdapter<N extends Node, C extends ColorSet> {
 
@@ -63,7 +65,6 @@ public interface ModelAdapter<N extends Node, C extends ColorSet> {
      * @param formula Requested formula
      * @return Set of colors where given formula holds on specified node.
      */
-    @NotNull
-    C validColorsFor(@NotNull N node, @NotNull Formula formula);
+    @NotNull C validColorsFor(@NotNull N node, @NotNull Formula formula);
 
 }

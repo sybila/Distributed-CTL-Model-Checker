@@ -4,6 +4,7 @@ import cz.muni.fi.ctl.formula.Formula;
 import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
+import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -11,22 +12,18 @@ import java.util.Map;
 /**
  * Verificator for and operator.
  */
-public class AndVerificator<N extends Node, C extends ColorSet> implements FormulaProcessor {
+class AndVerificator<N extends Node, C extends ColorSet> extends StaticProcessor<N, C> {
 
-    private ModelAdapter<N, C> model;
-    private Formula formula;
-
-    AndVerificator(@NotNull ModelAdapter<N, C> model, Formula formula) {
-        this.model = model;
-        this.formula = formula;
+    AndVerificator(@NotNull ModelAdapter<N, C> model, @NotNull Formula formula, @NotNull Terminator terminator) {
+        super(model, formula, terminator);
     }
 
     @Override
-    public void verify() {
-        Map<N, C> first = model.initialNodes(formula.getSubFormulaAt(0));
-        Map<N, C> second = model.initialNodes(formula.getSubFormulaAt(1));
+    protected void processModel() {
+        @NotNull Map<N, C> first = model.initialNodes(formula.getSubFormulaAt(0));
+        @NotNull Map<N, C> second = model.initialNodes(formula.getSubFormulaAt(1));
         //intersect node sets
-        for (Map.Entry<N, C> entry : first.entrySet()) {
+        for (@NotNull Map.Entry<N, C> entry : first.entrySet()) {
             C colorSet = second.get(entry.getKey());
             if (colorSet != null) {
                 colorSet.intersect(entry.getValue());

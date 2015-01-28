@@ -1,9 +1,11 @@
 package cz.muni.fi.modelchecker.mpi.termination;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Class that covers common functionality of slave and master terminators.
  * Note: All terminators are initially marked as working. So even if no
- * messages are received an only local work has been performed, you should call setDone.
+ * messages are received and only local work has been performed, you should call setDone at least once.
  */
 public abstract class Terminator {
 
@@ -16,17 +18,22 @@ public abstract class Terminator {
     protected final int tokenSource;
     protected final int tokenDestination;
 
+    @NotNull
     protected final TokenMessenger messenger;
 
     /**
      * Create a new terminator based on given token passing interface.
      */
     public static class TerminatorFactory {
-        private TokenMessenger messenger;
 
-        public TerminatorFactory(TokenMessenger messenger) {
+        @NotNull
+        private final TokenMessenger messenger;
+
+        public TerminatorFactory(@NotNull TokenMessenger messenger) {
             this.messenger = messenger;
         }
+
+        @NotNull
         public Terminator createNew() {
             if (messenger.getMyId() == 0) {
                 return new MasterTerminator(messenger);
@@ -37,7 +44,7 @@ public abstract class Terminator {
     }
 
     /** Package private constructor - new terminators should be created using static factory. */
-    Terminator(TokenMessenger messenger, int tokenSource, int tokenDestination) {
+    Terminator(@NotNull TokenMessenger messenger, int tokenSource, int tokenDestination) {
         this.messenger = messenger;
         this.tokenDestination = tokenDestination;
         this.tokenSource = tokenSource;

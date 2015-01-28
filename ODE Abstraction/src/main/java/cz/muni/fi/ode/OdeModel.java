@@ -11,17 +11,17 @@ import java.util.List;
  */
 public class OdeModel {
 
-    public final String filename;
+    private final String filename;
 
     //Do not touch -- used in jni
     @NotNull
-    private List<Range<Double>> variableRange = new ArrayList<>();
+    private final List<Range<Double>> variableRange = new ArrayList<>();
     @NotNull
-    private List<Range<Double>> parameterRange = new ArrayList<>();
+    private final List<Range<Double>> parameterRange = new ArrayList<>();
 
-    public List<List<Double>> thresholds = new ArrayList<>();
+    private final List<List<Double>> thresholds = new ArrayList<>();
 
-    public List<List<SumMember>> equations = new ArrayList<>();
+    private final List<List<SumMember>> equations = new ArrayList<>();
 
     public OdeModel(String filename) {
         this.filename = filename;
@@ -43,8 +43,9 @@ public class OdeModel {
         return parameterRange;
     }
 
+    @NotNull
     public TreeColorSet getFullColorSet() {
-        TreeColorSet set = TreeColorSet.createEmpty(parameterRange.size());
+        @NotNull TreeColorSet set = TreeColorSet.createEmpty(parameterRange.size());
         for (int i = 0; i < set.size(); i++) {
             set.get(i).add(parameterRange.get(i));
         }

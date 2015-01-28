@@ -1,5 +1,7 @@
 package cz.muni.fi.ode;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 
 public class SumMember {
@@ -49,17 +51,18 @@ public class SumMember {
         return param;
     }
 
+    @NotNull
     @Override
     public String toString() {
-        StringBuilder stringBuilder = new StringBuilder();
+        @NotNull StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append(constant);
         if (hasParam()) {
             stringBuilder.append("*Param(").append(getParam() - 1).append(")");
         }
-        for (Ramp ramp : ramps) {
+        for (@NotNull Ramp ramp : ramps) {
             stringBuilder.append("*").append(ramp.toString());
         }
-        for (Step step : steps) {
+        for (@NotNull Step step : steps) {
             stringBuilder.append("*").append(step.toString());
         }
         for (Integer var : vars) {

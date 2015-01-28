@@ -10,34 +10,44 @@ import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
 import cz.muni.fi.modelchecker.mpi.tasks.TaskMessenger;
 import cz.muni.fi.modelchecker.mpi.termination.Terminator;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Creates new verificator for given formula.
  */
 public class FormulaVerificator<N extends Node, C extends ColorSet> {
 
+    @NotNull
     private final StateSpacePartitioner<N> partitioner;
+    @NotNull
     private final ModelAdapter<N, C> model;
+    @NotNull
     private final TaskMessenger<N, C> taskMessenger;
+    @NotNull
     private final Terminator.TerminatorFactory terminatorFactory;
 
 
-    public FormulaVerificator(ModelAdapter<N, C> model, StateSpacePartitioner<N> partitioner, TaskMessenger<N, C> taskMessenger, Terminator.TerminatorFactory terminatorFactory) {
+    public FormulaVerificator(
+            @NotNull ModelAdapter<N, C> model,
+            @NotNull StateSpacePartitioner<N> partitioner,
+            @NotNull TaskMessenger<N, C> taskMessenger,
+            @NotNull Terminator.TerminatorFactory terminatorFactory
+    ) {
         this.partitioner = partitioner;
         this.model = model;
         this.taskMessenger = taskMessenger;
         this.terminatorFactory = terminatorFactory;
     }
 
-    public void verifyFormula(Formula formula) {
-        Operator operator = formula.getOperator();
+    public void verifyFormula(@NotNull Formula formula) {
+        @NotNull Operator operator = formula.getOperator();
         FormulaProcessor processor;
         if (operator == UnaryOperator.NEGATION) {
-            processor = new NegationVerificator<>(model, formula);
+            processor = new NegationVerificator<>(model, formula, terminatorFactory.createNew());
         } else if(operator == BinaryOperator.AND) {
-            processor = new AndVerificator<>(model, formula);
+            processor = new AndVerificator<>(model, formula, terminatorFactory.createNew());
         } else if(operator == BinaryOperator.OR) {
-            processor = new OrVerificator<>(model, formula);
+            processor = new OrVerificator<>(model, formula, terminatorFactory.createNew());
         } else if(operator == BinaryOperator.EXISTS_UNTIL) {
             processor = new ExistsUntilVerificator<>(model, partitioner, formula, terminatorFactory, taskMessenger);
         } else if(operator == BinaryOperator.ALL_UNTIL) {
@@ -48,13 +58,6 @@ public class FormulaVerificator<N extends Node, C extends ColorSet> {
             throw new IllegalArgumentException("Cannot verify operator: "+operator);
         }
 
-        if (operator == BinaryOperator.EXISTS_UNTIL || operator == BinaryOperator.ALL_UNTIL || operator == UnaryOperator.EXISTS_NEXT) {
-            processor.verify();
-        } else {
-            Terminator terminator = terminatorFactory.createNew();
-            processor.verify();
-            terminator.setDone();
-            terminator.waitForTermination();
-        }
+        processor.verify();
     }
 }

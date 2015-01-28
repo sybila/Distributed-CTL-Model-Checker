@@ -1,21 +1,25 @@
 package cz.muni.fi.modelchecker.mpi.termination;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 /**
  * Terminator running on a machine that has rank different than 0.
- * Uses Safra's algorithm(http://fmt.cs.utwente.nl/courses/cdp/slides/cdp-8-mpi-2-4up.pdf) for termination detection.
+ * Implements Safra's algorithm(http://fmt.cs.utwente.nl/courses/cdp/slides/cdp-8-mpi-2-4up.pdf) for termination detection.
  */
 class SlaveTerminator extends Terminator {
 
+    @Nullable
     private Token pendingToken = null;
 
-    SlaveTerminator(TokenMessenger m) {
+    SlaveTerminator(@NotNull TokenMessenger m) {
         super(m, (m.getMyId() + 1) % m.getProcessCount(), m.getMyId() - 1);
         if (tokenDestination < 0) {
             throw new IllegalStateException("Cannot launch slave terminator on master machine");
         }
     }
 
-    private void processToken(Token token) {
+    private void processToken(@NotNull Token token) {
         //non blocking send (so that we do not end up stuck in synchronized section)
         messenger.sendTokenAsync(tokenDestination, new Token(Math.min(token.flag + flag, 1), token.count + count));
         //status = White
@@ -25,7 +29,7 @@ class SlaveTerminator extends Terminator {
     @Override
     public void terminationLoop() {
         //wait for token from master
-        Token token = messenger.waitForToken(tokenSource);
+        @NotNull Token token = messenger.waitForToken(tokenSource);
         while (token.flag < 2) {    //while this is not terminating token
             synchronized (SlaveTerminator.this) {
                 if (working) {  //if node is active, save token for later

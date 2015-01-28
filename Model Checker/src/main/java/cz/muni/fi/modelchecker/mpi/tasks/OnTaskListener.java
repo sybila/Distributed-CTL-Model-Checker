@@ -2,6 +2,7 @@ package cz.muni.fi.modelchecker.mpi.tasks;
 
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
+import org.antlr.v4.runtime.misc.NotNull;
 
 /**
  * Listener that processes incoming tasks.
@@ -15,6 +16,6 @@ public interface OnTaskListener<N extends Node, C extends ColorSet> {
      * @param internal Inner node, target of task request.
      * @param colors Additional info about request colors.
      */
-    public void onTask(int sourceProcess, final N external, final N internal, final C colors);
+    public void onTask(int sourceProcess, @NotNull N external, @NotNull N internal, @NotNull C colors);
 
 }

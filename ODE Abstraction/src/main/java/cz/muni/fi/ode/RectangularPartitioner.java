@@ -12,6 +12,7 @@ public class RectangularPartitioner implements StateSpacePartitioner<CoordinateN
 
     private final int size;
     private final int rank;
+    @NotNull
     private final OdeModel model;
     private final List<Range<Double>> ranges = new ArrayList<>();
 
@@ -24,7 +25,7 @@ public class RectangularPartitioner implements StateSpacePartitioner<CoordinateN
             throw new IllegalArgumentException("Range is unbounded");
         }
         int tokens = (int) (firstVar.upperEndpoint() - firstVar.lowerEndpoint());
-        int[] intSize = new int[size];
+        @NotNull int[] intSize = new int[size];
         for (int i = 0; tokens > 0; i = (i+1)%size, tokens--) {
             intSize[i]++;
         }

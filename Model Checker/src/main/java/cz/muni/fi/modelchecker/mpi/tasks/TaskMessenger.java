@@ -2,6 +2,7 @@ package cz.muni.fi.modelchecker.mpi.tasks;
 
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * A communication class responsible for delivering tasks to other processes.
@@ -9,7 +10,7 @@ import cz.muni.fi.modelchecker.graph.Node;
 public interface TaskMessenger<N extends Node, C extends ColorSet> {
 
     /** Set task listener that will receive notifications about new tasks and prepare for communication. */
-    public void startSession(OnTaskListener<N,C> taskListener);
+    public void startSession(@NotNull OnTaskListener<N,C> taskListener);
 
     /** Cut off all communications and restore to indifferent state. */
     public void closeSession();
@@ -21,5 +22,5 @@ public interface TaskMessenger<N extends Node, C extends ColorSet> {
      * @param external Border node, destination of request.
      * @param colors Additional info about request colors.
      */
-    public void sendTask(int destinationProcess, N internal, N external, C colors);
+    public void sendTask(int destinationProcess, @NotNull N internal, @NotNull N external, @NotNull C colors);
 }

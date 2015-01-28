@@ -1,5 +1,7 @@
 package cz.muni.fi.ode;
 
+import org.jetbrains.annotations.NotNull;
+
 public class Ramp {
 
     // dim is index to model.var_names but incremented by 1. Proper using is model.getVariable(dim -1)
@@ -31,9 +33,10 @@ public class Ramp {
         return (/*min_value + */(res * (max_value - min_value)));
     }
 
+    @NotNull
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
+        @NotNull StringBuilder builder = new StringBuilder();
         if (negative) {
             builder.append("R(-)(");
         } else {

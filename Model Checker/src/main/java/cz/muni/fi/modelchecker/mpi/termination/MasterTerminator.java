@@ -1,14 +1,16 @@
 package cz.muni.fi.modelchecker.mpi.termination;
 
+import org.jetbrains.annotations.NotNull;
+
 /**
  * Terminator running on a machine that has rank 0
- * Uses Safra's algorithm(http://fmt.cs.utwente.nl/courses/cdp/slides/cdp-8-mpi-2-4up.pdf) for termination detection.
+ * Implements Safra's algorithm(http://fmt.cs.utwente.nl/courses/cdp/slides/cdp-8-mpi-2-4up.pdf) for termination detection.
  */
 class MasterTerminator extends Terminator {
 
     private boolean waitingForToken = false;
 
-    MasterTerminator(TokenMessenger m) {
+    MasterTerminator(@NotNull TokenMessenger m) {
         super(m, (m.getMyId() + 1) % m.getProcessCount(), m.getProcessCount() - 1);
         if (messenger.getMyId() != 0) {
             throw new IllegalStateException("Cannot launch master terminator on slave machine.");
@@ -36,13 +38,11 @@ class MasterTerminator extends Terminator {
 
     @Override
     public void terminationLoop() {
-        /*synchronized (this) {
-            //if we are not working and no token is currently circulating in the system,
-            //we initialize the probe. - This happens when no messages were received.
-            if (!working && !waitingForToken) initProbe();
-        }*/
+        //we don't try to send a probe here, because setDone
+        //has to be called at least once, therefore initiating probe
+
         //wait for token to go through all other processes.
-        Token token = messenger.waitForToken(tokenSource);
+        @NotNull Token token = messenger.waitForToken(tokenSource);
         while (token.flag < 2) {    //while this is not a termination token
             synchronized (this) {
                 if (!waitingForToken) { //if we are not expecting a token, something is really wrong

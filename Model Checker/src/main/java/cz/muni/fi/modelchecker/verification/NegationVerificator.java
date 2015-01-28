@@ -4,6 +4,7 @@ import cz.muni.fi.ctl.formula.Formula;
 import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
+import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -11,21 +12,17 @@ import java.util.Map;
 /**
  * Verificator for negation operator.
  */
-public class NegationVerificator<N extends Node, C extends ColorSet> implements FormulaProcessor {
+class NegationVerificator<N extends Node, C extends ColorSet> extends StaticProcessor<N, C> {
 
-    private ModelAdapter<N, C> model;
-    private Formula formula;
-
-    NegationVerificator(@NotNull ModelAdapter<N, C> model, Formula formula) {
-        this.formula = formula;
-        this.model = model;
+    NegationVerificator(@NotNull ModelAdapter<N, C> model, @NotNull Formula formula, @NotNull Terminator terminator) {
+        super(model, formula, terminator);
     }
 
     @Override
-    public void verify() {
-        Map<N, C> nodes = model.initialNodes(formula.getSubFormulaAt(0));
-        Map<N, C> inversion = model.invertNodeSet(nodes);
-        for (Map.Entry<N, C> entry : inversion.entrySet()) {
+    protected void processModel() {
+        @NotNull Map<N, C> nodes = model.initialNodes(formula.getSubFormulaAt(0));
+        @NotNull Map<N, C> inversion = model.invertNodeSet(nodes);
+        for (@NotNull Map.Entry<N, C> entry : inversion.entrySet()) {
             model.addFormula(entry.getKey(), formula, entry.getValue());
         }
     }

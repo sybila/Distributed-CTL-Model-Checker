@@ -9,11 +9,16 @@ import org.jetbrains.annotations.NotNull;
  */
 public class MPITokenMessenger implements TokenMessenger {
 
+    @NotNull
     private final Comm COMM;
-    private final int TAG = -1;
+    private final int TAG;
 
-    public MPITokenMessenger(Comm COMM) {
-        this.COMM = COMM;
+    public MPITokenMessenger(@NotNull Comm comm) {
+        this(comm, -1);
+    }
+    public MPITokenMessenger(@NotNull Comm comm, int tag) {
+        this.COMM = comm;
+        this.TAG = tag;
     }
 
     @Override
@@ -34,7 +39,7 @@ public class MPITokenMessenger implements TokenMessenger {
     @NotNull
     @Override
     public Token waitForToken(int source) {
-        int[] buffer = new int[2];
+        @NotNull int[] buffer = new int[2];
         COMM.Recv(buffer, 0, buffer.length, MPI.INT, source, TAG);
         return new Token(buffer[0], buffer[1]);
     }

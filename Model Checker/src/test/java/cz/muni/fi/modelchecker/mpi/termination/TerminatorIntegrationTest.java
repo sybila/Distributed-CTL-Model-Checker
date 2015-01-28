@@ -10,13 +10,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class TerminatorIntegrationTest {
 
-    List<BlockingQueue<Token>> queues = new ArrayList<>();
-    int msgCount = 0;
+    @NotNull
+    private final List<BlockingQueue<Token>> queues = new ArrayList<>();
+    private int msgCount = 0;
 
     private class Messenger implements TokenMessenger {
 
-        private int pCount;
-        private int id;
+        private final int pCount;
+        private final int id;
 
         private Messenger(int pCount, int id) {
             this.pCount = pCount;
@@ -59,11 +60,11 @@ public class TerminatorIntegrationTest {
         queues.add(new LinkedBlockingQueue<Token>());
         queues.add(new LinkedBlockingQueue<Token>());
 
-        final MasterTerminator masterTerminator = new MasterTerminator(new Messenger(5,0));
-        final SlaveTerminator slaveTerminator1 = new SlaveTerminator(new Messenger(5,1));
-        final SlaveTerminator slaveTerminator2 = new SlaveTerminator(new Messenger(5,2));
-        final SlaveTerminator slaveTerminator3 = new SlaveTerminator(new Messenger(5,3));
-        final SlaveTerminator slaveTerminator4 = new SlaveTerminator(new Messenger(5,4));
+        @NotNull final MasterTerminator masterTerminator = new MasterTerminator(new Messenger(5,0));
+        @NotNull final SlaveTerminator slaveTerminator1 = new SlaveTerminator(new Messenger(5,1));
+        @NotNull final SlaveTerminator slaveTerminator2 = new SlaveTerminator(new Messenger(5,2));
+        @NotNull final SlaveTerminator slaveTerminator3 = new SlaveTerminator(new Messenger(5,3));
+        @NotNull final SlaveTerminator slaveTerminator4 = new SlaveTerminator(new Messenger(5,4));
 
         slaveTerminator1.messageSent();
         slaveTerminator3.messageReceived();
@@ -80,7 +81,7 @@ public class TerminatorIntegrationTest {
 
         masterTerminator.setDone();
 
-        Thread t1 = new Thread(new Runnable() {
+        @NotNull Thread t1 = new Thread(new Runnable() {
             @Override
             public void run() {
                 masterTerminator.waitForTermination();
@@ -88,7 +89,7 @@ public class TerminatorIntegrationTest {
         });
         t1.start();
 
-        Thread t2 = new Thread(new Runnable() {
+        @NotNull Thread t2 = new Thread(new Runnable() {
             @Override
             public void run() {
                 slaveTerminator1.waitForTermination();
@@ -96,7 +97,7 @@ public class TerminatorIntegrationTest {
         });
         t2.start();
 
-        Thread t3 = new Thread(new Runnable() {
+        @NotNull Thread t3 = new Thread(new Runnable() {
             @Override
             public void run() {
                 slaveTerminator2.waitForTermination();
@@ -104,7 +105,7 @@ public class TerminatorIntegrationTest {
         });
         t3.start();
 
-        Thread t4 = new Thread(new Runnable() {
+        @NotNull Thread t4 = new Thread(new Runnable() {
             @Override
             public void run() {
                 slaveTerminator3.waitForTermination();
@@ -112,7 +113,7 @@ public class TerminatorIntegrationTest {
         });
         t4.start();
 
-        Thread t5 = new Thread(new Runnable() {
+        @NotNull Thread t5 = new Thread(new Runnable() {
             @Override
             public void run() {
                 slaveTerminator4.waitForTermination();

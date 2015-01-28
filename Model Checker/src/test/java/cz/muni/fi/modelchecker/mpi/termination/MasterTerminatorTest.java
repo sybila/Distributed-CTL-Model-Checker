@@ -16,19 +16,21 @@ public class MasterTerminatorTest {
     /* We are not testing for situations when process count is 1 but terminator sends/receives messages,
        because in such cases, the behaviour is undefined. */
 
+    @NotNull
     @Rule
-    public ExpectedException exception = ExpectedException.none();
+    public final ExpectedException exception = ExpectedException.none();
 
-    int flag;
-    int count;
+    private int flag;
+    private int count;
 
     @Test
     public void complexTest() {
         flag = 1;
         count = 0;
-        TokenMessenger messenger = new TokenMessenger() {
+        @NotNull TokenMessenger messenger = new TokenMessenger() {
 
-            BlockingQueue<Token> queue = new LinkedBlockingQueue<>();
+            @NotNull
+            final BlockingQueue<Token> queue = new LinkedBlockingQueue<>();
 
             @Override
             public int getProcessCount() {
@@ -58,7 +60,7 @@ public class MasterTerminatorTest {
                 }
             }
         };
-        final MasterTerminator terminator = new MasterTerminator(messenger);
+        @NotNull final MasterTerminator terminator = new MasterTerminator(messenger);
         terminator.messageSent();
         count++;    //message created in system
         terminator.messageReceived();   //message received
@@ -89,9 +91,10 @@ public class MasterTerminatorTest {
     @Test
     public void receivedMessagesAfterStart() throws InterruptedException {
         flag = 1;
-        TokenMessenger messenger = new TokenMessenger() {
+        @NotNull TokenMessenger messenger = new TokenMessenger() {
 
-            BlockingQueue<Token> queue = new LinkedBlockingQueue<>();
+            @NotNull
+            final BlockingQueue<Token> queue = new LinkedBlockingQueue<>();
 
             @Override
             public int getProcessCount() {
@@ -121,7 +124,7 @@ public class MasterTerminatorTest {
                 }
             }
         };
-        final MasterTerminator terminator = new MasterTerminator(messenger);
+        @NotNull final MasterTerminator terminator = new MasterTerminator(messenger);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -144,9 +147,10 @@ public class MasterTerminatorTest {
     @Test
     public void sentMessagesAfterStart() throws InterruptedException {
         flag = 1;
-        TokenMessenger messenger = new TokenMessenger() {
+        @NotNull TokenMessenger messenger = new TokenMessenger() {
 
-            BlockingQueue<Token> queue = new LinkedBlockingQueue<>();
+            @NotNull
+            final BlockingQueue<Token> queue = new LinkedBlockingQueue<>();
 
             @Override
             public int getProcessCount() {
@@ -176,7 +180,7 @@ public class MasterTerminatorTest {
                 }
             }
         };
-        final MasterTerminator terminator = new MasterTerminator(messenger);
+        @NotNull final MasterTerminator terminator = new MasterTerminator(messenger);
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -197,9 +201,10 @@ public class MasterTerminatorTest {
 
     @Test
     public void receivedMessagesBeforeStart() throws InterruptedException {
-        TokenMessenger messenger = new TokenMessenger() {
+        @NotNull TokenMessenger messenger = new TokenMessenger() {
 
-            BlockingQueue<Token> queue = new LinkedBlockingQueue<>();
+            @NotNull
+            final BlockingQueue<Token> queue = new LinkedBlockingQueue<>();
 
             @Override
             public int getProcessCount() {
@@ -230,14 +235,14 @@ public class MasterTerminatorTest {
             }
         };
         //receive and finish work before start
-        MasterTerminator terminator = new MasterTerminator(messenger);
+        @NotNull MasterTerminator terminator = new MasterTerminator(messenger);
         terminator.messageReceived();
         Thread.sleep(100);
         terminator.messageReceived();
         terminator.setDone();
         terminator.waitForTermination();
         //receive before start and finish after start
-        final MasterTerminator terminator2 = new MasterTerminator(messenger);
+        @NotNull final MasterTerminator terminator2 = new MasterTerminator(messenger);
         terminator2.messageReceived();
         new Thread(new Runnable() {
             @Override
@@ -257,9 +262,10 @@ public class MasterTerminatorTest {
 
     @Test
     public void sentMessagesBeforeStart() throws InterruptedException {
-        TokenMessenger messenger = new TokenMessenger() {
+        @NotNull TokenMessenger messenger = new TokenMessenger() {
 
-            BlockingQueue<Token> queue = new LinkedBlockingQueue<>();
+            @NotNull
+            final BlockingQueue<Token> queue = new LinkedBlockingQueue<>();
             int flag = 1;
 
             @Override
@@ -283,7 +289,7 @@ public class MasterTerminatorTest {
                 try {
                     Token token = queue.take();
                     if (token.flag == 2) return token;
-                    Token ret = new Token(Math.min(token.flag + flag, 1), token.count - 2);
+                    @NotNull Token ret = new Token(Math.min(token.flag + flag, 1), token.count - 2);
                     flag = 0;
                     return ret;
                 } catch (InterruptedException e) {
@@ -292,7 +298,7 @@ public class MasterTerminatorTest {
                 }
             }
         };
-        MasterTerminator terminator = new MasterTerminator(messenger);
+        @NotNull MasterTerminator terminator = new MasterTerminator(messenger);
         terminator.messageSent();
         Thread.sleep(100);
         terminator.messageSent();
@@ -302,9 +308,10 @@ public class MasterTerminatorTest {
 
     @Test
     public void wrongUse() {
-        TokenMessenger messenger = new TokenMessenger() {
+        @NotNull TokenMessenger messenger = new TokenMessenger() {
 
-            BlockingQueue<Token> queue = new LinkedBlockingQueue<>();
+            @NotNull
+            final BlockingQueue<Token> queue = new LinkedBlockingQueue<>();
 
             @Override
             public int getProcessCount() {
@@ -332,7 +339,7 @@ public class MasterTerminatorTest {
                 }
             }
         };
-        MasterTerminator terminator = new MasterTerminator(messenger);
+        @NotNull MasterTerminator terminator = new MasterTerminator(messenger);
         terminator.setDone();
         exception.expect(IllegalStateException.class);
         terminator.messageSent();
@@ -372,9 +379,10 @@ public class MasterTerminatorTest {
 
     @Test
     public void noMessages() {
-        TokenMessenger messenger = new TokenMessenger() {
+        @NotNull TokenMessenger messenger = new TokenMessenger() {
 
-            BlockingQueue<Token> queue = new LinkedBlockingQueue<>();
+            @NotNull
+            final BlockingQueue<Token> queue = new LinkedBlockingQueue<>();
 
             @Override
             public int getProcessCount() {
@@ -402,12 +410,13 @@ public class MasterTerminatorTest {
                 }
             }
         };
-        MasterTerminator terminator = new MasterTerminator(messenger);
+        @NotNull MasterTerminator terminator = new MasterTerminator(messenger);
         terminator.setDone();
         terminator.waitForTermination();
         messenger = new TokenMessenger() {
 
-            BlockingQueue<Token> queue = new LinkedBlockingQueue<>();
+            @NotNull
+            final BlockingQueue<Token> queue = new LinkedBlockingQueue<>();
 
             @Override
             public int getProcessCount() {

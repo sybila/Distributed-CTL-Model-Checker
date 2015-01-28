@@ -16,22 +16,24 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
 
 
     @NotNull
-    private Set<FloatProposition> revealedPropositions = new HashSet<>();
+    private final Set<FloatProposition> revealedPropositions = new HashSet<>();
 
-    public final Map<Integer, CoordinateNode> nodeCache = new HashMap<>();
+    private final Map<Integer, CoordinateNode> nodeCache = new HashMap<>();
     private final Map<Integer, CoordinateNode> borderNodes = new HashMap<>();
     private final OdeModel model;
+    @NotNull
     private final RectangularPartitioner partitioner;
     private final int myId;
     private boolean hasAllNodes = false;
     private StateSpaceGenerator generator;
 
-    public NodeFactory(OdeModel model, RectangularPartitioner partitioner) {
+    public NodeFactory(OdeModel model, @NotNull RectangularPartitioner partitioner) {
         this.model = model;
         this.partitioner = partitioner;
         this.myId = partitioner.getMyId();
     }
 
+    @NotNull
     public Collection<CoordinateNode> getNodes() {
         return nodeCache.values();
     }
@@ -55,7 +57,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
 
     @NotNull
     @Override
-    public synchronized Map<CoordinateNode, TreeColorSet> predecessorsFor(@NotNull CoordinateNode to, @Nullable TreeColorSet borders) {
+    public synchronized Map<CoordinateNode, TreeColorSet> predecessorsFor(@NotNull CoordinateNode to, @org.jetbrains.annotations.Nullable @Nullable TreeColorSet borders) {
         if (borders == null) {
             borders = model.getFullColorSet();
         }
@@ -68,7 +70,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
 
     @NotNull
     @Override
-    public synchronized Map<CoordinateNode, TreeColorSet> successorsFor(@NotNull CoordinateNode from, @Nullable TreeColorSet borders) {
+    public synchronized Map<CoordinateNode, TreeColorSet> successorsFor(@NotNull CoordinateNode from, @org.jetbrains.annotations.Nullable @Nullable TreeColorSet borders) {
         if (borders == null) {
             borders = model.getFullColorSet();
         }
@@ -83,7 +85,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
                 cacheAllNodes(partitioner.getMyLimit());
                 hasAllNodes = true;
             }
-            Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
+            @NotNull Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
             for (CoordinateNode node : nodeCache.values()) {
                 results.put(node, model.getFullColorSet());
             }
@@ -93,20 +95,20 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
             return new HashMap<>();
         }
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {
-            FloatProposition proposition = (FloatProposition) formula;
+            @NotNull FloatProposition proposition = (FloatProposition) formula;
             revealedPropositions.add(proposition);
-            Map<CoordinateNode, TreeColorSet> values = getNativeInit(
+            @NotNull Map<CoordinateNode, TreeColorSet> values = getNativeInit(
                     proposition.getVariable(),
                     proposition.getNativeOperator(),
                     proposition.getThreshold(),
                     partitioner.getMyLimit(), new HashMap<CoordinateNode, TreeColorSet>());
-            for (Map.Entry<CoordinateNode, TreeColorSet> entry : values.entrySet()) {
+            for (@NotNull Map.Entry<CoordinateNode, TreeColorSet> entry : values.entrySet()) {
                 entry.getKey().addFormula(proposition, entry.getValue());
             }
             return values;
         }
-        Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
-        for (CoordinateNode n : nodeCache.values()) {
+        @NotNull Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
+        for (@NotNull CoordinateNode n : nodeCache.values()) {
             TreeColorSet validColors = n.getValidColors(formula);
             if (validColors != null && !validColors.isEmpty()) {
                 results.put(n, validColors);
@@ -122,9 +124,9 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
             cacheAllNodes(partitioner.getMyLimit());
             hasAllNodes = true;
         }
-        Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
+        @NotNull Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
         for (CoordinateNode n : nodeCache.values()) {
-            TreeColorSet full = model.getFullColorSet();
+            @NotNull TreeColorSet full = model.getFullColorSet();
             TreeColorSet anti = nodes.get(n);
             if (anti != null) {
                 full.subtract(anti);
@@ -147,14 +149,14 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
         if (formula instanceof Tautology) return model.getFullColorSet();
         if (formula instanceof Contradiction) return TreeColorSet.createEmpty(model.parameterCount());
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {
-            FloatProposition proposition = (FloatProposition) formula;
+            @NotNull FloatProposition proposition = (FloatProposition) formula;
             revealedPropositions.add(proposition);
-            Map<CoordinateNode, TreeColorSet> values = getNativeInit(
+            @NotNull Map<CoordinateNode, TreeColorSet> values = getNativeInit(
                     proposition.getVariable(),
                     proposition.getNativeOperator(),
                     proposition.getThreshold(),
                     partitioner.getMyLimit(), new HashMap<CoordinateNode, TreeColorSet>());
-            for (Map.Entry<CoordinateNode, TreeColorSet> entry : values.entrySet()) {
+            for (@NotNull Map.Entry<CoordinateNode, TreeColorSet> entry : values.entrySet()) {
                 entry.getKey().addFormula(proposition, entry.getValue());
             }
         }

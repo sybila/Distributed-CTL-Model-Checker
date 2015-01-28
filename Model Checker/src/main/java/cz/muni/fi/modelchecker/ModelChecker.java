@@ -7,7 +7,7 @@ import cz.muni.fi.modelchecker.graph.Node;
 import cz.muni.fi.modelchecker.mpi.tasks.TaskMessenger;
 import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import cz.muni.fi.modelchecker.verification.FormulaVerificator;
-import mpi.MPI;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -18,33 +18,50 @@ import java.util.Set;
 @SuppressWarnings("UnusedDeclaration")  //this is a library class
 public class ModelChecker<N extends Node, C extends ColorSet> {
 
+    @NotNull
     private final Set<Formula> processedFormulas = new HashSet<>();
 
+    @NotNull
     private final FormulaVerificator<N, C> verificator;
+    @NotNull
     private final ModelAdapter<N,C> model;
+    @NotNull
+    private final StateSpacePartitioner<N> partitioner;
 
+    /**
+     * Create new model checker with given properties.
+     * @param model Providing node info and storage. Not null.
+     * @param partitioner Divides the graph into separate processes.
+     * @param taskMessenger Provides communication channels between processes.
+     * @param terminatorFactory Creates new pre-configured terminators.
+     */
     public ModelChecker(
-            ModelAdapter<N, C> model,
-            StateSpacePartitioner<N> partitioner,
-            TaskMessenger<N, C> taskMessenger,
-            Terminator.TerminatorFactory terminatorFactory) {
+            @NotNull ModelAdapter<N, C> model,
+            @NotNull StateSpacePartitioner<N> partitioner,
+            @NotNull TaskMessenger<N, C> taskMessenger,
+            @NotNull Terminator.TerminatorFactory terminatorFactory) {
         verificator = new FormulaVerificator<>(model, partitioner, taskMessenger, terminatorFactory);
         this.model = model;
+        this.partitioner = partitioner;
     }
 
-    public void verify(Formula formula) {
+    /**
+     * Verify given formula recursively over available model and previously computed data.
+     * @param formula Formula that should be verified. Not null.
+     */
+    public void verify(@NotNull Formula formula) {
 
         //return from proposition or from formula that has been already processed
         if (formula instanceof Proposition || processedFormulas.contains(formula)) return;
         //process formulas recursively
-        for (Formula sub : formula.getSubFormulas()) {
+        for (@NotNull Formula sub : formula.getSubFormulas()) {
             verify(sub);
         }
-        System.out.println(MPI.COMM_WORLD.Rank()+" Verification started: "+formula);
+        System.out.println(partitioner.getMyId()+" Verification started: "+formula);
 
         verificator.verifyFormula(formula);
 
-        System.out.println(MPI.COMM_WORLD.Rank()+" Found: "+model.initialNodes(formula).size());
+        System.out.println(partitioner.getMyId()+" Found Nodes: "+model.initialNodes(formula).size());
         processedFormulas.add(formula);
     }
 

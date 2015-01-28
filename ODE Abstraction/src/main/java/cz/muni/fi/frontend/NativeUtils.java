@@ -3,12 +3,7 @@ package cz.muni.fi.frontend;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 /**
  * Simple library class for working with JNI (Java Native Interface)
@@ -79,7 +74,7 @@ public class NativeUtils {
         }
 
         // Open output stream and copy data between source file in JAR and the temporary file
-        try (OutputStream os = new FileOutputStream(temp)) {
+        try (@NotNull OutputStream os = new FileOutputStream(temp)) {
             while ((readBytes = is.read(buffer)) != -1) {
                 os.write(buffer, 0, readBytes);
             }

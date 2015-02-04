@@ -14,6 +14,8 @@ public class CoordinateNode implements Node {
     @NotNull
     public final int[] coordinates;
 
+    private int owner = -1;
+
     @NotNull
     private final Map<Formula, TreeColorSet> formulae = new HashMap<>();
 
@@ -87,5 +89,13 @@ public class CoordinateNode implements Node {
     @Override
     public String toString() {
         return Arrays.toString(coordinates) +" formulae: "+formulae.toString();
+    }
+
+    public int getOwner() {
+        return owner;
+    }
+
+    public void setOwner(int owner) {
+        this.owner = owner;
     }
 }

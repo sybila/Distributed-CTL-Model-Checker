@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class RectangularPartitioner implements StateSpacePartitioner<CoordinateNode> {
+public class RectangularPartitioner implements CoordinatePartitioner {
 
     private final int size;
     private final int rank;
@@ -42,6 +42,7 @@ public class RectangularPartitioner implements StateSpacePartitioner<CoordinateN
     }
 
     @NotNull
+    @Override
     public List<Range<Double>> getMyLimit() {
         @NotNull List<Range<Double>> ret = new ArrayList<>();
         ret.add(ranges.get(rank));

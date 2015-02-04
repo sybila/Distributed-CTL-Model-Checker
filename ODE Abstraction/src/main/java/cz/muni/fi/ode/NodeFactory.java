@@ -6,6 +6,7 @@ import cz.muni.fi.ctl.formula.proposition.Contradiction;
 import cz.muni.fi.ctl.formula.proposition.FloatProposition;
 import cz.muni.fi.ctl.formula.proposition.Tautology;
 import cz.muni.fi.modelchecker.ModelAdapter;
+import cz.muni.fi.modelchecker.StateSpacePartitioner;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import org.antlr.v4.runtime.misc.Nullable;
 import org.jetbrains.annotations.NotNull;
@@ -22,12 +23,12 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
     private final Map<Integer, CoordinateNode> borderNodes = new HashMap<>();
     private final OdeModel model;
     @NotNull
-    private final RectangularPartitioner partitioner;
+    private final CoordinatePartitioner partitioner;
     private final int myId;
     private boolean hasAllNodes = false;
     private StateSpaceGenerator generator;
 
-    public NodeFactory(OdeModel model, @NotNull RectangularPartitioner partitioner) {
+    public NodeFactory(OdeModel model, @NotNull CoordinatePartitioner partitioner) {
         this.model = model;
         this.partitioner = partitioner;
         this.myId = partitioner.getMyId();
@@ -105,7 +106,8 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
             for (@NotNull Map.Entry<CoordinateNode, TreeColorSet> entry : values.entrySet()) {
                 entry.getKey().addFormula(proposition, entry.getValue());
             }
-            return values;
+            //values are not exclusively our inner nodes, so we can't return them directly.
+            //return values;
         }
         @NotNull Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
         for (@NotNull CoordinateNode n : nodeCache.values()) {

@@ -57,7 +57,7 @@ public class Main {
             System.out.println("Normalized form: "+formula);
             @NotNull OdeModel model = new OdeModel(args[args.length - 2]);
             model.load();
-            @NotNull RectangularPartitioner partitioner = new RectangularPartitioner(model, MPI.COMM_WORLD.Size(), MPI.COMM_WORLD.Rank());
+            @NotNull HashPartitioner partitioner = new HashPartitioner(model, MPI.COMM_WORLD.Size(), MPI.COMM_WORLD.Rank());
             @NotNull NodeFactory factory = new NodeFactory(model, partitioner);
             @NotNull StateSpaceGenerator generator = new StateSpaceGenerator(model, true, factory);
             factory.setGenerator(generator);

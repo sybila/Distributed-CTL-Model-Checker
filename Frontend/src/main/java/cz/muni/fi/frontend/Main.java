@@ -24,11 +24,11 @@ public class Main {
         } catch (UnsatisfiedLinkError e) {
             System.out.println("Link error. Using lib from zip file.");
             try {
-                NativeUtils.loadLibraryFromJar("/build/binaries/libgenerator.jnilib"); // during runtime. .DLL within .JAR
+                NativeUtils.loadLibraryFromJar("/libODE.jnilib"); // during runtime. .DLL within .JAR
             } catch (IOException e1) {
                 e1.printStackTrace();
                 try {
-                    NativeUtils.loadLibraryFromJar("/build/binaries/libgenerator.so");
+                    NativeUtils.loadLibraryFromJar("/libODE.so");
                 } catch (IOException e2) {
                     String property = System.getProperty("java.library.path");
                     @NotNull StringTokenizer parser = new StringTokenizer(property, ";");
@@ -57,7 +57,7 @@ public class Main {
             System.out.println("Normalized form: "+formula);
             @NotNull OdeModel model = new OdeModel(args[args.length - 2]);
             model.load();
-            @NotNull HashPartitioner partitioner = new HashPartitioner(model, MPI.COMM_WORLD.Size(), MPI.COMM_WORLD.Rank());
+            @NotNull CoordinatePartitioner partitioner = new RectangularPartitioner(model, MPI.COMM_WORLD.Size(), MPI.COMM_WORLD.Rank());
             @NotNull NodeFactory factory = new NodeFactory(model, partitioner);
             @NotNull StateSpaceGenerator generator = new StateSpaceGenerator(model, true, factory);
             factory.setGenerator(generator);

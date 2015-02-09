@@ -1,0 +1,95 @@
+apply plugin: 'java'
+
+sourceCompatibility = 1.7
+version = '1.0'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    compile project(':CTL Parser')
+    compile project(':Model Checker')
+    compile files('../libs/mpj.jar')
+    compile 'com.intellij:annotations:5.1'
+    compile 'com.googlecode.javaewah:JavaEWAH:1.0.0'
+}
+
+
+ext {
+    objDir = "build/objs/"
+    binDir = "build/binaries/"
+    srcDir = "src/main/cpp/"
+    nativeName = "Thomas"
+}
+
+//create directories for native files build
+task createDirs(type: Exec) {
+    args "-p", binDir, objDir
+    executable "mkdir"
+}
+
+//compile the native state space generator
+task compileGenerator(dependsOn: 'createDirs', type:Exec) {
+    if (os.equals('darwin')) {
+        args    "-std=c++11",
+                "-I", jdk+"/include/",
+                "-I", jdk+"/include/darwin/",
+                "-c",
+                "-o", objDir+"generator.o",
+                srcDir+"generator.cpp"
+    } else {
+        args    "-std=c++11",
+                "-fPIC",
+                "-I", jdk+"/include/",
+                "-I", jdk+"/include/linux/",
+                "-c",
+                "-o", objDir+"generator.o",
+                srcDir+"generator.cpp"
+    }
+    executable compiler
+}
+
+//compile and link native part of the state space generator
+task buildGenerator(dependsOn: 'compileGenerator', type:Exec) {
+    if (os.equals('darwin')) {
+        args    "-dynamiclib",
+                "-o", binDir+"lib"+nativeName+".jnilib",
+                objDir+"generator.o"
+    } else {
+        args    "-shared",
+                "-o", binDir+"lib"+nativeName+".so",
+                objDir+"generator.o"
+    }
+    executable compiler
+}
+
+//prepare cpp include files from model class
+task generateModelIncludeFiles(dependsOn: 'fullJar', type:Exec) {
+    args    "-o", srcDir+"jni_include/Model.h",
+            "-classpath", "build/libs/"+project.name+"-full-"+project.version+".jar",
+            "cz.muni.fi.thomas.NetworkModel"
+    executable "javah"
+}
+
+task generateIncludeFiles(dependsOn: [generateModelIncludeFiles]) {}
+
+jar {
+    //include native libraries in the jar file so that they can be linked at runtime
+    from {
+        [binDir+"lib"+nativeName+".jnilib", binDir+"lib"+nativeName+".so"]
+    }
+}
+
+//create a single runnable jar file with all dependencies (we need this for cpp include files generation
+task fullJar(type: Jar) {
+    manifest {
+        attributes  'Implementation-Title': 'Model Checker',
+                'Implementation-Version': version,
+                'Main-Class': 'cz.muni.fi.frontend.Main'
+    }
+    baseName = project.name + '-full'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}

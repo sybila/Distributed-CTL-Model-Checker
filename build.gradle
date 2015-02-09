@@ -12,4 +12,15 @@ allprojects {
     repositories {
         jcenter()
     }
+
+    //Global configuration ------ update these values before first build
+    ext {
+        //compiler (preferably g++) that can handle the level of c++11 used in this project
+        compiler = "g++-4.9"
+        //path to your jdk home folder
+        jdk = "/Library/Java/JavaVirtualMachines/jdk1.7.0_71.jdk/Contents/Home"
+        //allowed values: linux/darwin (windows is not supported for now)
+        os = "darwin"
+    }
+
 }

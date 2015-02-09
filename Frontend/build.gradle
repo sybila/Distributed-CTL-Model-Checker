@@ -1,73 +1,3 @@
-//------------ CPP PART --------------
-
-ext {
-    compiler = "g++"
-    jdk = "/usr/lib/jvm/default-java"
-    objDir = "build/objs/"
-    binDir = "build/binaries/"
-    srcDir = "src/main/cpp/"
-}
-
-task resources(type: Exec) {
-    args "-p",binDir,objDir
-    executable "mkdir"
-}
-
-
-task compileGeneratorLinux(dependsOn: 'resources', type:Exec) {
-    args    "-std=c++11",
-	    "-fPIC",
-            "-I", jdk+"/include/",
-            "-I", jdk+"/include/linux/",
-            "-c",
-            "-o", objDir+"generator.o",
-            srcDir+"generator.cpp"
-    executable compiler
-}
-
-task linkGeneratorLinux(dependsOn: 'compileGeneratorLinux', type:Exec) {
-    args    "-shared",
-//	    "-Wl,-soname,hello.so",
-//	    "-static",
-//	    "-lc",
-            "-o", binDir+"libgenerator.so",
-            objDir+"generator.o"
-    executable compiler
-}
-
-task compileGeneratorOSX(dependsOn: 'resources', type:Exec) {
-    args    "-std=c++11",
-            "-I", jdk+"/include/",
-            "-I", jdk+"/include/darwin/",
-            "-c",
-            "-o", objDir+"generator.o",
-            srcDir+"generator.cpp"
-    executable compiler
-}
-
-task linkGeneratorOSX(dependsOn: 'compileGeneratorOSX', type:Exec) {
-    args    "-dynamiclib",
-            "-o", binDir+"libgenerator.jnilib",
-            objDir+"generator.o"
-    executable compiler
-}
-
-task generateFactoryIncludeFiles(dependsOn: 'fullJar', type:Exec) {
-    args    "-o", srcDir+"jni_include/NodeFactory.h",
-            "-classpath", "build/libs/ODE Abstraction-all-1.0.jar",
-            "cz.muni.fi.ode.NodeFactory"
-    executable "javah"
-}
-
-task generateModelIncludeFiles(dependsOn: 'fullJar', type:Exec) {
-    args    "-o", srcDir+"jni_include/Model.h",
-            "-classpath", "build/libs/ODE Abstraction-all-1.0.jar",
-            "cz.muni.fi.ode.OdeModel"
-    executable "javah"
-}
-
-//-------------JAVA PART--------------
-
 apply plugin: 'java'
 
 sourceCompatibility = 1.7
@@ -78,28 +8,22 @@ repositories {
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.11'
-    compile fileTree(dir: 'build/binaries/', include: ['*.zip'])
     compile 'com.intellij:annotations:5.1'
-    compile 'com.google.guava:guava:18.0'
-    compile files('../libs/mpj.jar')
     compile project(':CTL Parser')
     compile project(':Model Checker')
-}
-
-task nativezip(dependsOn: linkGeneratorOSX, type: Exec) {
-    args    binDir+"natives.zip", binDir+"libgenerator.jnilib"
-    executable "zip"
+    compile project(':ODE Abstraction')
+    compile project(':Thomas Network Abstraction')
+    compile files('../libs/mpj.jar')
 }
 
 //create a single Jar with all dependencies
-task fullJar(type: Jar) {
+task odeJar(type: Jar) {
     manifest {
-        attributes  'Implementation-Title': 'Model Checker',
+        attributes  'Implementation-Title': 'Biodivine CTL',
                     'Implementation-Version': version,
-                    'Main-Class': 'cz.muni.fi.frontend.Main'
+                    'Main-Class': 'cz.muni.fi.frontend.ODEMain'
     }
-    baseName = project.name + '-all'
+    baseName = project.name + '-ode'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }

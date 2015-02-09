@@ -1,5 +1,6 @@
 package cz.muni.fi.frontend;
 
+import com.googlecode.javaewah.EWAHCompressedBitmap;
 import cz.muni.fi.ctl.FormulaNormalizer;
 import cz.muni.fi.ctl.FormulaParser;
 import cz.muni.fi.ctl.formula.Formula;
@@ -14,82 +15,97 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.StringTokenizer;
 
 public class Main {
     
     static {
-        try {
-            System.loadLibrary("generator"); // used for tests. This library in classpath only
-        } catch (UnsatisfiedLinkError e) {
-            System.out.println("Link error. Using lib from zip file.");
-            try {
-                NativeUtils.loadLibraryFromJar("/libODE.jnilib"); // during runtime. .DLL within .JAR
-            } catch (IOException e1) {
-                e1.printStackTrace();
-                try {
-                    NativeUtils.loadLibraryFromJar("/libODE.so");
-                } catch (IOException e2) {
-                    String property = System.getProperty("java.library.path");
-                    @NotNull StringTokenizer parser = new StringTokenizer(property, ";");
-                    while (parser.hasMoreTokens()) {
-                        System.err.println(parser.nextToken());
-                    }
-                    System.exit(1);
-                }
-            }
-        }
-   }
+        loadLibrary("ODE");
+        loadLibrary("Thomas");
+    }
 
-    public static void main(@NotNull String[] args) throws InterruptedException {
-	    long start = System.currentTimeMillis();
-       	System.out.println(System.getProperty( "java.library.path" ));
+    public static void main(@NotNull String[] args) throws InterruptedException, IOException {
+
+        //TODO: Now this is just ODE main, but in the future, this should be built into interactive console application.
+
+        //prepare benchmark
+        long start = System.currentTimeMillis();
+
+        //start MPI
         MPI.Init(args);
+        if (MPI.COMM_WORLD.Rank() == 0) {
+            System.out.println("MPI started on "+MPI.COMM_WORLD.Size()+" machines.");
+        }
 
-
-
+        //read and normalize formula
         @NotNull FormulaParser parser = new FormulaParser();
         @NotNull FormulaNormalizer normalizer = new FormulaNormalizer();
-        try {
-            System.out.println("Arg: "+args[args.length - 1]);
-            @NotNull Formula formula = parser.parse(new File(args[args.length - 1]));
-            formula = normalizer.normalize(formula);
-            System.out.println("Normalized form: "+formula);
-            @NotNull OdeModel model = new OdeModel(args[args.length - 2]);
-            model.load();
-            @NotNull CoordinatePartitioner partitioner = new RectangularPartitioner(model, MPI.COMM_WORLD.Size(), MPI.COMM_WORLD.Rank());
-            @NotNull NodeFactory factory = new NodeFactory(model, partitioner);
-            @NotNull StateSpaceGenerator generator = new StateSpaceGenerator(model, true, factory);
-            factory.setGenerator(generator);
+        @NotNull Formula formula = parser.parse(new File(args[args.length - 1]));
+        formula = normalizer.normalize(formula);
+        if (MPI.COMM_WORLD.Rank() == 0) {
+            System.out.println("Formula prepared for verification: "+formula);
+        }
 
-            @NotNull Terminator.TerminatorFactory terminatorFactory = new Terminator.TerminatorFactory(new MPITokenMessenger(MPI.COMM_WORLD));
+        //read and prepare model
+        @NotNull OdeModel model = new OdeModel(args[args.length - 2]);
+        model.load();
 
-            @NotNull TaskMessenger<CoordinateNode, TreeColorSet> taskMessenger = new MpiTaskMessenger(MPI.COMM_WORLD, model.variableCount(), factory, model);
+        //@NotNull CoordinatePartitioner partitioner = new RectangularPartitioner(model, MPI.COMM_WORLD.Size(), MPI.COMM_WORLD.Rank());
+        @NotNull CoordinatePartitioner partitioner = new HashPartitioner(model, MPI.COMM_WORLD.Size(), MPI.COMM_WORLD.Rank());
+        @NotNull NodeFactory factory = new NodeFactory(model, partitioner);
+        @NotNull StateSpaceGenerator generator = new StateSpaceGenerator(model, true, factory);
+        factory.setGenerator(generator);
 
-            @NotNull ModelChecker<CoordinateNode, TreeColorSet> modelChecker = new ModelChecker<>(factory, partitioner, taskMessenger, terminatorFactory);
-            modelChecker.verify(formula);
-            if (args.length >= 3 && args[args.length - 3].equals("--all")) {
-                for (@NotNull CoordinateNode node : factory.getNodes()) {
-                    System.out.println(node.toString());
-                }
-            } else if (args.length >= 3 && !args[args.length - 3].equals("--none")) {
-                for (@NotNull CoordinateNode node : factory.getNodes()) {
-                    @NotNull TreeColorSet colorSet = factory.validColorsFor(node, formula);
-                    if (!colorSet.isEmpty()) {
-			            System.out.println(Arrays.toString(node.coordinates)+" "+colorSet);
-                    }
+        //prepare MPI communication environment
+        @NotNull Terminator.TerminatorFactory terminatorFactory = new Terminator.TerminatorFactory(new MPITokenMessenger(MPI.COMM_WORLD));
+        @NotNull TaskMessenger<CoordinateNode, TreeColorSet> taskMessenger = new MpiTaskMessenger(MPI.COMM_WORLD, model.variableCount(), factory, model);
+
+        //prepare model checker and run verification
+        @NotNull ModelChecker<CoordinateNode, TreeColorSet> modelChecker = new ModelChecker<>(factory, partitioner, taskMessenger, terminatorFactory);
+        modelChecker.verify(formula);
+
+        //print results
+        if (args.length >= 3 && args[args.length - 3].equals("--all")) {
+            for (@NotNull CoordinateNode node : factory.getNodes()) {
+                System.out.println(node.toString());
+            }
+        } else if (args.length >= 3 && !args[args.length - 3].equals("--none")) {
+            for (@NotNull CoordinateNode node : factory.getNodes()) {
+                @NotNull TreeColorSet colorSet = factory.validColorsFor(node, formula);
+                if (!colorSet.isEmpty()) {
+                    System.out.println(Arrays.toString(node.coordinates)+" "+colorSet);
                 }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-	int rank = MPI.COMM_WORLD.Rank();
-	System.out.println("Waiting for termination "+rank);
+
         MPI.Finalize();
-	System.out.println("Temrinated "+rank);
-	System.err.println("Duration: "+(System.currentTimeMillis()
- - start));
-	System.exit(0);
+        System.err.println(MPI.COMM_WORLD.Rank()+" Duration: "+(System.currentTimeMillis() - start));
+        System.exit(0);
+
+    }
+
+
+    private static void loadLibrary(String name) {
+        try {
+            System.loadLibrary(name);
+            System.out.println(name+" module loaded from include path.");
+        } catch (UnsatisfiedLinkError e) {
+            try {
+                switch (OsCheck.getOperatingSystemType()) {
+                    case MacOS:
+                        NativeUtils.loadLibraryFromJar("/lib"+name+".jnilib");
+                        break;
+                    case Linux:
+                        NativeUtils.loadLibraryFromJar("/lib"+name+".so");
+                        break;
+                    default:
+                        System.out.println("Unsupported operating system for module: "+name);
+                        break;
+                }
+                System.out.println(name+" module loaded from jar file.");
+            } catch (Exception e1) {
+                System.out.println("Unable to load module: "+name+", problem: "+e1.toString());
+            }
+        }
     }
 
 }

@@ -1,1 +1,1 @@
-include ':CTL Parser',':Model Checker', ':ODE Abstraction'
+include ':CTL Parser',':Model Checker', ':ODE Abstraction', ':Thomas Network Abstraction', ':Frontend'

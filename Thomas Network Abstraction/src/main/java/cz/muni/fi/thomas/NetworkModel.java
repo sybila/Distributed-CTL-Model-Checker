@@ -14,7 +14,7 @@ import java.util.*;
 /**
  * Data if filled by C++ state space generator by calling load(). Nothing is computed on the fly, everything is prepared before verification.
  */
-public class NetworkModel implements ModelAdapter<LevelNode, BitmapColorSet> {
+public class NetworkModel implements ModelAdapter<LevelNode, BitMapColorSet> {
 
 
     @NotNull
@@ -61,23 +61,23 @@ public class NetworkModel implements ModelAdapter<LevelNode, BitmapColorSet> {
 
     @NotNull
     @Override
-    public Map<LevelNode, BitmapColorSet> predecessorsFor(@NotNull LevelNode to, @Nullable BitmapColorSet borders) {
+    public Map<LevelNode, BitMapColorSet> predecessorsFor(@NotNull LevelNode to, @Nullable BitMapColorSet borders) {
         return to.getPredecessors(borders);
     }
 
     @NotNull
     @Override
-    public Map<LevelNode, BitmapColorSet> successorsFor(@NotNull LevelNode from, @Nullable BitmapColorSet borders) {
+    public Map<LevelNode, BitMapColorSet> successorsFor(@NotNull LevelNode from, @Nullable BitMapColorSet borders) {
         return from.getSuccessors(borders);
     }
 
     @NotNull
     @Override
-    public Map<LevelNode, BitmapColorSet> initialNodes(@NotNull Formula formula) {
+    public Map<LevelNode, BitMapColorSet> initialNodes(@NotNull Formula formula) {
         if (formula instanceof Tautology) {
-            @NotNull Map<LevelNode, BitmapColorSet> results = new HashMap<>();
+            @NotNull Map<LevelNode, BitMapColorSet> results = new HashMap<>();
             for (LevelNode node : nodeCache.values()) {
-                results.put(node, BitmapColorSet.createFull(numOfParameters));
+                results.put(node, BitMapColorSet.createFull(numOfParameters));
             }
             return results;
         }
@@ -87,9 +87,9 @@ public class NetworkModel implements ModelAdapter<LevelNode, BitmapColorSet> {
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {
             revealProposition((FloatProposition) formula);
         }
-        @NotNull Map<LevelNode, BitmapColorSet> results = new HashMap<>();
+        @NotNull Map<LevelNode, BitMapColorSet> results = new HashMap<>();
         for (@NotNull LevelNode n : nodeCache.values()) {
-            BitmapColorSet validColors = n.getValidColors(formula);
+            BitMapColorSet validColors = n.getValidColors(formula);
             if (validColors != null && !validColors.isEmpty()) {
                 results.put(n, validColors);
             }
@@ -99,11 +99,11 @@ public class NetworkModel implements ModelAdapter<LevelNode, BitmapColorSet> {
 
     @NotNull
     @Override
-    public Map<LevelNode, BitmapColorSet> invertNodeSet(@NotNull Map<LevelNode, BitmapColorSet> nodes) {
-        @NotNull Map<LevelNode, BitmapColorSet> results = new HashMap<>();
+    public Map<LevelNode, BitMapColorSet> invertNodeSet(@NotNull Map<LevelNode, BitMapColorSet> nodes) {
+        @NotNull Map<LevelNode, BitMapColorSet> results = new HashMap<>();
         for (LevelNode n : nodeCache.values()) {
-            @NotNull BitmapColorSet full = BitmapColorSet.createFull(numOfParameters);
-            BitmapColorSet anti = nodes.get(n);
+            @NotNull BitMapColorSet full = BitMapColorSet.createFull(numOfParameters);
+            BitMapColorSet anti = nodes.get(n);
             if (anti != null) {
                 full.subtract(anti);
             }
@@ -115,26 +115,26 @@ public class NetworkModel implements ModelAdapter<LevelNode, BitmapColorSet> {
     }
 
     @Override
-    public boolean addFormula(@NotNull LevelNode node, @NotNull Formula formula, @NotNull BitmapColorSet parameters) {
+    public boolean addFormula(@NotNull LevelNode node, @NotNull Formula formula, @NotNull BitMapColorSet parameters) {
         return node.addFormula(formula, parameters);
     }
 
     @NotNull
     @Override
-    public BitmapColorSet validColorsFor(@NotNull LevelNode node, @NotNull Formula formula) {
-        if (formula instanceof Tautology) return BitmapColorSet.createFull(numOfParameters);
-        if (formula instanceof Contradiction) return new BitmapColorSet();
+    public BitMapColorSet validColorsFor(@NotNull LevelNode node, @NotNull Formula formula) {
+        if (formula instanceof Tautology) return BitMapColorSet.createFull(numOfParameters);
+        if (formula instanceof Contradiction) return new BitMapColorSet();
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {
             revealProposition((FloatProposition) formula);
         }
-        BitmapColorSet colorSet = node.getValidColors(formula);
-        return colorSet == null ? new BitmapColorSet() : colorSet;
+        BitMapColorSet colorSet = node.getValidColors(formula);
+        return colorSet == null ? new BitMapColorSet() : colorSet;
     }
 
     private void revealProposition(FloatProposition proposition) {
         for (LevelNode entry : nodeCache.values()) {
             if (proposition.evaluate((double) entry.getLevel(variableOrdering.indexOf(proposition.getVariable())))) {
-                entry.addFormula(proposition, BitmapColorSet.createFull(numOfParameters));
+                entry.addFormula(proposition, BitMapColorSet.createFull(numOfParameters));
             }
         }
         revealedPropositions.add(proposition);

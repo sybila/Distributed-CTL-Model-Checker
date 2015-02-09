@@ -1,7 +1,6 @@
 package cz.muni.fi.thomas;
 
 import cz.muni.fi.ctl.formula.Formula;
-import cz.muni.fi.ctl.formula.proposition.FloatProposition;
 import cz.muni.fi.modelchecker.graph.Node;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -17,11 +16,11 @@ public class LevelNode implements Node {
     private int owner = -1;
 
     @NotNull
-    private final Map<Formula, BitmapColorSet> formulae = new HashMap<>();
+    private final Map<Formula, BitMapColorSet> formulae = new HashMap<>();
 
-    private Map<LevelNode, BitmapColorSet> predecessors;
+    private Map<LevelNode, BitMapColorSet> predecessors;
 
-    private Map<LevelNode, BitmapColorSet> successors;
+    private Map<LevelNode, BitMapColorSet> successors;
 
     public LevelNode(@NotNull int[] levels) {
         this.levels = Arrays.copyOf(levels, levels.length);
@@ -35,7 +34,7 @@ public class LevelNode implements Node {
         return predecessors != null;
     }
 
-    public synchronized void savePredecessors(@NotNull Map<LevelNode, BitmapColorSet> predecessors) {
+    public synchronized void savePredecessors(@NotNull Map<LevelNode, BitMapColorSet> predecessors) {
         this.predecessors = new HashMap<>(predecessors);
     }
 
@@ -43,15 +42,15 @@ public class LevelNode implements Node {
         return successors != null;
     }
 
-    public synchronized void saveSuccessors(@NotNull Map<LevelNode, BitmapColorSet> successors) {
+    public synchronized void saveSuccessors(@NotNull Map<LevelNode, BitMapColorSet> successors) {
         this.successors = new HashMap<>(successors);
     }
 
     @NotNull
-    public synchronized Map<LevelNode, BitmapColorSet> getPredecessors(@Nullable BitmapColorSet borders) {
-        @NotNull Map<LevelNode, BitmapColorSet> results = new HashMap<>();
-        for (@NotNull Map.Entry<LevelNode, BitmapColorSet> entry : predecessors.entrySet()) {
-            @NotNull BitmapColorSet colorSet = BitmapColorSet.createCopy(entry.getValue());
+    public synchronized Map<LevelNode, BitMapColorSet> getPredecessors(@Nullable BitMapColorSet borders) {
+        @NotNull Map<LevelNode, BitMapColorSet> results = new HashMap<>();
+        for (@NotNull Map.Entry<LevelNode, BitMapColorSet> entry : predecessors.entrySet()) {
+            @NotNull BitMapColorSet colorSet = BitMapColorSet.createCopy(entry.getValue());
             if (borders != null) {
                 colorSet.intersect(borders);
             }
@@ -63,10 +62,10 @@ public class LevelNode implements Node {
     }
 
     @NotNull
-    public synchronized Map<LevelNode, BitmapColorSet> getSuccessors(@Nullable BitmapColorSet borders) {
-        @NotNull Map<LevelNode, BitmapColorSet> results = new HashMap<>();
-        for (@NotNull Map.Entry<LevelNode, BitmapColorSet> entry : successors.entrySet()) {
-            @NotNull BitmapColorSet colorSet = BitmapColorSet.createCopy(entry.getValue());
+    public synchronized Map<LevelNode, BitMapColorSet> getSuccessors(@Nullable BitMapColorSet borders) {
+        @NotNull Map<LevelNode, BitMapColorSet> results = new HashMap<>();
+        for (@NotNull Map.Entry<LevelNode, BitMapColorSet> entry : successors.entrySet()) {
+            @NotNull BitMapColorSet colorSet = BitMapColorSet.createCopy(entry.getValue());
             if (borders != null) {
                 colorSet.intersect(borders);
             }
@@ -77,15 +76,15 @@ public class LevelNode implements Node {
         return results;
     }
 
-    public synchronized BitmapColorSet getValidColors(Formula formula) {
+    public synchronized BitMapColorSet getValidColors(Formula formula) {
         return formulae.get(formula);
     }
 
-    public synchronized boolean addFormula(Formula formula, @NotNull BitmapColorSet colors) {
+    public synchronized boolean addFormula(Formula formula, @NotNull BitMapColorSet colors) {
         if (colors.isEmpty()) return false;
-        BitmapColorSet colorSet = formulae.get(formula);
+        BitMapColorSet colorSet = formulae.get(formula);
         if (colorSet == null) {
-            formulae.put(formula, BitmapColorSet.createCopy(colors));
+            formulae.put(formula, BitMapColorSet.createCopy(colors));
             return true;
         } else {
             if (colorSet.encloses(colors)) {

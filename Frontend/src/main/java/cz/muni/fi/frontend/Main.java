@@ -1,20 +1,13 @@
 package cz.muni.fi.frontend;
 
-import com.googlecode.javaewah.EWAHCompressedBitmap;
-import cz.muni.fi.ctl.FormulaNormalizer;
-import cz.muni.fi.ctl.FormulaParser;
-import cz.muni.fi.ctl.formula.Formula;
-import cz.muni.fi.modelchecker.ModelChecker;
-import cz.muni.fi.modelchecker.mpi.tasks.TaskMessenger;
-import cz.muni.fi.modelchecker.mpi.termination.MPITokenMessenger;
-import cz.muni.fi.modelchecker.mpi.termination.Terminator;
-import cz.muni.fi.ode.*;
-import mpi.MPI;
+import com.google.common.collect.Range;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class Main {
     
@@ -25,6 +18,21 @@ public class Main {
 
     public static void main(@NotNull String[] args) throws InterruptedException, IOException {
 
+        Range<Double> first = Range.open(0.0,10.0);
+        Range<Double> second = Range.open(0.0,10.0);
+        Set<Range<Double>> fs = new HashSet<>();
+        fs.add(first);
+        Set<Range<Double>> st = new HashSet<>();
+        st.add(second);
+        List<Set<Range<Double>>> fst = new ArrayList<>();
+        fst.add(fs);
+        List<Set<Range<Double>>> scn = new ArrayList<>();
+        scn.add(st);
+        System.out.println("EQ: "+first.equals(second));
+        System.out.println("EQ: "+fs.equals(st));
+        System.out.println("Hash: "+fs.hashCode()+" "+st.hashCode());
+        System.out.println("Hash: "+scn.hashCode()+" "+fst.hashCode());
+/*
         //TODO: Now this is just ODE main, but in the future, this should be built into interactive console application.
 
         //prepare benchmark
@@ -79,7 +87,7 @@ public class Main {
 
         MPI.Finalize();
         System.err.println(MPI.COMM_WORLD.Rank()+" Duration: "+(System.currentTimeMillis() - start));
-        System.exit(0);
+        System.exit(0);*/
 
     }
 

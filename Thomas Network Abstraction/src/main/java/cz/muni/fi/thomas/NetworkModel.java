@@ -20,16 +20,21 @@ public class NetworkModel implements ModelAdapter<LevelNode, BitMapColorSet> {
     @NotNull
     private final Set<FloatProposition> revealedPropositions = new HashSet<>();
 
+    @NotNull
     private final Map<Integer, LevelNode> nodeCache = new HashMap<>();
+
+    @NotNull
     private final Map<Integer, LevelNode> borderNodes = new HashMap<>();
 
     //filled by native code
+    @NotNull
     private List<String> variableOrdering = new ArrayList<>();
 
     @NotNull
     private final StateSpacePartitioner<LevelNode> partitioner;
     private final int myId;
-    private int numOfParameters;
+    //this is not a number of parameters, it's a bit width of vector that can hold all independent parameter templates.
+    private int paramSpaceWidth = 0;
 
     public NetworkModel(@NotNull StateSpacePartitioner<LevelNode> partitioner) {
         this.partitioner = partitioner;
@@ -77,7 +82,7 @@ public class NetworkModel implements ModelAdapter<LevelNode, BitMapColorSet> {
         if (formula instanceof Tautology) {
             @NotNull Map<LevelNode, BitMapColorSet> results = new HashMap<>();
             for (LevelNode node : nodeCache.values()) {
-                results.put(node, BitMapColorSet.createFull(numOfParameters));
+                results.put(node, BitMapColorSet.createFull(paramSpaceWidth));
             }
             return results;
         }
@@ -102,7 +107,7 @@ public class NetworkModel implements ModelAdapter<LevelNode, BitMapColorSet> {
     public Map<LevelNode, BitMapColorSet> invertNodeSet(@NotNull Map<LevelNode, BitMapColorSet> nodes) {
         @NotNull Map<LevelNode, BitMapColorSet> results = new HashMap<>();
         for (LevelNode n : nodeCache.values()) {
-            @NotNull BitMapColorSet full = BitMapColorSet.createFull(numOfParameters);
+            @NotNull BitMapColorSet full = BitMapColorSet.createFull(paramSpaceWidth);
             BitMapColorSet anti = nodes.get(n);
             if (anti != null) {
                 full.subtract(anti);
@@ -122,7 +127,7 @@ public class NetworkModel implements ModelAdapter<LevelNode, BitMapColorSet> {
     @NotNull
     @Override
     public BitMapColorSet validColorsFor(@NotNull LevelNode node, @NotNull Formula formula) {
-        if (formula instanceof Tautology) return BitMapColorSet.createFull(numOfParameters);
+        if (formula instanceof Tautology) return BitMapColorSet.createFull(paramSpaceWidth);
         if (formula instanceof Contradiction) return new BitMapColorSet();
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {
             revealProposition((FloatProposition) formula);
@@ -131,10 +136,15 @@ public class NetworkModel implements ModelAdapter<LevelNode, BitMapColorSet> {
         return colorSet == null ? new BitMapColorSet() : colorSet;
     }
 
+    @Override
+    public void purge(Formula formula) {
+
+    }
+
     private void revealProposition(FloatProposition proposition) {
         for (LevelNode entry : nodeCache.values()) {
             if (proposition.evaluate((double) entry.getLevel(variableOrdering.indexOf(proposition.getVariable())))) {
-                entry.addFormula(proposition, BitMapColorSet.createFull(numOfParameters));
+                entry.addFormula(proposition, BitMapColorSet.createFull(paramSpaceWidth));
             }
         }
         revealedPropositions.add(proposition);
@@ -142,6 +152,13 @@ public class NetworkModel implements ModelAdapter<LevelNode, BitMapColorSet> {
 
     public void load(String filename) {
         loadNative(filename);
+        for (String s : variableOrdering) {
+            System.out.println("Var: "+s);
+        }
+        System.out.println("Param space width: "+paramSpaceWidth);
+        for (LevelNode n : nodeCache.values()) {
+            System.out.println("Node: "+n.fullString());
+        }
     }
 
     private native void loadNative(String filename);

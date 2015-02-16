@@ -51,6 +51,10 @@ public class CoordinateNode implements Node {
         return results;
     }
 
+    public void purgeFormula(Formula formula) {
+        formulae.remove(formula);
+    }
+
     public synchronized TreeColorSet getValidColors(Formula formula) {
         return formulae.get(formula);
     }

@@ -67,4 +67,6 @@ public interface ModelAdapter<N extends Node, C extends ColorSet> {
      */
     @NotNull C validColorsFor(@NotNull N node, @NotNull Formula formula);
 
+    void purge(Formula formula);
+
 }

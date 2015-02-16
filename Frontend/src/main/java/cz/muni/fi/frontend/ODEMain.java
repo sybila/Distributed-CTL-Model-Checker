@@ -1,6 +1,5 @@
 package cz.muni.fi.frontend;
 
-import com.googlecode.javaewah.EWAHCompressedBitmap;
 import cz.muni.fi.ctl.FormulaNormalizer;
 import cz.muni.fi.ctl.FormulaParser;
 import cz.muni.fi.ctl.formula.Formula;
@@ -10,7 +9,6 @@ import cz.muni.fi.modelchecker.mpi.termination.MPITokenMessenger;
 import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import cz.muni.fi.ode.*;
 import mpi.MPI;
-import mpjbuf.BufferConstants;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -20,7 +18,7 @@ import java.util.Arrays;
 public class ODEMain {
 
     static {
-        loadLibrary("ODE");
+        NativeUtils.loadLibrary("ODE");
     }
 
     public static void main(@NotNull String[] args) throws InterruptedException, IOException {
@@ -78,31 +76,6 @@ public class ODEMain {
         MPI.Finalize();
         System.err.println(MPI.COMM_WORLD.Rank()+" Duration: "+(System.currentTimeMillis() - start));
         System.exit(0);
-    }
-
-
-    private static void loadLibrary(String name) {
-        try {
-            System.loadLibrary(name);
-            System.out.println(name+" module loaded from include path.");
-        } catch (UnsatisfiedLinkError e) {
-            try {
-                switch (OsCheck.getOperatingSystemType()) {
-                    case MacOS:
-                        NativeUtils.loadLibraryFromJar("/lib"+name+".jnilib");
-                        break;
-                    case Linux:
-                        NativeUtils.loadLibraryFromJar("/lib"+name+".so");
-                        break;
-                    default:
-                        System.out.println("Unsupported operating system for module: "+name);
-                        break;
-                }
-                System.out.println(name+" module loaded from jar file.");
-            } catch (Exception e1) {
-                System.out.println("Unable to load module: "+name+", problem: "+e1.toString());
-            }
-        }
     }
 
 }

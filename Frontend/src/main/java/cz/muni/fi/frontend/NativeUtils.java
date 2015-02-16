@@ -14,6 +14,31 @@ import java.io.*;
  */
 public class NativeUtils {
 
+
+    public static void loadLibrary(String name) {
+        try {
+            System.loadLibrary(name);
+            System.out.println(name+" module loaded from include path.");
+        } catch (UnsatisfiedLinkError e) {
+            try {
+                switch (OsCheck.getOperatingSystemType()) {
+                    case MacOS:
+                        NativeUtils.loadLibraryFromJar("/lib"+name+".jnilib");
+                        break;
+                    case Linux:
+                        NativeUtils.loadLibraryFromJar("/lib"+name+".so");
+                        break;
+                    default:
+                        System.out.println("Unsupported operating system for module: "+name);
+                        break;
+                }
+                System.out.println(name+" module loaded from jar file.");
+            } catch (Exception e1) {
+                System.out.println("Unable to load module: "+name+", problem: "+e1.toString());
+            }
+        }
+    }
+
     /**
      * Private constructor - this class will never be instanced
      */

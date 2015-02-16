@@ -27,3 +27,15 @@ task odeJar(type: Jar) {
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
+
+//create a single Jar with all dependencies
+task thomasJar(type: Jar) {
+    manifest {
+        attributes  'Implementation-Title': 'Biodivine CTL',
+                'Implementation-Version': version,
+                'Main-Class': 'cz.muni.fi.frontend.ThomasMain'
+    }
+    baseName = project.name + '-thomas'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}

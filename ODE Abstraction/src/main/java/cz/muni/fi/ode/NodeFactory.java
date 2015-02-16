@@ -6,7 +6,6 @@ import cz.muni.fi.ctl.formula.proposition.Contradiction;
 import cz.muni.fi.ctl.formula.proposition.FloatProposition;
 import cz.muni.fi.ctl.formula.proposition.Tautology;
 import cz.muni.fi.modelchecker.ModelAdapter;
-import cz.muni.fi.modelchecker.StateSpacePartitioner;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import org.antlr.v4.runtime.misc.Nullable;
 import org.jetbrains.annotations.NotNull;
@@ -142,7 +141,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
 
     @Override
     public synchronized boolean addFormula(@NotNull CoordinateNode node, @NotNull Formula formula, @NotNull TreeColorSet parameters) {
-        return node.addFormula(formula, parameters);
+        return node.addFormula(formula,parameters);
     }
 
     @NotNull
@@ -165,6 +164,13 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
         TreeColorSet colorSet = node.getValidColors(formula);
         if (colorSet == null) return TreeColorSet.createEmpty(model.parameterCount());
         return colorSet;
+    }
+
+    @Override
+    public void purge(Formula formula) {
+        for (CoordinateNode node : nodeCache.values()) {
+            node.purgeFormula(formula);
+        }
     }
 
 

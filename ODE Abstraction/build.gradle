@@ -37,6 +37,7 @@ task createDirs(type: Exec) {
 task compileGenerator(dependsOn: 'createDirs', type:Exec) {
     if (os.equals('darwin')) {
         args    "-std=c++11",
+                "-O3",
                 "-I", jdk+"/include/",
                 "-I", jdk+"/include/darwin/",
                 "-c",
@@ -45,6 +46,7 @@ task compileGenerator(dependsOn: 'createDirs', type:Exec) {
     } else {
         args    "-std=c++11",
                 "-fPIC",
+                "-O3",
                 "-I", jdk+"/include/",
                 "-I", jdk+"/include/linux/",
                 "-c",

@@ -18,6 +18,7 @@ dependencies {
 
 
 ext {
+    compiler = "g++"    //override compiler
     objDir = "build/objs/"
     binDir = "build/binaries/"
     srcDir = "src/main/cpp/"
@@ -34,6 +35,7 @@ task createDirs(type: Exec) {
 task compileGenerator(dependsOn: 'createDirs', type:Exec) {
     if (os.equals('darwin')) {
         args    "-std=c++11",
+                "-O3",
                 "-I", jdk+"/include/",
                 "-I", jdk+"/include/darwin/",
                 "-c",
@@ -42,6 +44,7 @@ task compileGenerator(dependsOn: 'createDirs', type:Exec) {
     } else {
         args    "-std=c++11",
                 "-fPIC",
+                "-O3",
                 "-I", jdk+"/include/",
                 "-I", jdk+"/include/linux/",
                 "-c",
@@ -55,10 +58,20 @@ task compileGenerator(dependsOn: 'createDirs', type:Exec) {
 task buildGenerator(dependsOn: 'compileGenerator', type:Exec) {
     if (os.equals('darwin')) {
         args    "-dynamiclib",
+                "-lgecodesupport",
+                "-lgecodekernel",
+                "-lgecodesearch",
+                "-lgecodeminimodel",
+                "-lgecodeint",
                 "-o", binDir+"lib"+nativeName+".jnilib",
                 objDir+"generator.o"
     } else {
         args    "-shared",
+                "-lgecodesupport",
+                "-lgecodekernel",
+                "-lgecodesearch",
+                "-lgecodeminimodel",
+                "-lgecodeint",
                 "-o", binDir+"lib"+nativeName+".so",
                 objDir+"generator.o"
     }

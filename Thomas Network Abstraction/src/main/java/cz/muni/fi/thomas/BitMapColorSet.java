@@ -52,12 +52,16 @@ public class BitMapColorSet implements ColorSet {
 
     @Override
     public String toString() {
-        return values.toString() + " " + values.sizeInBytes() + " " + values.sizeInBits();
+        return (isFull() ? "ANY" : values.toString()) + " " + values.sizeInBytes() + " " + values.sizeInBits();
     }
 
     @Override
     public boolean isEmpty() {
         return values.isEmpty();
+    }
+
+    public boolean isFull() {
+        return values.cardinality() == values.sizeInBits();
     }
 
     public boolean encloses(BitMapColorSet set) {

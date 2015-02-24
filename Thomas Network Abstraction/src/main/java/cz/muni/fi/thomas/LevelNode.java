@@ -16,7 +16,6 @@ public class LevelNode implements Node {
     private int owner = -1;
 
     @NotNull
-    //TODO: We have to store colors as list of color sets, because the set is not complete parameter set, it's a template for combinations of parameters
     private final Map<Formula, BitMapColorSet> formulae = new HashMap<>();
 
     private Map<LevelNode, BitMapColorSet> predecessors = new HashMap<>();

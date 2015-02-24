@@ -28,13 +28,13 @@ public class NetworkModel implements ModelAdapter<LevelNode, BitMapColorSet> {
 
     //filled by native code
     @NotNull
-    private List<String> variableOrdering = new ArrayList<>();
+    public List<String> variableOrdering = new ArrayList<>();
 
     @NotNull
     private final StateSpacePartitioner<LevelNode> partitioner;
     private final int myId;
     //this is not a number of parameters, it's a bit width of vector that can hold all independent parameter templates.
-    private int paramSpaceWidth = 0;
+    public int paramSpaceWidth = 0;
 
     public NetworkModel(@NotNull StateSpacePartitioner<LevelNode> partitioner) {
         this.partitioner = partitioner;
@@ -150,8 +150,7 @@ public class NetworkModel implements ModelAdapter<LevelNode, BitMapColorSet> {
         revealedPropositions.add(proposition);
     }
 
-    public void load(String filename) {
-        loadNative(filename);
+    public void printOut() {
         for (String s : variableOrdering) {
             System.out.println("Var: "+s);
         }
@@ -160,7 +159,11 @@ public class NetworkModel implements ModelAdapter<LevelNode, BitMapColorSet> {
             System.out.println("Node: "+n.fullString());
         }
     }
+/*
+    public void load(String filename) {
+        loadNative(filename);
+    }
 
     private native void loadNative(String filename);
-
+*/
 }

@@ -74,6 +74,26 @@ public:
 		}
 	};
 
+    class ByteClass : public AnyClass {
+		jmethodID _valueOf;
+		jmethodID _byteValue;
+	public:
+		class Instance: public AnyInstance<ByteClass> {
+		public:
+			Instance(jobject value, ByteClass * type) : AnyInstance(value, type) {}
+			short byteValue() {
+				return _type->_env->CallByteMethod(_value, _type->_byteValue);
+			}
+		};
+		ByteClass::Instance valueOf(short i) {
+			return ByteClass::Instance(_env->CallStaticObjectMethod(_class, _valueOf, i), this);
+		}
+		ByteClass(JVM * jvm) : AnyClass(jvm, "java/lang/Byte") {
+			_valueOf = _env->GetStaticMethodID(_class, "valueOf", "(B)Ljava/lang/Byte;");
+			_byteValue = _env->GetMethodID(_class, "byteValue", "()B");
+		}
+	};
+
 	class ListClass : public AnyClass {
 		jmethodID _add;
 		jmethodID _get;
@@ -111,6 +131,8 @@ public:
 		jmethodID _get;
 		jmethodID _size;
 		jmethodID _init;
+		jmethodID _constructor;
+		jclass _hashMap;
 	public:
 		class Instance : public AnyInstance<MapClass> {
 		public: 
@@ -126,9 +148,14 @@ public:
 			}
 		};
 		MapClass(JVM * jvm) : AnyClass(jvm, "java/util/Map") {
+		    _hashMap = _env->FindClass("java/util/HashMap");
 			_get = _env->GetMethodID(_class, "get", "(Ljava/lang/Object;)Ljava/lang/Object;");
 			_put = _env->GetMethodID(_class, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
 			_size = _env->GetMethodID(_class, "size", "()I");
+			_constructor = _env->GetMethodID(_hashMap, "<init>", "()V");
+		}
+		MapClass::Instance create() {
+		    return MapClass::Instance(_env->NewObject(_hashMap, _constructor), this);
 		}
 	};
 
@@ -141,7 +168,7 @@ public:
 		public:
 			Instance(jobject value, ColorSetClass* type) : AnyInstance(value, type) {}
 			Instance(TransConst transition, int offset, int size, ColorSetClass * type) : 
-				AnyInstance(type->createFull(size), type) 
+				AnyInstance(type->createFull(size).object(), type)
 			{
 				for (int i = 0; i < transition.targets.size(); ++i)
 				{
@@ -163,8 +190,8 @@ public:
 			_createFull = _env->GetStaticMethodID(_class, "createFull", "(I)Lcz/muni/fi/thomas/BitMapColorSet;");
 		}
 
-		jobject createFull(jint size) {
-			return _env->CallStaticObjectMethod(_class, _createFull, size);
+		ColorSetClass::Instance createFull(jint size) {
+			return ColorSetClass::Instance(_env->CallStaticObjectMethod(_class, _createFull, size), this);
 		}
 	};
 
@@ -220,22 +247,42 @@ public:
 		}
 	};
 
+	class ModelClass : public AnyClass {
+	    jfieldID _specieContextTargetMapping;
+	public:
+	    class Instance : public AnyInstance<ModelClass> {
+	    public:
+	        MapClass::Instance specieContextTargetMapping;
+	        Instance(jobject value, ModelClass * type) :
+	            AnyInstance(value, type),
+	            specieContextTargetMapping(_type->_env->GetObjectField(_value, _type->_specieContextTargetMapping), &(_type->_jvm->Map)) {
+	        }
+	    };
+	    ModelClass(JVM * jvm) : AnyClass(jvm, "cz/muni/fi/thomas/NativeModel") {
+	        _specieContextTargetMapping = _env->GetFieldID(_class, "specieContextTargetMapping", "Ljava/util/Map;");
+	    }
+	};
+
 	DoubleClass Double;
 	IntegerClass Integer;
+	ByteClass Byte;
 	ListClass List;
 	MapClass Map;
 	NodeClass Node;
 	NodeFactoryClass NodeFactory;
 	ColorSetClass ColorSet;
+	ModelClass Model;
 
 	JVM(JNIEnv * env) : _env(env),
 		Double(this),
 		Integer(this),
+		Byte(this),
 		List(this),
 		Map(this),
 		Node(this),
 		NodeFactory(this),
-		ColorSet(this)	
+		ColorSet(this),
+	    Model(this)
 	 { }
 
 };

@@ -35,7 +35,6 @@ task createDirs(type: Exec) {
 task compileGenerator(dependsOn: 'createDirs', type:Exec) {
     if (os.equals('darwin')) {
         args    "-std=c++11",
-                "-O3",
                 "-I", jdk+"/include/",
                 "-I", jdk+"/include/darwin/",
                 "-c",
@@ -82,7 +81,7 @@ task buildGenerator(dependsOn: 'compileGenerator', type:Exec) {
 task generateModelIncludeFiles(dependsOn: 'fullJar', type:Exec) {
     args    "-o", srcDir+"jni_include/Model.h",
             "-classpath", "build/libs/"+project.name+"-full-"+project.version+".jar",
-            "cz.muni.fi.thomas.NetworkModel"
+            "cz.muni.fi.thomas.NativeModel"
     executable "javah"
 }
 

@@ -92,7 +92,7 @@ JNIEXPORT void JNICALL Java_cz_muni_fi_thomas_NativeModel_loadNative(
     }
 
 	structure = ConstructionManager::computeStructure(model, kinetics);
-	structure.printMe();
+//	structure.printMe();
 
 	//count parameters
 	vector<int> subspaceSizes;
@@ -138,7 +138,7 @@ JNIEXPORT void JNICALL Java_cz_muni_fi_thomas_NativeModel_loadNative(
 			auto target = factory.getNode(levelsArray);
 			node.addSuccessor(target, colors);
 			target.addPredecessor(node, colors);
-			std::cout << "Transition copied" << std::endl << std::flush;
+		//	std::cout << "Transition copied" << std::endl << std::flush;
 		}
 	}
 	delete temp;

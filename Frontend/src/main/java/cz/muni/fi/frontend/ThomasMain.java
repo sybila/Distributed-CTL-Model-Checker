@@ -66,7 +66,7 @@ public class ThomasMain {
         };
         @NotNull NetworkModel factory = new NetworkModel(partitioner);
         model.loadModel(factory);
-        factory.printOut();
+      //  factory.printOut();
 
         //prepare MPI communication environment
         @NotNull Terminator.TerminatorFactory terminatorFactory = new Terminator.TerminatorFactory(new MPITokenMessenger(MPI.COMM_WORLD));

@@ -1,6 +1,5 @@
 package cz.muni.fi.thomas;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,13 +21,13 @@ public class NativeModel {
 
     public void loadModel(NetworkModel nodeStorage) {
         loadNative(fileName, nodeStorage);
-        for (Map.Entry<String, Map<String, List<Byte>>> entry : specieContextTargetMapping.entrySet()) {
+        /*for (Map.Entry<String, Map<String, List<Byte>>> entry : specieContextTargetMapping.entrySet()) {
             System.out.println("Specie: "+entry.getKey());
             for (Map.Entry<String, List<Byte>> context : entry.getValue().entrySet()) {
                 System.out.println("Context: " + context.getKey());
                 System.out.println("Targets: "+ Arrays.toString(context.getValue().toArray()));
             }
-        }
+        }*/
     }
 
     private native void loadNative(String filename, NetworkModel nodeStorage);

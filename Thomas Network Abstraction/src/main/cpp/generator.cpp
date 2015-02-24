@@ -92,6 +92,7 @@ JNIEXPORT void JNICALL Java_cz_muni_fi_thomas_NativeModel_loadNative(
     }
 
 	structure = ConstructionManager::computeStructure(model, kinetics);
+	structure.printMe();
 
 	//count parameters
 	vector<int> subspaceSizes;

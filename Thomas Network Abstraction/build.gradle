@@ -43,7 +43,6 @@ task compileGenerator(dependsOn: 'createDirs', type:Exec) {
     } else {
         args    "-std=c++11",
                 "-fPIC",
-                "-O3",
                 "-I", jdk+"/include/",
                 "-I", jdk+"/include/linux/",
                 "-c",
@@ -74,6 +73,18 @@ task buildGenerator(dependsOn: 'compileGenerator', type:Exec) {
                 "-o", binDir+"lib"+nativeName+".so",
                 objDir+"generator.o"
     }
+    executable compiler
+}
+
+task buildParamPrinter(type:Exec) {
+    args    "-std=c++11",
+            "-lgecodesupport",
+            "-lgecodekernel",
+            "-lgecodesearch",
+            "-lgecodeminimodel",
+            "-lgecodeint",
+            "-o", "paramPrinter",
+            srcDir+"paramSpacePrinter.cpp"
     executable compiler
 }
 

@@ -41,7 +41,6 @@ namespace ConstructionManager {
 		UnparametrizedStructureBuilder unparametrized_structure_builder(model, PropertyAutomaton(), kinetics);
 		UnparametrizedStructure unparametrized_structure = unparametrized_structure_builder.buildStructure();
 		//	cout << "hi" << endl;
-		unparametrized_structure.printMe();
 		return unparametrized_structure;
 	}
 

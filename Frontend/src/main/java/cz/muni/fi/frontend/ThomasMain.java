@@ -1,6 +1,5 @@
 package cz.muni.fi.frontend;
 
-import com.google.common.collect.Lists;
 import cz.muni.fi.ctl.FormulaNormalizer;
 import cz.muni.fi.ctl.FormulaParser;
 import cz.muni.fi.ctl.formula.Formula;
@@ -21,8 +20,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by daemontus on 09/02/15.
@@ -94,7 +91,7 @@ public class ThomasMain {
         @NotNull ModelChecker<LevelNode, BitMapColorSet> modelChecker = new ModelChecker<>(factory, partitioner, taskMessenger, terminatorFactory);
         modelChecker.verify(formula);
 
-        System.out.println(" ---------  PARAMETER KEY --------- ");
+       /* System.out.println(" ---------  PARAMETER KEY --------- ");
         int[] stepSizes = new int[factory.variableOrdering.size()];
         int meanwhile = 1;
         List<String> varRev = Lists.reverse(factory.variableOrdering);
@@ -114,7 +111,7 @@ public class ThomasMain {
                 }
                 System.out.println();
             }
-        }
+        }*/
 
         //print results
         System.out.println(" ---------  RESULTS --------- ");

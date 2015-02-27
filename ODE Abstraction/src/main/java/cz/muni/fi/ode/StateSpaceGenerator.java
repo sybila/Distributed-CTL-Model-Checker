@@ -40,14 +40,15 @@ public class StateSpaceGenerator {
 
         boolean hasSelfLoop = true;
 
-        for (int v = 0; v < model.variableCount(); v++) {
+        //go through all dimension of model and compute results for each of them separately
+        for (int dimension = 0; dimension < model.variableCount(); dimension++) {
 
             boolean lowerPositiveDirection = false;
             boolean lowerNegativeDirection = false;
             boolean upperPositiveDirection = false;
             boolean upperNegativeDirection = false;
 
-            @NotNull int[][] vertices = getRightVertices(from, v, true);
+            @NotNull int[][] vertices = getRightVertices(from, dimension, true);
 
           /*  System.out.println("Vertices: ");
             for (int[] vertex : vertices) {
@@ -70,7 +71,8 @@ public class StateSpaceGenerator {
 //                paramIndex = -1;
                 denom = 0.0;
 
-                derivationValue = value(vertex, v);
+                //TODO: Don't we need to "normalize" the derivation value by old value?
+                derivationValue = value(vertex, dimension);
                // System.out.println("Derivation " + derivationValue);
                 if (paramIndex != -1) {
 
@@ -156,14 +158,14 @@ public class StateSpaceGenerator {
             //cerr << "most left  param value on lower facet: " << mostLeftOneValue << endl;
             //cerr << "most right param value on lower facet: " << mostRightOneValue << endl;
 
-            if(from.coordinates[v] != 0)	{
+            if(from.coordinates[dimension] != 0)	{
                 if(!successors) {
                     //If I want predecessors of state 's'
 
                     if(lowerPositiveDirection) {
                         //There exists edge from lower state to state 's'
                         @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
-                        newStateCoors[v] = newStateCoors[v] - 1;
+                        newStateCoors[dimension] = newStateCoors[dimension] - 1;
 
                         TreeColorSet newPS;
                         if(paramIndex != -1) {
@@ -183,7 +185,7 @@ public class StateSpaceGenerator {
                         //There exists edge from lower state to state 's'
 
                         @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
-                        newStateCoors[v] = newStateCoors[v] - 1;
+                        newStateCoors[dimension] = newStateCoors[dimension] - 1;
 
                         TreeColorSet newPS;
                         if(paramIndex != -1) {
@@ -202,7 +204,7 @@ public class StateSpaceGenerator {
 
             //I want to check upper state in this dimension only if state 's' is not at the top in this dimension
 
-            vertices = getRightVertices(from, v, false);
+            vertices = getRightVertices(from, dimension, false);
            /* System.out.println("Vertices: ");
             for (int[] vertex : vertices) {
                 for (int a : vertex) {
@@ -223,7 +225,7 @@ public class StateSpaceGenerator {
 //				paramIndex = -1;
                 denom = 0.0;
 
-                derivationValue = value(vertex, v);
+                derivationValue = value(vertex, dimension);
 
                 if (paramIndex != -1) {
 
@@ -309,14 +311,14 @@ public class StateSpaceGenerator {
             //cerr << "most left  param value on upper facet: " << mostLeftOneValue << endl;
             //cerr << "most right param value on upper facet: " << mostRightOneValue << endl;
 
-            if(from.coordinates[v] != model.getThresholdRanges().get(v).upperEndpoint() - 1) {
+            if(from.coordinates[dimension] != model.getThresholdRanges().get(dimension).upperEndpoint() - 1) {
                 if(!successors) {
                     //If I want predecessors of state 's'
 
                     if(upperNegativeDirection) {
                         //There exists edge from lower state to state 's'
                         @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
-                        newStateCoors[v] = newStateCoors[v] + 1;
+                        newStateCoors[dimension] = newStateCoors[dimension] + 1;
 
                         TreeColorSet newPS;
                         if(paramIndex != -1) {
@@ -338,7 +340,7 @@ public class StateSpaceGenerator {
                         //There exists edge from lower state to state 's'
 
                         @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
-                        newStateCoors[v] = newStateCoors[v] + 1;
+                        newStateCoors[dimension] = newStateCoors[dimension] + 1;
 
                         TreeColorSet newPS;
                         if(paramIndex != -1) {
@@ -372,102 +374,127 @@ public class StateSpaceGenerator {
         return results;
     }
 
+    /**
+     * Compute derivation in given vertex for specified dimension.
+     * @param vertex
+     * @param dim
+     * @return
+     */
     private double value(int[] vertex, int dim) {
         double sum = 0;
 
         paramIndex = -1;
 
-        List<SumMember> equation = model.getEquationForVariable(dim);
-        for (@NotNull SumMember sumMember : equation) {
-            //adding value of constant in actual summember 's' of equation for variable 'dim'
-            double underSum = sumMember.getConstant();
+        for (@NotNull SumMember sumMember : model.getEquationForVariable(dim)) {
+            //init partial sum to constant part of the equation member
+            double partialSum = sumMember.getConstant();
 
-            //if(dbg) std::cerr << "\tconstant is " << underSum << "\n";
-
-            //adding values of variables in actual summember 's' of equation for variable 'dim' in given point
-            List<Integer> vars = sumMember.getVars();
-            for (Integer var : vars) {
-                int actualVarIndex = var - 1;
-                double thres = model.getThresholdForVarByIndex(actualVarIndex, vertex[actualVarIndex]);
-                //if(dbg) std::cerr << "\tthres for var " << actualVarIndex << " is " << thres << "\n";
-                underSum *= thres;
+            //multiply partialSum by actual value of every threshold relevant to this sum member
+            for (Integer variableIndex : sumMember.getVars()) {
+                //sum member indexes it's variables from 1, so we need to subtract 1 to fit model
+                partialSum *= model.getThresholdForVarByIndex(variableIndex - 1, vertex[variableIndex - 1]);
             }
 
-            //cerr << "start of evalueting of ramps\n";
-
-            //adding enumerated ramps for actual summember 's' of equation for variable 'dim'
+            //multiply partialSum by values of all ramps relevant to this sum member
             for (@NotNull Ramp ramp : sumMember.getRamps()) {
-                //cerr << "ramp: " << dataModel.getSumForVarByIndex(dim, s).GetRamps().at(r) << endl;
-                int rampVarIndex = ramp.dim - 1;
-                //cerr << "ramp var index: " << rampVarIndex << endl;
-                double thres = model.getThresholdForVarByIndex(rampVarIndex, vertex[rampVarIndex]);
-                //cerr << "thres for this var: " << thres << endl;
-                underSum *= ramp.value(thres);
-                //cerr << "local underSum = " << underSum << endl;
+                //ramp, as sum member, indexes variables from 1, therefore -1
+                partialSum *= ramp.value(model.getThresholdForVarByIndex(ramp.dim - 1, vertex[ramp.dim - 1]));
             }
 
-            //adding enumerated step functions for actual summember 's' of equation for variable 'dim'
+            //multiply partialSum by values of all step functions relevant to this sum member
             for (@NotNull Step step : sumMember.getSteps()) {
-                int stepVarIndex = step.dim - 1;
-                double thres = model.getThresholdForVarByIndex(stepVarIndex, vertex[stepVarIndex]);
-                underSum *= step.value(thres);
+                //step, as sum member, indexes variables from 1, therefore -1
+                partialSum *= step.value(model.getThresholdForVarByIndex(step.dim - 1, vertex[step.dim - 1]));
             }
 
-            //adding average value of actual summember's parameter, if any exists
             if (sumMember.hasParam()) {
-                if (!parametrized) {
+                if (!parametrized) {    //in this model checker, parametrized is exclusively true
+                    //if we want to ignore parameters, we just add there an average for lower and upper parameter limit
                     Range<Double> param = model.getParameterRange().get(sumMember.getParam() - 1);
-                    underSum *= (param.lowerEndpoint() + param.upperEndpoint()) * 0.5;
-                    //adding enumerated summember 's' to sum
-                    sum += underSum;
+                    partialSum *= (param.lowerEndpoint() + param.upperEndpoint()) * 0.5;
+                    sum += partialSum;
                 } else {
+                    //else, we set values for following parameter splitting computation
                     paramIndex = sumMember.getParam() - 1;
-                    denom += underSum;
+                    denom += partialSum;
                 }
 
             } else {
-                //adding enumerated summember 's' to sum
-                sum += underSum;
+                //if sum member does not have a parameter, just add all of this to the final sum
+                sum += partialSum;
             }
 
         }
-        //if ( dbg ) std::cerr << "final value = " << sum << std::endl;
+
         return sum;
     }
 
+    /**
+     * Compute coordinates of all border vertices of given node when one dimension is fixed
+     * to only lower or higher threshold.
+     * (Vertex - coordinates of thresholds; Node - coordinates of "space" between several vertices.)
+     *
+     * @param node Questioned node.
+     * @param fixedDimension Index of fixed dimension.
+     * @param lowerThreshold If true, only lower threshold is considered on fixed dimension. Higher otherwise.
+     * @return Array of vertex coordinates that match given constrains.
+     */
     @NotNull
-    private int[][] getRightVertices(@NotNull CoordinateNode from, int dim, boolean lower) {
-        int totalNodes = IntMath.pow(2, model.variableCount() - 1);
-        @NotNull int[][] results = new int[totalNodes][model.variableCount()];
-        @NotNull int[] coors = new int[model.variableCount()];
-        @NotNull int[] repetitions = new int[model.variableCount()];
-        int activeIndex = 0;
-        int activeNode = 0;
+    private int[][] getRightVertices(@NotNull CoordinateNode node, int fixedDimension, boolean lowerThreshold) {
+        //TODO: Optimization tip: Computation is done on one thread and all array sizes are fixed based on model,
+        //therefore all these arrays don't need to be allocated all over again in every call of this function.
+
+        //number of border vertices that we need to consider in computation
+        //n-dimensional node has 2^n vertices, but we have one dimension fixed, therefore -1
+        int numberOfAdjacentNodes = IntMath.pow(2, model.variableCount() - 1);
+
+        //array of vertex coordinates that we wanted to compute
+        @NotNull int[][] results = new int[numberOfAdjacentNodes][model.variableCount()];
+
+        //helper array that holds incomplete coordinates during computation
+        @NotNull int[] coordinateBuffer = new int[model.variableCount()];
+
+        //helper array that specifies whether the dimension is fully computed
+        @NotNull boolean[] needsMoreWork = new boolean[model.variableCount()];
+
+        int activeIndex = 0;        //which dimension of coordinates we are working on
+        int resultCounter = 0;      //index in results where we want to write final coordinates
+        //this is basically simulating recursion using the needsMoreWork array.
+        //magic begins here
         while (activeIndex >= 0) {
             if (activeIndex == model.variableCount()) {
-                System.arraycopy(coors, 0, results[activeNode], 0, model.variableCount());
+                //if all dimensions are processed, copy buffer into results and move to lower dimension
+                System.arraycopy(coordinateBuffer, 0, results[resultCounter], 0, model.variableCount());
+                resultCounter++;
                 activeIndex--;
-                while (activeIndex >= 0 && repetitions[activeIndex] == 0) {
+                //skip dimensions that are already completed
+                while (activeIndex >= 0 && !needsMoreWork[activeIndex]) {
                     activeIndex--;
                 }
-                activeNode++;
-            } else if (activeIndex == dim){
-                repetitions[activeIndex] = 0;
-                if (lower) {
-                    coors[activeIndex] = from.coordinates[activeIndex];
+            } else if (activeIndex == fixedDimension) {
+                //if we are working on fixed dimension, we do not process both lower and higher thresholds,
+                //we decide based on parameter whether we want strictly lower or higher
+                if (lowerThreshold) {
+                    //index of lower node threshold
+                    coordinateBuffer[activeIndex] = node.coordinates[activeIndex];
                 } else {
-                    coors[activeIndex] = from.coordinates[activeIndex] + 1;
+                    //index of higher node threshold
+                    coordinateBuffer[activeIndex] = node.coordinates[activeIndex] + 1;
                 }
-                activeIndex++;
+                needsMoreWork[activeIndex] = false;
+                activeIndex++;  //move to higher dimension
             } else {
-                if (repetitions[activeIndex] == 0) {
-                    repetitions[activeIndex] = 1;
-                    coors[activeIndex] = from.coordinates[activeIndex];
+                //if we are working on any general dimension, we first process all lower thresholds and
+                //mark dimension as not completed. When all lower thresholds are prepared, we process all higher
+                //thresholds and only after that mark the dimension as done.
+                if (!needsMoreWork[activeIndex]) {
+                    needsMoreWork[activeIndex] = true;
+                    coordinateBuffer[activeIndex] = node.coordinates[activeIndex];
                 } else {
-                    repetitions[activeIndex] = 0;
-                    coors[activeIndex] = from.coordinates[activeIndex] + 1;
+                    needsMoreWork[activeIndex] = false;
+                    coordinateBuffer[activeIndex] = node.coordinates[activeIndex] + 1;
                 }
-                activeIndex++;
+                activeIndex++; //move to higher dimension
             }
         }
 

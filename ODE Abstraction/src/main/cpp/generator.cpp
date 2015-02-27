@@ -56,7 +56,7 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
         Parser parser(modelfile2);
         parser.parse();
         odeModel = parser.returnStorage();
-        odeModel.RunAbstraction();
+        odeModel.RunAbstraction(false);
         generator = new StateSpaceGenerator(odeModel, true);
 
 /*
@@ -84,7 +84,7 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
 	        auto newRange = jvm.Range.closed(paramRanges[i].first, paramRanges[i].second);
 	        model.paramList.add(newRange.object());
         }
-        //read threashold ranges and add them to javao model object
+        //read threashold ranges and add them to java model object
         for (int i = 0; i < odeModel.getDims(); ++i)
         {
         	//write threshold range

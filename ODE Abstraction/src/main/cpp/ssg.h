@@ -66,7 +66,6 @@ ParameterSpace::ParameterSpace(vector<list<pair<double, double> > > data) {
   this->ps = data;
 }
 
-
 void ParameterSpace::setParamRange(size_t paramIndex, pair<double,double> paramRange) {
 	if(ps.empty() || ps.size() < paramIndex || paramIndex < 0) {
 		cerr << "ERROR: Wrong parameter index (" << paramIndex << "), size of ps is " << ps.size() << endl;
@@ -134,7 +133,7 @@ void ParameterSpace::addParamRange(size_t paramIndex, pair<double,double> paramR
 
 ParameterSpace ParameterSpace::derivedParamSpace(const ParameterSpace& ps, int pIndex, double lpValue, double rpValue) {
 	ParameterSpace newPS(ps);
-	//std::cout << "Derive c" << lpValue << " " << rpValue << std::endl;
+	
 	if(lpValue <= ps.ps.at(pIndex).front().first && rpValue >= ps.ps.at(pIndex).back().second) {
 		//whole param interval (with index pIndex) of this param space will be in returned param space
 		return newPS;
@@ -350,8 +349,8 @@ ostream& operator<<(ostream& out,const State& st) {
 	for(size_t i = 1; i < st.getCoors().size(); i++) {
 		out << "," << st.getCoors().at(i);
 	}
-	out << "]";
-	//out << st.colors << endl;
+	out << "] : ";
+	out << st.colors << endl;
 	return out;
 }
 
@@ -453,13 +452,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 			//I want to check lower state in this dimension only if state 's' is not at the bottom in this dimension
 
 			vector<vector<size_t> > vertices = getRightVertices(s, v, true);
-		/*	cout << "Vertices: " << endl;
-			for (int a=0; a < vertices.size(); a++) {
-				for (int b=0; b < vertices.size(); b++) {
-					cout << vertices[a][b] << " ";
-				}
-				cout << endl;
-			}*/
+
 			vector<double> paramValues;
 			int paramIndex = -1;
 //			double oneParamValue = numeric_limits<double>::max();
@@ -474,13 +467,13 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 				double denom = 0.0;
 			
 				derivationValue = value(vertices.at(i),v,paramIndex,denom);
-			//	cout << "Derivation " << derivationValue << endl;
+			
 				if(paramIndex != -1) {
 
 					if(abs(denom) != 0) {
 					
-						paramValues.push_back(derivationValue/(-denom) == -0 ? 0 : derivationValue/(-denom));
-						//cerr << dataModel.getParamName(paramIndex) << " = " << derivationValue << "/" << -denom << " = " << paramValues.back() << endl;
+						paramValues.push_back((-derivationValue/denom) == -0 ? 0 : (-derivationValue/denom));
+						cerr << dataModel.getParamName(paramIndex) << " = " << -derivationValue << "/" << denom << " = " << paramValues.back() << endl;
 						
 						if(s.getColors().getParamSpace().at(paramIndex).empty())
 							cerr << "Error: no interval for parameter " << dataModel.getParamName(paramIndex) << endl;
@@ -488,12 +481,48 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 						// lowest and highest values of parameter space for chosen variable
 						double lowestParamValue = s.getColors().getParamSpace().at(paramIndex).front().first;
 						double highestParamValue = s.getColors().getParamSpace().at(paramIndex).back().second;
-						//std::cout << "Bounds: " << lowestParamValue << " " << highestParamValue << std::endl;
+						
 						if(lowestParamValue > highestParamValue)
 							swap(lowestParamValue, highestParamValue);
 					
+						if(isSucc) {
+							if(denom < 0 && highestParamValue >= paramValues.back()) {
+								lowerNegativeDirection = true;
+								
+								if( mostLeftOneValue == numeric_limits<double>::lowest() || 
+								(biggestConvexHullOfParamSubspace && mostLeftOneValue > paramValues.back()) ||
+								(!biggestConvexHullOfParamSubspace && mostLeftOneValue < paramValues.back()) )
+									mostLeftOneValue = paramValues.back();
+							}
+							if(derivationValue < 0 && denom > 0 && lowestParamValue <= paramValues.back()) {
+								lowerNegativeDirection = true;
+								
+								if( mostRightOneValue == numeric_limits<double>::max() ||
+								(biggestConvexHullOfParamSubspace && mostRightOneValue < paramValues.back()) ||
+								(!biggestConvexHullOfParamSubspace && mostRightOneValue > paramValues.back()) )
+									mostRightOneValue = paramValues.back();
+							}
+						} else {	// ! isSucc
+							if(denom > 0 && highestParamValue >= paramValues.back()) {
+								lowerPositiveDirection = true;
+								
+								if( mostLeftOneValue == numeric_limits<double>::lowest() || 
+								(biggestConvexHullOfParamSubspace && mostLeftOneValue > paramValues.back()) ||
+								(!biggestConvexHullOfParamSubspace && mostLeftOneValue < paramValues.back()) )
+									mostLeftOneValue = paramValues.back();
+							}
+							if(derivationValue > 0 && denom < 0 && lowestParamValue <= paramValues.back()) {
+								lowerPositiveDirection = true;
+								
+								if( mostRightOneValue == numeric_limits<double>::max() ||
+								(biggestConvexHullOfParamSubspace && mostRightOneValue < paramValues.back()) ||
+								(!biggestConvexHullOfParamSubspace && mostRightOneValue > paramValues.back()) )
+									mostRightOneValue = paramValues.back();
+							}
+						}
+					
 						// works for (paramValues.back() < 0),  (paramValues.back() > 0) and (paramValues.back() == 0)
-						if(denom < 0) {
+/*						if(denom < 0) {
 							if(!isSucc && lowestParamValue <= paramValues.back()) {
 								lowerPositiveDirection = true;
 								
@@ -528,7 +557,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 									mostLeftOneValue = paramValues.back();
 							}
 						}
-					
+*/					
 /*					
 						if(isSucc) {	
 												
@@ -555,8 +584,23 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 						} */
 						
 					} else {	// abs(denom) == 0 (ERGO: it might be at border of state space)
-						//cerr << "derivation = " << derivationValue << " --> parameter unknown" << endl;
-						if(derivationValue < 0) {
+						cerr << "derivation = " << derivationValue << " --> parameter unknown" << endl;
+						
+						if(isSucc) {
+							if(derivationValue < 0) {
+								lowerNegativeDirection = true;
+								mostLeftOneValue = (biggestConvexHullOfParamSubspace ? -100000.0 : numeric_limits<double>::lowest());
+								mostRightOneValue = (biggestConvexHullOfParamSubspace ? 100000.0 : numeric_limits<double>::max());
+							}
+						} else {	// ! isSucc
+							if(derivationValue > 0) {
+								lowerPositiveDirection = true;
+								mostLeftOneValue = (biggestConvexHullOfParamSubspace ? -100000.0 : numeric_limits<double>::lowest());
+								mostRightOneValue = (biggestConvexHullOfParamSubspace ? 100000.0 : numeric_limits<double>::max());
+							}
+						}
+						
+/*						if(derivationValue < 0) {
 							lowerNegativeDirection = true;
 							
 							if(isSucc) {
@@ -570,20 +614,21 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 								mostLeftOneValue = (biggestConvexHullOfParamSubspace ? -100000.0 : numeric_limits<double>::lowest()); //TODO: mozno nahradit (-100000.0) za (numeric_limits<double>::lowest())+1)
 								mostRightOneValue = (biggestConvexHullOfParamSubspace ? 100000.0 : numeric_limits<double>::max()); //TODO: mozno nahradit (100000.0) za (numeric_limits<double>::max())-1)
 							}
-						} 						
+						}
+*/						
 					}
 				} else {	// paramIndex == -1 (ERGO: no unknown parameter in equation)
-					//cerr << "derivation = " << derivationValue << endl;
+					cerr << "derivation = " << derivationValue << endl;					
 					if(derivationValue < 0) {
 						lowerNegativeDirection = true;
-					} else {
+					} else {	// zistit ci tu nema byt if(derivationValue > 0)
 						lowerPositiveDirection = true;
 					} 
 				}
 			}
 			
-			//cerr << "most left  param value on lower facet: " << mostLeftOneValue << endl;
-			//cerr << "most right param value on lower facet: " << mostRightOneValue << endl;
+			cerr << "most left  param value on lower facet: " << mostLeftOneValue << endl;
+			cerr << "most right param value on lower facet: " << mostRightOneValue << endl;
 		
 			if(s.getCoors().at(v) != 0)	{
 				if(!isSucc) {
@@ -640,13 +685,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 			//I want to check upper state in this dimension only if state 's' is not at the top in this dimension
 		
 			vector<vector<size_t> > vertices = getRightVertices(s, v, false);			
-		/*	cout << "Vertices: " << endl;
-            			for (int a=0; a < vertices.size(); a++) {
-            				for (int b=0; b < vertices.size(); b++) {
-            					cout << vertices[a][b] << " ";
-            				}
-            				cout << endl;
-            			}*/
+			
 			vector<double> paramValues;
 			int paramIndex = -1;
 //			double oneParamValue = numeric_limits<double>::max();
@@ -665,8 +704,8 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 				if(paramIndex != -1) {
 				
 					if(abs(denom) != 0) {
-						paramValues.push_back(derivationValue/(denom != 0.0 ? -denom : 1) == -0 ? 0 : derivationValue/(denom != 0.0 ? -denom : 1));
-						//cerr << dataModel.getParamName(paramIndex) << " = " << derivationValue << "/" << -denom << " = " << paramValues.back() << endl;
+						paramValues.push_back((-derivationValue/denom) == -0 ? 0 : -derivationValue/denom);
+						cerr << dataModel.getParamName(paramIndex) << " = " << -derivationValue << "/" << denom << " = " << paramValues.back() << endl;
 						
 						if(s.getColors().getParamSpace().at(paramIndex).empty())
 							cerr << "Error: no interval for parameter " << dataModel.getParamName(paramIndex) << endl;
@@ -678,8 +717,44 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 						if(lowestParamValue > highestParamValue)
 							swap(lowestParamValue, highestParamValue);
 
+						if(!isSucc) {
+							if(denom < 0 && highestParamValue >= paramValues.back()) {
+								upperNegativeDirection = true;
+								
+								if( mostLeftOneValue == numeric_limits<double>::lowest() || 
+								(biggestConvexHullOfParamSubspace && mostLeftOneValue > paramValues.back()) ||
+								(!biggestConvexHullOfParamSubspace && mostLeftOneValue < paramValues.back()) )
+									mostLeftOneValue = paramValues.back();
+							}
+							if(derivationValue < 0 && denom > 0 && lowestParamValue <= paramValues.back()) {
+								upperNegativeDirection = true;
+								
+								if( mostRightOneValue == numeric_limits<double>::max() ||
+								(biggestConvexHullOfParamSubspace && mostRightOneValue < paramValues.back()) ||
+								(!biggestConvexHullOfParamSubspace && mostRightOneValue > paramValues.back()) )
+									mostRightOneValue = paramValues.back();
+							}
+						} else {	// isSucc
+							if(denom > 0 && highestParamValue >= paramValues.back()) {
+								upperPositiveDirection = true;
+								
+								if( mostLeftOneValue == numeric_limits<double>::lowest() || 
+								(biggestConvexHullOfParamSubspace && mostLeftOneValue > paramValues.back()) ||
+								(!biggestConvexHullOfParamSubspace && mostLeftOneValue < paramValues.back()) )
+									mostLeftOneValue = paramValues.back();
+							}
+							if(derivationValue > 0 && denom < 0 && lowestParamValue <= paramValues.back()) {
+								upperPositiveDirection = true;
+								
+								if( mostRightOneValue == numeric_limits<double>::max() ||
+								(biggestConvexHullOfParamSubspace && mostRightOneValue < paramValues.back()) ||
+								(!biggestConvexHullOfParamSubspace && mostRightOneValue > paramValues.back()) )
+									mostRightOneValue = paramValues.back();
+							}
+						}
+
 						// works for (paramValues.back() < 0),  (paramValues.back() > 0) and (paramValues.back() == 0)			
-						if(denom < 0) {
+/*						if(denom < 0) {
 							if(isSucc && lowestParamValue <= paramValues.back()) {
 								upperPositiveDirection = true;
 								
@@ -714,7 +789,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 									mostLeftOneValue = paramValues.back();
 							}
 						}
-
+*/
 /*					
 						if(isSucc) {
 					
@@ -741,8 +816,23 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 						} */
 						
 					} else {	// abs(denom) == 0 (ERGO: it might be at border of state space)
-					//	cerr << "derivation = " << derivationValue << " --> parameter unknown" << endl;
-						if(derivationValue < 0) {
+						cerr << "derivation = " << derivationValue << " --> parameter unknown" << endl;					
+						
+						if(!isSucc) {
+							if(derivationValue < 0) {
+								upperNegativeDirection = true;
+								mostLeftOneValue = (biggestConvexHullOfParamSubspace ? -100000.0 : numeric_limits<double>::lowest());
+								mostRightOneValue = (biggestConvexHullOfParamSubspace ? 100000.0 : numeric_limits<double>::max());
+							}
+						} else {	// ! isSucc
+							if(derivationValue > 0) {
+								upperPositiveDirection = true;
+								mostLeftOneValue = (biggestConvexHullOfParamSubspace ? -100000.0 : numeric_limits<double>::lowest());
+								mostRightOneValue = (biggestConvexHullOfParamSubspace ? 100000.0 : numeric_limits<double>::max());
+							}
+						}
+
+/*						if(derivationValue < 0) {
 							upperNegativeDirection = true;
 							
 							if(!isSucc) {
@@ -756,11 +846,12 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 								mostLeftOneValue = (biggestConvexHullOfParamSubspace ? -100000.0 : numeric_limits<double>::lowest()); //TODO: mozno nahradit (-100000.0) za (numeric_limits<double>::lowest())+1)
 								mostRightOneValue = (biggestConvexHullOfParamSubspace ? 100000.0 : numeric_limits<double>::max()); //TODO: mozno nahradit (100000.0) za (numeric_limits<double>::max())-1)
 							}
-						} 						
+						}
+*/						
 					}
 					
 				} else {	// paramIndex == -1 (ERGO: no unknown parameter in equation)
-				//	cerr << "derivation = " << derivationValue << endl;
+					cerr << "derivation = " << derivationValue << endl;					
 					if(derivationValue < 0) {
 						upperNegativeDirection = true;
 					} else {
@@ -769,8 +860,8 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 				}
 			}
 			
-			//cerr << "most left  param value on upper facet: " << mostLeftOneValue << endl;
-			//cerr << "most right param value on upper facet: " << mostRightOneValue << endl;
+			cerr << "most left  param value on upper facet: " << mostLeftOneValue << endl;
+			cerr << "most right param value on upper facet: " << mostRightOneValue << endl;
 		
 			if(s.getCoors().at(v) != dataModel.getThresholdsForVariable(v).size() -2) {		
 				if(!isSucc) {

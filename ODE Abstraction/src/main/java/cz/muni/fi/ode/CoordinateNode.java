@@ -11,8 +11,8 @@ import java.util.Map;
 
 public class CoordinateNode implements Node {
 
-    @NotNull
-    public final int[] coordinates;
+    public int[] coordinates;
+    private long hash;
 
     private int owner = -1;
 
@@ -21,12 +21,10 @@ public class CoordinateNode implements Node {
 
     private Map<CoordinateNode, TreeColorSet> predecessors;
 
-    public CoordinateNode(@NotNull int[] coordinates) {
-        this.coordinates = Arrays.copyOf(coordinates, coordinates.length);
-    }
-
-    public int getCoordinate(int dimension) {
-        return coordinates[dimension];
+    public CoordinateNode(@NotNull int[] coordinates, long hash) {
+        this.coordinates = new int[coordinates.length];
+        System.arraycopy(coordinates, 0, this.coordinates, 0, coordinates.length);
+        this.hash = hash;
     }
 
     public synchronized boolean hasPredecessorsFor() {
@@ -49,6 +47,10 @@ public class CoordinateNode implements Node {
             }
         }
         return results;
+    }
+
+    public int getCoordinate(int dim) {
+        return coordinates[dim];
     }
 
     public void purgeFormula(Formula formula) {
@@ -77,21 +79,29 @@ public class CoordinateNode implements Node {
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(coordinates);
+        return (int) hash;
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof CoordinateNode) {
             @NotNull CoordinateNode n = (CoordinateNode) obj;
-            return Arrays.equals(coordinates, n.coordinates);
+            return hash == n.hash;
         }
         return false;
+    }
+
+    public long getHash() {
+        return hash;
     }
 
     @NotNull
     @Override
     public String toString() {
+        return Arrays.toString(coordinates) /*+" formulae: "+formulae.toString()*/;
+    }
+
+    public String fullString() {
         return Arrays.toString(coordinates) +" formulae: "+formulae.toString();
     }
 

@@ -4,6 +4,7 @@ import com.google.common.collect.Range;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -18,10 +19,16 @@ public class OdeModel {
     private final List<Range<Double>> variableRange = new ArrayList<>();
     @NotNull
     private final List<Range<Double>> parameterRange = new ArrayList<>();
-
+    @NotNull
+    private final List<String> variableOrder = new ArrayList<>();
+    @NotNull
     private final List<List<Double>> thresholds = new ArrayList<>();
-
+    @NotNull
     private final List<List<SumMember>> equations = new ArrayList<>();
+
+    //local support data
+    private long[] dimensionMultipliers;
+    private long stateCount;
 
     public OdeModel(String filename) {
         this.filename = filename;
@@ -29,6 +36,30 @@ public class OdeModel {
 
     public void load() {
         cppLoad(filename);
+        dimensionMultipliers = new long[getVariableCount()];
+        stateCount = 1;
+        //count all states and prepare ordering
+        for (int i=0; i < getVariableCount(); i++) {
+            dimensionMultipliers[i] = stateCount;
+            Range<Double> range = getThresholdRanges().get(i);
+            stateCount *= (int) (range.upperEndpoint() - range.lowerEndpoint());
+        }
+    }
+
+    public long nodeHash(@NotNull int[] nodeCoordinates) {
+        long res = 0;
+        for (int i=0; i < dimensionMultipliers.length; i++) {
+            res += dimensionMultipliers[i] * nodeCoordinates[i];
+        }
+        return res;
+    }
+
+    public long getDimensionMultiplier(int dim) {
+        return dimensionMultipliers[dim];
+    }
+
+    public long getStateCount() {
+        return stateCount;
     }
 
     private native void cppLoad(String filename);
@@ -52,7 +83,16 @@ public class OdeModel {
         return set;
     }
 
-    public int variableCount() {
+    public int getVarIndex(String var) {
+        for (int i=0; i<variableOrder.size(); i++) {
+            if (var.equals(variableOrder.get(i))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public int getVariableCount() {
         return variableRange.size();
     }
 
@@ -61,7 +101,11 @@ public class OdeModel {
     }
 
     public List<SumMember> getEquationForVariable(int dim) {
-        return equations.get(dim);
+        return Collections.unmodifiableList(equations.get(dim));
+    }
+
+    public int getThresholdsForVarCount(int varIndex) {
+        return thresholds.get(varIndex).size();
     }
 
     public double getThresholdForVarByIndex(int actualVarIndex, int i) {

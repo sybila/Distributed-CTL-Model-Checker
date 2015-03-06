@@ -91,6 +91,8 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
         	std::vector<double> thresholds = odeModel.getThresholdsForVariable(i);
 	        auto newRange = jvm.Range.closed(0, thresholds.size() - 1);
 	        model.varList.add(newRange.object());
+	        //init name->index function
+	        model.variableOrder.add(env->NewStringUTF(odeModel.getVariable(i).c_str()));
 	        //copy thresholds
         	auto tList = jvm.List.create();
         	for (int j = 0; j < thresholds.size(); j++) {
@@ -202,7 +204,7 @@ JNIEXPORT jobject JNICALL Java_cz_muni_fi_ode_NodeFactory_getNativeInit(
 		Operators(jOp), 
 		(double) jTh, 
 		borders
-	);	
+	);
 	saveStatesToMap(data, results, factory, jvm);
 	return results.object();
 }

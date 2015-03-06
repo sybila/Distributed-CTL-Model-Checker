@@ -10,6 +10,7 @@ import cz.muni.fi.modelchecker.graph.ColorSet;
 import org.antlr.v4.runtime.misc.Nullable;
 import org.jetbrains.annotations.NotNull;
 
+import java.lang.reflect.Array;
 import java.util.*;
 
 public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
@@ -18,8 +19,8 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
     @NotNull
     private final Set<FloatProposition> revealedPropositions = new HashSet<>();
 
-    private final Map<Integer, CoordinateNode> nodeCache = new HashMap<>();
-    private final Map<Integer, CoordinateNode> borderNodes = new HashMap<>();
+    private final Map<Long, CoordinateNode> nodeCache = new HashMap<>();
+    private final Map<Long, CoordinateNode> borderNodes = new HashMap<>();
     private final OdeModel model;
     @NotNull
     private final CoordinatePartitioner partitioner;
@@ -39,13 +40,13 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
     }
 
     public synchronized CoordinateNode getNode(@NotNull int[] coordinates) {
-        int hash = Arrays.hashCode(coordinates);
+        long hash = model.nodeHash(coordinates);
         if (nodeCache.containsKey(hash)) {
             return nodeCache.get(hash);
         } else if (borderNodes.containsKey(hash)) {
             return borderNodes.get(hash);
         } else {
-            @NotNull CoordinateNode n = new CoordinateNode(coordinates);
+            @NotNull CoordinateNode n = new CoordinateNode(coordinates, hash);
             if (partitioner.getNodeOwner(n) == myId) {
                 nodeCache.put(hash, n);
             } else {
@@ -97,11 +98,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {
             @NotNull FloatProposition proposition = (FloatProposition) formula;
             revealedPropositions.add(proposition);
-            @NotNull Map<CoordinateNode, TreeColorSet> values = getNativeInit(
-                    proposition.getVariable(),
-                    proposition.getNativeOperator(),
-                    proposition.getThreshold(),
-                    partitioner.getMyLimit(), new HashMap<CoordinateNode, TreeColorSet>());
+            @NotNull Map<CoordinateNode, TreeColorSet> values = generator.initial(proposition, partitioner.getMyLimit());
             for (@NotNull Map.Entry<CoordinateNode, TreeColorSet> entry : values.entrySet()) {
                 entry.getKey().addFormula(proposition, entry.getValue());
             }
@@ -109,10 +106,10 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
             //return values;
         }
         @NotNull Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
-        for (@NotNull CoordinateNode n : nodeCache.values()) {
-            TreeColorSet validColors = n.getValidColors(formula);
+        for (CoordinateNode node : nodeCache.values()) {
+            TreeColorSet validColors = node.getValidColors(formula);
             if (validColors != null && !validColors.isEmpty()) {
-                results.put(n, validColors);
+                results.put(node, validColors);
             }
         }
         return results;
@@ -141,7 +138,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
 
     @Override
     public synchronized boolean addFormula(@NotNull CoordinateNode node, @NotNull Formula formula, @NotNull TreeColorSet parameters) {
-        return node.addFormula(formula,parameters);
+        return node.addFormula(formula, parameters);
     }
 
     @NotNull
@@ -152,11 +149,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {
             @NotNull FloatProposition proposition = (FloatProposition) formula;
             revealedPropositions.add(proposition);
-            @NotNull Map<CoordinateNode, TreeColorSet> values = getNativeInit(
-                    proposition.getVariable(),
-                    proposition.getNativeOperator(),
-                    proposition.getThreshold(),
-                    partitioner.getMyLimit(), new HashMap<CoordinateNode, TreeColorSet>());
+            @NotNull Map<CoordinateNode, TreeColorSet> values = generator.initial(proposition, partitioner.getMyLimit());
             for (@NotNull Map.Entry<CoordinateNode, TreeColorSet> entry : values.entrySet()) {
                 entry.getKey().addFormula(proposition, entry.getValue());
             }

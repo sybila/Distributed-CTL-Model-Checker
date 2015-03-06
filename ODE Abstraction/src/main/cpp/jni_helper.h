@@ -228,6 +228,7 @@ public:
 		jfieldID _varList;
 		jfieldID _thresholdList;
 		jfieldID _equationList;
+		jfieldID _variableOrder;
 	public:
 		class Instance : public AnyInstance<ModelClass> {
 		public:
@@ -235,12 +236,14 @@ public:
 			ListClass::Instance varList;
 			ListClass::Instance thresholds;
 			ListClass::Instance equations;
+			ListClass::Instance variableOrder;
 			Instance(jobject value, ModelClass * type) : 
 				AnyInstance(value, type), 
 				paramList(_type->_env->GetObjectField(_value, _type->_paramList), &(_type->_jvm->List)),
 				thresholds(_type->_env->GetObjectField(_value, _type->_thresholdList), &(_type->_jvm->List)),
 				equations(_type->_env->GetObjectField(_value, _type->_equationList), &(_type->_jvm->List)),
-				varList(_type->_env->GetObjectField(_value, _type->_varList), &(_type->_jvm->List)) {
+				varList(_type->_env->GetObjectField(_value, _type->_varList), &(_type->_jvm->List)),
+				variableOrder(_type->_env->GetObjectField(_value, _type->_variableOrder), &(_type->_jvm->List)) {
 			}
 		};
 		ModelClass(JVM * jvm) : AnyClass(jvm, "cz/muni/fi/ode/OdeModel") {
@@ -248,6 +251,7 @@ public:
 			_varList = _env->GetFieldID(_class, "variableRange", "Ljava/util/List;");
 			_thresholdList = _env->GetFieldID(_class, "thresholds", "Ljava/util/List;");
 			_equationList = _env->GetFieldID(_class, "equations", "Ljava/util/List;");
+			_variableOrder = _env->GetFieldID(_class, "variableOrder", "Ljava/util/List;");
 		}
 	};
 

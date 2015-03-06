@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 public class ODEMain {
 
@@ -53,7 +54,7 @@ public class ODEMain {
 
         //prepare MPI communication environment
         @NotNull Terminator.TerminatorFactory terminatorFactory = new Terminator.TerminatorFactory(new MPITokenMessenger(MPI.COMM_WORLD));
-        @NotNull TaskMessenger<CoordinateNode, TreeColorSet> taskMessenger = new MpiTaskMessenger(MPI.COMM_WORLD, model.variableCount(), factory, model);
+        @NotNull TaskMessenger<CoordinateNode, TreeColorSet> taskMessenger = new MpiTaskMessenger(MPI.COMM_WORLD, model.getVariableCount(), factory, model);
 
         //prepare model checker and run verification
         @NotNull ModelChecker<CoordinateNode, TreeColorSet> modelChecker = new ModelChecker<>(factory, partitioner, taskMessenger, terminatorFactory);
@@ -62,7 +63,7 @@ public class ODEMain {
         //print results
         if (args.length >= 3 && args[args.length - 3].equals("--all")) {
             for (@NotNull CoordinateNode node : factory.getNodes()) {
-                System.out.println(node.toString());
+                System.out.println(node.fullString());
             }
         } else if (args.length >= 3 && !args[args.length - 3].equals("--none")) {
             for (@NotNull CoordinateNode node : factory.getNodes()) {

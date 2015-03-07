@@ -60,7 +60,7 @@ public class StateSpaceGenerator {
      */
     @NotNull
     public Map<CoordinateNode, TreeColorSet> getPredecessors(@NotNull CoordinateNode from, @NotNull TreeColorSet borders) {
-        return getDirectedEdges(from, borders, false, true);
+        return getDirectedEdges(from, borders, false);
     }
 
     /**
@@ -71,7 +71,7 @@ public class StateSpaceGenerator {
      */
     @NotNull
     public Map<CoordinateNode, TreeColorSet> getSuccessors(@NotNull CoordinateNode from, @NotNull TreeColorSet borders) {
-        return getDirectedEdges(from, borders, true, true);
+        return getDirectedEdges(from, borders, true);
     }
 
     /**
@@ -128,17 +128,17 @@ public class StateSpaceGenerator {
         enumerateStates(0, 0, model.getThresholdCountForVariable(0) - 1);
     }
 
-    private int paramIndex;
-    private double denom;
-
     @NotNull
-    private Map<CoordinateNode, TreeColorSet> getDirectedEdges(@NotNull CoordinateNode from, @NotNull TreeColorSet border, boolean successors, boolean biggestConvexHullOfParamSubspace) {
+    private Map<CoordinateNode, TreeColorSet> getDirectedEdges(@NotNull CoordinateNode from, @NotNull TreeColorSet border, boolean successors) {
+
         @NotNull Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
 
         boolean hasSelfLoop = true;
 
         //go through all dimension of model and compute results for each of them separately
         for (int dimension = 0; dimension < model.getVariableCount(); dimension++) {
+
+            int parameterIndex = -1;
 
             boolean lowerPositiveDirection = false;
             boolean lowerNegativeDirection = false;
@@ -147,152 +147,72 @@ public class StateSpaceGenerator {
 
             @NotNull int[][] vertices = computeBorderVerticesForState(from, dimension, true);
 
-          /*  System.out.println("Vertices: ");
-            for (int[] vertex : vertices) {
-                for (int a : vertex) {
-                    System.out.print(a + " ");
-                }
-                System.out.println();
-            }*/
-
-            @NotNull List<Double> paramValues = new ArrayList<>();
-            paramIndex = -1;
-
-            double mostRightOneValue = Double.POSITIVE_INFINITY;
-            double mostLeftOneValue = Double.NEGATIVE_INFINITY;
-            double derivationValue = 0.0;
+            double upperParameterSplit = Double.POSITIVE_INFINITY;
+            double lowerParameterSplit = Double.NEGATIVE_INFINITY;
 
             // cycle for every vertices in lower (n-1)-dimensional facet of this state
             for (int[] vertex : vertices) {
 
-//                paramIndex = -1;
-                denom = 0.0;
+                DerivationValue derivationValue = value(vertex, dimension);
 
-                //TODO: Don't we need to "normalize" the derivation value by old value?
-                derivationValue = value(vertex, dimension);
-              //  System.out.println(Arrays.toString(vertex)+"/"+dimension+": "+(-derivationValue/denom));
-               // System.out.println("Derivation " + derivationValue);
-                if (paramIndex != -1) {
+                if (derivationValue.parameterIndex != -1) {
 
-                    if (Math.abs(denom) != 0) {
+                    parameterIndex = derivationValue.parameterIndex;
 
-                        paramValues.add((-derivationValue/denom) == -0 ? 0 : (-derivationValue/denom));
-                        //cerr << dataModel.getParamName(paramIndex) << " = " << derivationValue << "/" << -denom << " = " << paramValues.back() << endl;
+                    if (Math.abs(derivationValue.denominator) != 0) {
 
-                        if (border.get(paramIndex).isEmpty()) {
-                            throw new IllegalStateException("Error: no interval for parameter " + paramIndex);
-                        }
+                        double parameterSplitValue = derivationValue.getParameterSplitValue();
 
                         // lowest and highest values of parameter space for chosen variable
-                        Range<Double> paramBounds = border.get(paramIndex).span();
-                       // System.out.println("Bounds: "+paramBounds.lowerEndpoint()+" "+paramBounds.upperEndpoint());
-                        // works for (paramValues.back() < 0),  (paramValues.back() > 0) and (paramValues.back() == 0)
-                        Double lastParamValue = paramValues.get(paramValues.size() - 1);
-                        if(successors) {
-                            if(denom < 0 && paramBounds.upperEndpoint() >= lastParamValue) {
-                                lowerNegativeDirection = true;
-
-                                if( mostLeftOneValue == Double.NEGATIVE_INFINITY ||
-                                        (biggestConvexHullOfParamSubspace && mostLeftOneValue > lastParamValue) ||
-                                        (!biggestConvexHullOfParamSubspace && mostLeftOneValue < lastParamValue) )
-                                mostLeftOneValue = lastParamValue;
-                            }
-                            if(derivationValue < 0 && denom > 0 && paramBounds.lowerEndpoint() <= lastParamValue) {
-                                lowerNegativeDirection = true;
-
-                                if( mostRightOneValue == Double.POSITIVE_INFINITY ||
-                                        (biggestConvexHullOfParamSubspace && mostRightOneValue < lastParamValue) ||
-                                        (!biggestConvexHullOfParamSubspace && mostRightOneValue > lastParamValue) )
-                                mostRightOneValue = lastParamValue;
-                            }
-                        } else {	// ! isSucc
-                            if(denom > 0 && paramBounds.upperEndpoint() >= lastParamValue) {
-                                lowerPositiveDirection = true;
-
-                                if( mostLeftOneValue == Double.NEGATIVE_INFINITY ||
-                                        (biggestConvexHullOfParamSubspace && mostLeftOneValue > lastParamValue) ||
-                                        (!biggestConvexHullOfParamSubspace && mostLeftOneValue < lastParamValue) )
-                                mostLeftOneValue = lastParamValue;
-                            }
-                            if(derivationValue > 0 && denom < 0 && paramBounds.lowerEndpoint() <= lastParamValue) {
-                                lowerPositiveDirection = true;
-
-                                if( mostRightOneValue == Double.POSITIVE_INFINITY ||
-                                        (biggestConvexHullOfParamSubspace && mostRightOneValue < lastParamValue) ||
-                                        (!biggestConvexHullOfParamSubspace && mostRightOneValue > lastParamValue) )
-                                mostRightOneValue = lastParamValue;
-                            }
-                        }
-                       /* if (denom < 0) {
-                            if (!successors && paramBounds.lowerEndpoint() <= lastParamValue) {
-                                lowerPositiveDirection = true;
-                                if (mostRightOneValue == Double.POSITIVE_INFINITY ||
-                                        (biggestConvexHullOfParamSubspace && mostRightOneValue < lastParamValue) ||
-                                        (!biggestConvexHullOfParamSubspace && mostRightOneValue > lastParamValue))
-                                    mostRightOneValue = lastParamValue;
-                            }
-                            if (successors && paramBounds.upperEndpoint() >= lastParamValue) {
-                                lowerNegativeDirection = true;
-
-                                if (mostLeftOneValue == Double.NEGATIVE_INFINITY ||
-                                        (biggestConvexHullOfParamSubspace && mostLeftOneValue > lastParamValue) ||
-                                        (!biggestConvexHullOfParamSubspace && mostLeftOneValue < lastParamValue))
-                                    mostLeftOneValue = lastParamValue;
-                            }
-                        } else { // denom > 0
-                            if (successors && paramBounds.lowerEndpoint() <= lastParamValue) {
-                                lowerNegativeDirection = true;
-
-                                if (mostRightOneValue == Double.POSITIVE_INFINITY ||
-                                        (biggestConvexHullOfParamSubspace && mostRightOneValue < lastParamValue) ||
-                                        (!biggestConvexHullOfParamSubspace && mostRightOneValue > lastParamValue))
-                                    mostRightOneValue = lastParamValue;
-                            }
-                            if (!successors && paramBounds.upperEndpoint() >= lastParamValue) {
-                                lowerPositiveDirection = true;
-
-                                if (mostLeftOneValue == Double.NEGATIVE_INFINITY ||
-                                        (biggestConvexHullOfParamSubspace && mostLeftOneValue > lastParamValue) ||
-                                        (!biggestConvexHullOfParamSubspace && mostLeftOneValue < lastParamValue))
-                                    mostLeftOneValue = lastParamValue;
-                            }
-                        }*/
-
-                    } else {    // abs(denom) == 0 (ERGO: it might be at border of state space)
-                        //cerr << "derivation = " << derivationValue << " --> parameter unknown" << endl;
+                        Range<Double> paramBounds = border.get(parameterIndex).span();
 
                         if(successors) {
-                            if(derivationValue < 0) {
+                            if(derivationValue.denominator < 0 && paramBounds.upperEndpoint() >= parameterSplitValue) {
                                 lowerNegativeDirection = true;
-                                mostLeftOneValue = (biggestConvexHullOfParamSubspace ? -100000.0 : Double.NEGATIVE_INFINITY);
-                                mostRightOneValue = (biggestConvexHullOfParamSubspace ? 100000.0 : Double.POSITIVE_INFINITY);
+
+                                if(lowerParameterSplit == Double.NEGATIVE_INFINITY || (lowerParameterSplit > parameterSplitValue))
+                                lowerParameterSplit = parameterSplitValue;
                             }
-                        } else {	// ! isSucc
-                            if(derivationValue > 0) {
+                            if(derivationValue.value < 0 && derivationValue.denominator > 0 && paramBounds.lowerEndpoint() <= parameterSplitValue) {
+                                lowerNegativeDirection = true;
+
+                                if(upperParameterSplit == Double.POSITIVE_INFINITY || (upperParameterSplit < parameterSplitValue)) {
+                                    upperParameterSplit = parameterSplitValue;
+                                }
+                            }
+                        } else {	// !successors
+                            if(derivationValue.denominator > 0 && paramBounds.upperEndpoint() >= parameterSplitValue) {
                                 lowerPositiveDirection = true;
-                                mostLeftOneValue = (biggestConvexHullOfParamSubspace ? -100000.0 : Double.NEGATIVE_INFINITY);
-                                mostRightOneValue = (biggestConvexHullOfParamSubspace ? 100000.0 : Double.POSITIVE_INFINITY);
+
+                                if(lowerParameterSplit == Double.NEGATIVE_INFINITY || (lowerParameterSplit > parameterSplitValue)) {
+                                    lowerParameterSplit = parameterSplitValue;
+                                }
+                            }
+                            if(derivationValue.value > 0 && derivationValue.denominator < 0 && paramBounds.lowerEndpoint() <= parameterSplitValue) {
+                                lowerPositiveDirection = true;
+
+                                if(upperParameterSplit == Double.POSITIVE_INFINITY || (upperParameterSplit < parameterSplitValue)) {
+                                    upperParameterSplit = parameterSplitValue;
+                                }
                             }
                         }
-                        /*if (derivationValue < 0) {
-                            lowerNegativeDirection = true;
-
-                            if (successors) {
-                                mostLeftOneValue = (biggestConvexHullOfParamSubspace ? -100000.0 : Double.NEGATIVE_INFINITY); //TODO: mozno nahradit (-100000.0) za (numeric_limits<double>::lowest())+1)
-                                mostRightOneValue = (biggestConvexHullOfParamSubspace ? 100000.0 : Double.POSITIVE_INFINITY); //TODO: mozno nahradit (100000.0) za (numeric_limits<double>::max())-1)
+                    } else {    // abs(denominator) == 0 (ERGO: it might be at border of state space)
+                        if(successors) {
+                            if(derivationValue.value < 0) {
+                                lowerNegativeDirection = true;
+                                lowerParameterSplit = Double.NEGATIVE_INFINITY;
+                                upperParameterSplit = Double.POSITIVE_INFINITY;
                             }
-                        } else {
-                            lowerPositiveDirection = true;
-
-                            if (!successors) {
-                                mostLeftOneValue = (biggestConvexHullOfParamSubspace ? -100000.0 : Double.NEGATIVE_INFINITY); //TODO: mozno nahradit (-100000.0) za (numeric_limits<double>::lowest())+1)
-                                mostRightOneValue = (biggestConvexHullOfParamSubspace ? 100000.0 : Double.POSITIVE_INFINITY); //TODO: mozno nahradit (100000.0) za (numeric_limits<double>::max())-1)
+                        } else {	// !successors
+                            if(derivationValue.value > 0) {
+                                lowerPositiveDirection = true;
+                                lowerParameterSplit = Double.NEGATIVE_INFINITY;
+                                upperParameterSplit = Double.POSITIVE_INFINITY;
                             }
-                        }*/
+                        }
                     }
                 } else {    // paramIndex == -1 (ERGO: no unknown parameter in equation)
-                    //cerr << "derivation = " << derivationValue << endl;
-                    if (derivationValue < 0) {
+                    if (derivationValue.value < 0) {
                         lowerNegativeDirection = true;
                     } else {
                         lowerPositiveDirection = true;
@@ -301,203 +221,95 @@ public class StateSpaceGenerator {
 
             }
 
-
-            //cerr << "most left  param value on lower facet: " << mostLeftOneValue << endl;
-            //cerr << "most right param value on lower facet: " << mostRightOneValue << endl;
-
             if(from.coordinates[dimension] != 0)	{
-                if(!successors) {
-                    //If I want predecessors of state 's'
+                if((successors && lowerNegativeDirection) || (!successors && lowerPositiveDirection)) {
 
-                    if(lowerPositiveDirection) {
-                        //There exists edge from lower state to state 's'
-                        @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
-                        newStateCoors[dimension] = newStateCoors[dimension] - 1;
+                    @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
+                    newStateCoors[dimension] = newStateCoors[dimension] - 1;
 
-                        TreeColorSet newPS;
-                        if(paramIndex != -1) {
-                            //Parameter space needs to be cut for this edge
-                            //						newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,oneParamValue);
-                            newPS = TreeColorSet.derivedColorSet(border, paramIndex, mostLeftOneValue, mostRightOneValue);
-                        } else {
-                            //Edge is for whole parameter space
-                            newPS = TreeColorSet.createCopy(border);
-                        }
-
-                        results.put(factory.getNode(newStateCoors), newPS);
+                    TreeColorSet newPS;
+                    if(parameterIndex != -1) {
+                        newPS = TreeColorSet.derivedColorSet(border, parameterIndex, lowerParameterSplit, upperParameterSplit);
+                    } else {
+                        newPS = TreeColorSet.createCopy(border);
                     }
-                } else {
-                    //If I want successors of state 's'
-                    if(lowerNegativeDirection) {
-                        //There exists edge from lower state to state 's'
 
-                        @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
-                        newStateCoors[dimension] = newStateCoors[dimension] - 1;
-
-                        TreeColorSet newPS;
-                        if(paramIndex != -1) {
-                            //Parameter space needs to be cut for this edge
-                            //						newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,oneParamValue);
-                            newPS = TreeColorSet.derivedColorSet(border, paramIndex, mostLeftOneValue, mostRightOneValue);
-                        } else {
-                            //Edge is for whole parameter space
-                            newPS = TreeColorSet.createCopy(border);
-                        }
-
-                        results.put(factory.getNode(newStateCoors), newPS);
-                    }
+                    results.put(factory.getNode(newStateCoors), newPS);
                 }
             }
 
-            //I want to check upper state in this dimension only if state 's' is not at the top in this dimension
-
             vertices = computeBorderVerticesForState(from, dimension, false);
-           /* System.out.println("Vertices: ");
-            for (int[] vertex : vertices) {
-                for (int a : vertex) {
-                    System.out.print(a + " ");
-                }
-                System.out.println();
-            }*/
-
-            paramValues = new ArrayList<>();
-            paramIndex = -1;
-            mostRightOneValue = Double.POSITIVE_INFINITY;
-            mostLeftOneValue = Double.NEGATIVE_INFINITY;
-            derivationValue = 0.0;
+            parameterIndex = -1;
+            upperParameterSplit = Double.POSITIVE_INFINITY;
+            lowerParameterSplit = Double.NEGATIVE_INFINITY;
 
             // cycle for every vertices in higher (n-1)-dimensional facet of this state
             for (int[] vertex : vertices) {
 
-//				paramIndex = -1;
-                denom = 0.0;
+                DerivationValue derivationValue = value(vertex, dimension);
 
-                derivationValue = value(vertex, dimension);
-                //System.out.println(Arrays.toString(vertex)+"/"+dimension+": "+(-derivationValue/denom));
-                if (paramIndex != -1) {
+                if (derivationValue.parameterIndex != -1) {
 
-                    if (Math.abs(denom) != 0) {
-                        paramValues.add((-derivationValue/denom) == -0 ? 0 : -derivationValue/denom);
-                        //cerr << dataModel.getParamName(paramIndex) << " = " << derivationValue << "/" << -denom << " = " << paramValues.back() << endl;
+                    parameterIndex = derivationValue.parameterIndex;
 
-                        if (border.get(paramIndex).isEmpty()) {
-                            throw new IllegalStateException("Error: no interval for parameter " + paramIndex);
-                        }
+                    if (Math.abs(derivationValue.denominator) != 0) {
+
+                        double parameterSplit = derivationValue.getParameterSplitValue();
+
 
                         // lowest and highest values of parameter space for chosen variable
-                        Range<Double> paramBounds = border.get(paramIndex).span();
-
-                        // works for (paramValues.back() < 0),  (paramValues.back() > 0) and (paramValues.back() == 0)
-                        Double lastParamValue = paramValues.get(paramValues.size() - 1);
-                        if(!successors) {
-                            if(denom < 0 && paramBounds.upperEndpoint() >= lastParamValue) {
-                                upperNegativeDirection = true;
-
-                                if( mostLeftOneValue == Double.NEGATIVE_INFINITY ||
-                                        (biggestConvexHullOfParamSubspace && mostLeftOneValue > lastParamValue) ||
-                                        (!biggestConvexHullOfParamSubspace && mostLeftOneValue < lastParamValue) )
-                                mostLeftOneValue = lastParamValue;
-                            }
-                            if(derivationValue < 0 && denom > 0 && paramBounds.lowerEndpoint() <= lastParamValue) {
-                                upperNegativeDirection = true;
-
-                                if( mostRightOneValue == Double.POSITIVE_INFINITY ||
-                                        (biggestConvexHullOfParamSubspace && mostRightOneValue < lastParamValue) ||
-                                        (!biggestConvexHullOfParamSubspace && mostRightOneValue > lastParamValue) )
-                                mostRightOneValue = lastParamValue;
-                            }
-                        } else {	// isSucc
-                            if(denom > 0 && paramBounds.upperEndpoint() >= lastParamValue) {
-                                upperPositiveDirection = true;
-
-                                if( mostLeftOneValue == Double.NEGATIVE_INFINITY ||
-                                        (biggestConvexHullOfParamSubspace && mostLeftOneValue > lastParamValue) ||
-                                        (!biggestConvexHullOfParamSubspace && mostLeftOneValue < lastParamValue) )
-                                mostLeftOneValue = lastParamValue;
-                            }
-                            if(derivationValue > 0 && denom < 0 && paramBounds.lowerEndpoint() <= lastParamValue) {
-                                upperPositiveDirection = true;
-
-                                if( mostRightOneValue == Double.POSITIVE_INFINITY ||
-                                        (biggestConvexHullOfParamSubspace && mostRightOneValue < lastParamValue) ||
-                                        (!biggestConvexHullOfParamSubspace && mostRightOneValue > lastParamValue) )
-                                mostRightOneValue = lastParamValue;
-                            }
-                        }
-                        /*if (denom < 0) {
-                            if (successors && paramBounds.lowerEndpoint() <= lastParamValue) {
-                                upperPositiveDirection = true;
-
-                                if (mostRightOneValue == Double.POSITIVE_INFINITY ||
-                                        (biggestConvexHullOfParamSubspace && mostRightOneValue < lastParamValue) ||
-                                        (!biggestConvexHullOfParamSubspace && mostRightOneValue > lastParamValue))
-                                mostRightOneValue = lastParamValue;
-                            }
-                            if (!successors && paramBounds.upperEndpoint() >= lastParamValue) {
-                                upperNegativeDirection = true;
-
-                                if (mostLeftOneValue == Double.NEGATIVE_INFINITY ||
-                                        (biggestConvexHullOfParamSubspace && mostLeftOneValue > lastParamValue) ||
-                                        (!biggestConvexHullOfParamSubspace && mostLeftOneValue < lastParamValue))
-                                mostLeftOneValue = lastParamValue;
-                            }
-                        } else { // denom > 0
-                            if (!successors && paramBounds.lowerEndpoint() <= lastParamValue) {
-                                upperNegativeDirection = true;
-
-                                if (mostRightOneValue == Double.POSITIVE_INFINITY ||
-                                        (biggestConvexHullOfParamSubspace && mostRightOneValue < lastParamValue) ||
-                                        (!biggestConvexHullOfParamSubspace && mostRightOneValue > lastParamValue))
-                                mostRightOneValue = lastParamValue;
-                            }
-                            if (successors && paramBounds.upperEndpoint() >= lastParamValue) {
-                                upperPositiveDirection = true;
-
-                                if (mostLeftOneValue == Double.NEGATIVE_INFINITY ||
-                                        (biggestConvexHullOfParamSubspace && mostLeftOneValue > lastParamValue) ||
-                                        (!biggestConvexHullOfParamSubspace && mostLeftOneValue < lastParamValue))
-                                mostLeftOneValue = lastParamValue;
-                            }
-                        }*/
-
-
-                    } else {    // abs(denom) == 0 (ERGO: it might be at border of state space)
+                        Range<Double> paramBounds = border.get(parameterIndex).span();
 
                         if(!successors) {
-                            if(derivationValue < 0) {
+                            if(derivationValue.denominator < 0 && paramBounds.upperEndpoint() >= parameterSplit) {
                                 upperNegativeDirection = true;
-                                mostLeftOneValue = (biggestConvexHullOfParamSubspace ? -100000.0 : Double.NEGATIVE_INFINITY);
-                                mostRightOneValue = (biggestConvexHullOfParamSubspace ? 100000.0 : Double.POSITIVE_INFINITY);
+
+                                if(lowerParameterSplit == Double.NEGATIVE_INFINITY || (lowerParameterSplit > parameterSplit)) {
+                                    lowerParameterSplit = parameterSplit;
+                                }
                             }
-                        } else {	// ! isSucc
-                            if(derivationValue > 0) {
+                            if(derivationValue.value < 0 && derivationValue.denominator > 0 && paramBounds.lowerEndpoint() <= parameterSplit) {
+                                upperNegativeDirection = true;
+
+                                if(upperParameterSplit == Double.POSITIVE_INFINITY || (upperParameterSplit < parameterSplit)) {
+                                    upperParameterSplit = parameterSplit;
+                                }
+                            }
+                        } else {	// successors
+                            if(derivationValue.denominator > 0 && paramBounds.upperEndpoint() >= parameterSplit) {
                                 upperPositiveDirection = true;
-                                mostLeftOneValue = (biggestConvexHullOfParamSubspace ? -100000.0 : Double.NEGATIVE_INFINITY);
-                                mostRightOneValue = (biggestConvexHullOfParamSubspace ? 100000.0 : Double.POSITIVE_INFINITY);
+
+                                if(lowerParameterSplit == Double.NEGATIVE_INFINITY || (lowerParameterSplit > parameterSplit)) {
+                                    lowerParameterSplit = parameterSplit;
+                                }
+                            }
+                            if(derivationValue.value > 0 && derivationValue.denominator < 0 && paramBounds.lowerEndpoint() <= parameterSplit) {
+                                upperPositiveDirection = true;
+
+                                if(upperParameterSplit == Double.POSITIVE_INFINITY || (upperParameterSplit < parameterSplit)) {
+                                    upperParameterSplit = parameterSplit;
+                                }
                             }
                         }
+                    } else {    // abs(denominator) == 0 (ERGO: it might be at border of state space)
 
-                        //	cerr << "derivation = " << derivationValue << " --> parameter unknown" << endl;
-                        /*if (derivationValue < 0) {
-                            upperNegativeDirection = true;
-
-                            if (!successors) {
-                                mostLeftOneValue = (biggestConvexHullOfParamSubspace ? -100000.0 : Double.NEGATIVE_INFINITY); //TODO: mozno nahradit (-100000.0) za (numeric_limits<double>::lowest())+1)
-                                mostRightOneValue = (biggestConvexHullOfParamSubspace ? 100000.0 : Double.POSITIVE_INFINITY); //TODO: mozno nahradit (100000.0) za (numeric_limits<double>::max())-1)
+                        if(!successors) {
+                            if(derivationValue.value < 0) {
+                                upperNegativeDirection = true;
+                                lowerParameterSplit = Double.NEGATIVE_INFINITY;
+                                upperParameterSplit = Double.POSITIVE_INFINITY;
                             }
-                        } else {
-                            upperPositiveDirection = true;
-
-                            if (successors) {
-                                mostLeftOneValue = (biggestConvexHullOfParamSubspace ? -100000.0 : Double.NEGATIVE_INFINITY); //TODO: mozno nahradit (-100000.0) za (numeric_limits<double>::lowest())+1)
-                                mostRightOneValue = (biggestConvexHullOfParamSubspace ? 100000.0 : Double.POSITIVE_INFINITY); //TODO: mozno nahradit (100000.0) za (numeric_limits<double>::max())-1)
+                        } else {	// successors
+                            if(derivationValue.value > 0) {
+                                upperPositiveDirection = true;
+                                lowerParameterSplit = Double.NEGATIVE_INFINITY;
+                                upperParameterSplit = Double.POSITIVE_INFINITY;
                             }
-                        }*/
+                        }
                     }
 
                 } else {    // paramIndex == -1 (ERGO: no unknown parameter in equation)
-                    //	cerr << "derivation = " << derivationValue << endl;
-                    if (derivationValue < 0) {
+                    if (derivationValue.value < 0) {
                         upperNegativeDirection = true;
                     } else {
                         upperPositiveDirection = true;
@@ -505,53 +317,20 @@ public class StateSpaceGenerator {
                 }
             }
 
-            //cerr << "most left  param value on upper facet: " << mostLeftOneValue << endl;
-            //cerr << "most right param value on upper facet: " << mostRightOneValue << endl;
-
             if(from.coordinates[dimension] != model.getThresholdRanges().get(dimension).upperEndpoint() - 1) {
-                if(!successors) {
-                    //If I want predecessors of state 's'
+                if((successors && upperPositiveDirection) || (!successors && upperNegativeDirection)) {
 
-                    if(upperNegativeDirection) {
-                        //There exists edge from lower state to state 's'
-                        @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
-                        newStateCoors[dimension] = newStateCoors[dimension] + 1;
+                    @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
+                    newStateCoors[dimension] = newStateCoors[dimension] + 1;
 
-                        TreeColorSet newPS;
-                        if(paramIndex != -1) {
-                            //Parameter space needs to be cut for this edge
-                            //						newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,oneParamValue);
-                            newPS = TreeColorSet.derivedColorSet(border, paramIndex, mostLeftOneValue, mostRightOneValue);
-                        } else {
-                            //Edge is for whole parameter space
-                            newPS = TreeColorSet.createCopy(border);
-                        }
-
-                        results.put(factory.getNode(newStateCoors), newPS);
-
+                    TreeColorSet newPS;
+                    if(parameterIndex != -1) {
+                        newPS = TreeColorSet.derivedColorSet(border, parameterIndex, lowerParameterSplit, upperParameterSplit);
+                    } else {
+                        newPS = TreeColorSet.createCopy(border);
                     }
-                } else {
-                    //If I want successors of state 's'
 
-                    if(upperPositiveDirection) {
-                        //There exists edge from lower state to state 's'
-
-                        @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
-                        newStateCoors[dimension] = newStateCoors[dimension] + 1;
-
-                        TreeColorSet newPS;
-                        if(paramIndex != -1) {
-                            //Parameter space needs to be cut for this edge
-                            //						newPS = ParameterSpace::derivedParamSpace(s.getColors(),paramIndex,oneParamValue);
-                            newPS = TreeColorSet.derivedColorSet(border, paramIndex, mostLeftOneValue, mostRightOneValue);
-                        } else {
-                            //Edge is for whole parameter space
-                            newPS = TreeColorSet.createCopy(border);
-                        }
-
-                        results.put(factory.getNode(newStateCoors), newPS);
-
-                    }
+                    results.put(factory.getNode(newStateCoors), newPS);
                 }
             }
 
@@ -573,15 +352,14 @@ public class StateSpaceGenerator {
 
     /**
      * Compute derivation in given vertex for specified dimension by evaluating the function for given variable.
-     * TODO: This function has side effect of modifying paramIndex and denom variables. Remove this.
      * @param vertex Coordinates of thresholds where the computation should be performed.
      * @param dim Index of variable whose function should be evaluated.
      * @return Derivation of specified variable in given vertex as given by function specified in the model.
      */
-    private double value(int[] vertex, int dim) {
+    private DerivationValue value(int[] vertex, int dim) {
         double sum = 0;
-
-        paramIndex = -1;
+        double denominator = 0;
+        int parameterIndex = -1;
 
         for (@NotNull SumMember sumMember : model.getEquationForVariable(dim)) {
             //init partial sum to constant part of the equation member
@@ -607,8 +385,8 @@ public class StateSpaceGenerator {
 
             if (sumMember.hasParam()) {
                 //we set values for following parameter splitting computation
-                paramIndex = sumMember.getParam() - 1;
-                denom += partialSum;
+                parameterIndex = sumMember.getParam() - 1;
+                denominator += partialSum;
             } else {
                 //if sum member does not have a parameter, just add all of this to the final sum
                 sum += partialSum;
@@ -616,7 +394,7 @@ public class StateSpaceGenerator {
 
         }
 
-        return sum;
+        return new DerivationValue(sum, denominator, parameterIndex);
     }
 
     /**
@@ -750,6 +528,25 @@ public class StateSpaceGenerator {
         }
 
         return results;
+    }
+
+    /**
+     * Class that holds information about one dimension of derivation vector in some vertex.
+     */
+    private static class DerivationValue {
+        public final double value;
+        public final double denominator;
+        public final int parameterIndex;
+
+        public DerivationValue(double value, double denominator, int parameterIndex) {
+            this.value = value;
+            this.denominator = denominator;
+            this.parameterIndex = parameterIndex;
+        }
+
+        public double getParameterSplitValue() {
+            return (-value/denominator) == -0 ? 0 : -value/denominator;
+        }
     }
 
 }

@@ -10,7 +10,6 @@ import cz.muni.fi.modelchecker.graph.ColorSet;
 import org.antlr.v4.runtime.misc.Nullable;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
@@ -83,7 +82,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
     public synchronized Map<CoordinateNode, TreeColorSet> initialNodes(@NotNull Formula formula) {
         if (formula instanceof Tautology) {
             if (!hasAllNodes) {
-                cacheAllNodes(partitioner.getMyLimit());
+                generator.cacheAllNodes();
                 hasAllNodes = true;
             }
             @NotNull Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
@@ -98,9 +97,9 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {
             @NotNull FloatProposition proposition = (FloatProposition) formula;
             revealedPropositions.add(proposition);
-            @NotNull Map<CoordinateNode, TreeColorSet> values = generator.initial(proposition, partitioner.getMyLimit());
-            for (@NotNull Map.Entry<CoordinateNode, TreeColorSet> entry : values.entrySet()) {
-                entry.getKey().addFormula(proposition, entry.getValue());
+            for (CoordinateNode node : generator.initial(proposition)) {
+                //proposition is invariant to parameters
+                node.addFormula(proposition, model.getFullColorSet());
             }
             //values are not exclusively our inner nodes, so we can't return them directly.
             //return values;
@@ -119,7 +118,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
     @Override
     public synchronized Map<CoordinateNode, TreeColorSet> invertNodeSet(@NotNull Map<CoordinateNode, TreeColorSet> nodes) {
         if (!hasAllNodes) {
-            cacheAllNodes(partitioner.getMyLimit());
+            generator.cacheAllNodes();
             hasAllNodes = true;
         }
         @NotNull Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
@@ -149,9 +148,8 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {
             @NotNull FloatProposition proposition = (FloatProposition) formula;
             revealedPropositions.add(proposition);
-            @NotNull Map<CoordinateNode, TreeColorSet> values = generator.initial(proposition, partitioner.getMyLimit());
-            for (@NotNull Map.Entry<CoordinateNode, TreeColorSet> entry : values.entrySet()) {
-                entry.getKey().addFormula(proposition, entry.getValue());
+            for (CoordinateNode n : generator.initial(proposition)) {
+                n.addFormula(proposition, model.getFullColorSet());
             }
         }
         TreeColorSet colorSet = node.getValidColors(formula);

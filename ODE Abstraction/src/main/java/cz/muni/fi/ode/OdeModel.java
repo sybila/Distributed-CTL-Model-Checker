@@ -16,7 +16,7 @@ public class OdeModel {
 
     //Do not touch -- used in jni
     @NotNull
-    private final List<Range<Double>> variableRange = new ArrayList<>();
+    private final List<Range<Integer>> variableRange = new ArrayList<>();
     @NotNull
     private final List<Range<Double>> parameterRange = new ArrayList<>();
     @NotNull
@@ -41,8 +41,8 @@ public class OdeModel {
         //count all states and prepare ordering
         for (int i=0; i < getVariableCount(); i++) {
             dimensionMultipliers[i] = stateCount;
-            Range<Double> range = getThresholdRanges().get(i);
-            stateCount *= (int) (range.upperEndpoint() - range.lowerEndpoint());
+            Range<Integer> range = getThresholdRanges().get(i);
+            stateCount *= range.upperEndpoint() - range.lowerEndpoint();
         }
     }
 
@@ -65,7 +65,7 @@ public class OdeModel {
     private native void cppLoad(String filename);
 
     @NotNull
-    public List<Range<Double>> getThresholdRanges() {
+    public List<Range<Integer>> getThresholdRanges() {
         return variableRange;
     }
 
@@ -83,13 +83,13 @@ public class OdeModel {
         return set;
     }
 
-    public int getVarIndex(String var) {
+    public int getVariableIndexByName(String var) {
         for (int i=0; i<variableOrder.size(); i++) {
             if (var.equals(variableOrder.get(i))) {
                 return i;
             }
         }
-        return -1;
+        throw new IllegalArgumentException(var+" is not a variable of this model. ");
     }
 
     public int getVariableCount() {
@@ -104,11 +104,11 @@ public class OdeModel {
         return Collections.unmodifiableList(equations.get(dim));
     }
 
-    public int getThresholdsForVarCount(int varIndex) {
+    public int getThresholdCountForVariable(int varIndex) {
         return thresholds.get(varIndex).size();
     }
 
-    public double getThresholdForVarByIndex(int actualVarIndex, int i) {
+    public double getThresholdValueForVariableByIndex(int actualVarIndex, int i) {
         return thresholds.get(actualVarIndex).get(i);
     }
 }

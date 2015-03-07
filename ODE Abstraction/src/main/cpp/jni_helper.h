@@ -277,18 +277,30 @@ public:
 			_upperEndPoint = _env->GetMethodID(_class, "upperEndpoint", "()Ljava/lang/Comparable;");
 			_lowerEndPoint = _env->GetMethodID(_class, "lowerEndpoint", "()Ljava/lang/Comparable;");
 		}
-		RangeClass::Instance open(double d1, double d2) {
-			return open(_jvm->Double.valueOf(d1), _jvm->Double.valueOf(d2));
+		RangeClass::Instance openInt(int d1, int d2) {
+		    return openInt(_jvm->Integer.valueOf(d1), _jvm->Integer.valueOf(d2));
 		}
-		RangeClass::Instance open(DoubleClass::Instance d1, DoubleClass::Instance d2) {
+		RangeClass::Instance openDouble(double d1, double d2) {
+			return openDouble(_jvm->Double.valueOf(d1), _jvm->Double.valueOf(d2));
+		}
+		RangeClass::Instance openDouble(DoubleClass::Instance d1, DoubleClass::Instance d2) {
 			return RangeClass::Instance(_env->CallStaticObjectMethod(_class, _open, d1.object(), d2.object()), this);
 		}
-		RangeClass::Instance closed(double d1, double d2) {
-			return closed(_jvm->Double.valueOf(d1), _jvm->Double.valueOf(d2));
+		RangeClass::Instance openInt(IntegerClass::Instance d1, IntegerClass::Instance d2) {
+        	return RangeClass::Instance(_env->CallStaticObjectMethod(_class, _open, d1.object(), d2.object()), this);
+       	}
+		RangeClass::Instance closedInt(int d1, int d2) {
+        	return closedInt(_jvm->Integer.valueOf(d1), _jvm->Integer.valueOf(d2));
+       	}
+		RangeClass::Instance closedDouble(double d1, double d2) {
+			return closedDouble(_jvm->Double.valueOf(d1), _jvm->Double.valueOf(d2));
 		}
-		RangeClass::Instance closed(DoubleClass::Instance d1, DoubleClass::Instance d2) {
+		RangeClass::Instance closedDouble(DoubleClass::Instance d1, DoubleClass::Instance d2) {
 			return RangeClass::Instance(_env->CallStaticObjectMethod(_class, _closed, d1.object(), d2.object()), this);
 		}
+		RangeClass::Instance closedInt(IntegerClass::Instance d1, IntegerClass::Instance d2) {
+   			return RangeClass::Instance(_env->CallStaticObjectMethod(_class, _closed, d1.object(), d2.object()), this);
+        }
 	};
 
 	class RangeSetClass : public AnyClass {
@@ -328,7 +340,7 @@ public:
 					auto ranges = values[dim];
 					auto  iter = ranges.begin();
 					for( ; iter != ranges.end(); ++iter ) {						
-						rangeSet.add(_type->_jvm->Range.closed(iter->first, iter->second));					
+						rangeSet.add(_type->_jvm->Range.closedDouble(iter->first, iter->second));
 					}
 				}
 			}

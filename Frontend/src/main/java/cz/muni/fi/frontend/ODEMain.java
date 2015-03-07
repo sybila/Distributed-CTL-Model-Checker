@@ -14,7 +14,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.List;
 
 public class ODEMain {
 
@@ -49,7 +48,7 @@ public class ODEMain {
         //@NotNull CoordinatePartitioner partitioner = new RectangularPartitioner(model, MPI.COMM_WORLD.Size(), MPI.COMM_WORLD.Rank());
         @NotNull CoordinatePartitioner partitioner = new HashPartitioner(model, MPI.COMM_WORLD.Size(), MPI.COMM_WORLD.Rank());
         @NotNull NodeFactory factory = new NodeFactory(model, partitioner);
-        @NotNull StateSpaceGenerator generator = new StateSpaceGenerator(model, true, factory);
+        @NotNull StateSpaceGenerator generator = new StateSpaceGenerator(model, factory, partitioner.getMyLimit());
         factory.setGenerator(generator);
 
         //prepare MPI communication environment

@@ -10,5 +10,5 @@ import java.util.List;
  */
 public interface CoordinatePartitioner extends StateSpacePartitioner<CoordinateNode> {
 
-    public List<Range<Double>> getMyLimit();
+    public List<Range<Integer>> getMyLimit();
 }

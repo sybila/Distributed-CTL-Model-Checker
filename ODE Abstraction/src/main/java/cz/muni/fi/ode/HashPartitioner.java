@@ -20,7 +20,7 @@ public class HashPartitioner implements CoordinatePartitioner {
 
     private long statesPerMachine;
 
-    private List<Range<Double>> limit = new ArrayList<>();
+    private List<Range<Integer>> limit = new ArrayList<>();
 
     public HashPartitioner(@NotNull OdeModel odeModel, int size, int rank) {
         this.size = size;
@@ -40,22 +40,22 @@ public class HashPartitioner implements CoordinatePartitioner {
             myHighestState = stateCount - 1;
         }
         for (int i=0; i < odeModel.getVariableCount(); i++) {
-            Range<Double> range = odeModel.getThresholdRanges().get(i);
-            int varRange = (int) (range.upperEndpoint() - range.lowerEndpoint());
+            Range<Integer> range = odeModel.getThresholdRanges().get(i);
+            int varRange = range.upperEndpoint() - range.lowerEndpoint();
             if (varRange * model.getDimensionMultiplier(i) <= statesPerMachine) {    //this covers situations when var i is insignificant with respect to current partitioning
                 limit.add(range);
             } else {    //we will get here only if number of indexes this variable covers is smaller than her actual span / short: if upperBound > lowerBound, there is less than varRange items between them
-                long lowerBound = (myLowestState / model.getDimensionMultiplier(i)) % varRange;
-                long upperBound = (myHighestState / model.getDimensionMultiplier(i)) % varRange;
+                int lowerBound = (int) ((myLowestState / model.getDimensionMultiplier(i)) % varRange);
+                int upperBound = (int) ((myHighestState / model.getDimensionMultiplier(i)) % varRange);
                 upperBound++;
                 //System.out.println(rank+" "+lowerBound+" "+upperBound);
                 if (upperBound < lowerBound) {  //sadly, this is how it works
                     limit.add(range);
                 } else {
                     if (upperBound >= range.upperEndpoint()) {
-                        limit.add(Range.closed((double) lowerBound, range.upperEndpoint()));
+                        limit.add(Range.closed(lowerBound, range.upperEndpoint()));
                     } else {
-                        limit.add(Range.closed((double) lowerBound, (double) upperBound));
+                        limit.add(Range.closed(lowerBound, upperBound));
                     }
                 }
             }
@@ -68,6 +68,7 @@ public class HashPartitioner implements CoordinatePartitioner {
         if (node.getOwner() == -1) {
             int owner = (int) (node.getHash() / statesPerMachine);
             node.setOwner(owner);
+            if (owner != 0) System.out.println(node.toString());
             return owner;
         } else {
             return node.getOwner();
@@ -80,7 +81,7 @@ public class HashPartitioner implements CoordinatePartitioner {
     }
 
     @Override
-    public List<Range<Double>> getMyLimit() {
+    public List<Range<Integer>> getMyLimit() {
         return new ArrayList<>(limit);
     }
 }

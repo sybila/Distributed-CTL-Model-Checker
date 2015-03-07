@@ -1,7 +1,6 @@
 package cz.muni.fi.ode;
 
 import com.google.common.collect.Range;
-import cz.muni.fi.modelchecker.StateSpacePartitioner;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -14,22 +13,22 @@ public class RectangularPartitioner implements CoordinatePartitioner {
     private final int rank;
     @NotNull
     private final OdeModel model;
-    private final List<Range<Double>> ranges = new ArrayList<>();
+    private final List<Range<Integer>> ranges = new ArrayList<>();
 
     public RectangularPartitioner(@NotNull OdeModel odeModel, int size, int rank) {
         this.size = size;
         this.rank = rank;
         this.model = odeModel;
-        Range<Double> firstVar = odeModel.getThresholdRanges().get(0);
+        Range<Integer> firstVar = odeModel.getThresholdRanges().get(0);
         if (!firstVar.hasLowerBound() || !firstVar.hasUpperBound()) {
             throw new IllegalArgumentException("Range is unbounded");
         }
-        int tokens = (int) (firstVar.upperEndpoint() - firstVar.lowerEndpoint());
+        int tokens = firstVar.upperEndpoint() - firstVar.lowerEndpoint();
         @NotNull int[] intSize = new int[size];
         for (int i = 0; tokens > 0; i = (i+1)%size, tokens--) {
             intSize[i]++;
         }
-        double lower = firstVar.lowerEndpoint();
+        int lower = firstVar.lowerEndpoint();
         for (int i = 0; i<size; i++) {
             if (i == size - 1) {
                 ranges.add(Range.closed(lower, firstVar.upperEndpoint()));
@@ -43,10 +42,10 @@ public class RectangularPartitioner implements CoordinatePartitioner {
 
     @NotNull
     @Override
-    public List<Range<Double>> getMyLimit() {
-        @NotNull List<Range<Double>> ret = new ArrayList<>();
+    public List<Range<Integer>> getMyLimit() {
+        @NotNull List<Range<Integer>> ret = new ArrayList<>();
         ret.add(ranges.get(rank));
-        @NotNull List<Range<Double>> params = model.getThresholdRanges();
+        @NotNull List<Range<Integer>> params = model.getThresholdRanges();
         for (int i=1; i < params.size(); i++) {
             ret.add(params.get(i));
         }
@@ -56,8 +55,8 @@ public class RectangularPartitioner implements CoordinatePartitioner {
     @Override
     public int getNodeOwner(@NotNull CoordinateNode node) throws IllegalArgumentException {
         for (int i = 0; i < size; i++) {
-            Range<Double> range = ranges.get(i);
-            if (range.contains((double) node.getCoordinate(0))) {
+            Range<Integer> range = ranges.get(i);
+            if (range.contains(node.getCoordinate(0))) {
                 return i;
             }
         }

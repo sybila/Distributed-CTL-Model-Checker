@@ -63,11 +63,11 @@ public class ModelChecker<N extends Node, C extends ColorSet> {
 
         System.out.println(partitioner.getMyId()+" Found Nodes: "+model.initialNodes(formula).size());
 
-        for (@NotNull Formula sub : formula.getSubFormulas()) {
+       /* for (@NotNull Formula sub : formula.getSubFormulas()) {
             model.purge(sub);
-        }
+        }*/
 
-        //processedFormulas.add(formula);
+        processedFormulas.add(formula);
     }
 
 }

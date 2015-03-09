@@ -24,14 +24,20 @@ public class StateSpaceGenerator {
      */
 
     //array of vertex coordinates that we wanted to compute
-    @NotNull int[][] results;
+    @NotNull private final int[][] results;
 
     //helper array that holds incomplete coordinates during computation
-    @NotNull int[] coordinateBuffer;
+    @NotNull private final int[] coordinateBuffer;
 
     //helper array that specifies whether the dimension is fully computed
-    @NotNull boolean[] needsMoreWork;
+    @NotNull private final boolean[] needsMoreWork;
 
+
+    //global data used by calculateValue function
+    //global variables are ugly, but we need this to be really fast
+    private int parameterIndex = -1;
+    private double derivationValue = 0;
+    private double denominator = 0;
 
     /**
      * @param model ODE model with proper abstraction used as a source of data.
@@ -138,8 +144,6 @@ public class StateSpaceGenerator {
         //go through all dimension of model and compute results for each of them separately
         for (int dimension = 0; dimension < model.getVariableCount(); dimension++) {
 
-            int parameterIndex = -1;
-
             boolean lowerPositiveDirection = false;
             boolean lowerNegativeDirection = false;
             boolean upperPositiveDirection = false;
@@ -153,27 +157,25 @@ public class StateSpaceGenerator {
             // cycle for every vertices in lower (n-1)-dimensional facet of this state
             for (int[] vertex : vertices) {
 
-                DerivationValue derivationValue = value(vertex, dimension);
+                calculateValue(vertex, dimension);
 
-                if (derivationValue.parameterIndex != -1) {
+                if (parameterIndex != -1) {
 
-                    parameterIndex = derivationValue.parameterIndex;
+                    // lowest and highest values of parameter space for chosen variable
+                    Range<Double> paramBounds = border.get(parameterIndex).span();
 
-                    if (Math.abs(derivationValue.denominator) != 0) {
+                    if (Math.abs(denominator) != 0) {
 
-                        double parameterSplitValue = derivationValue.getParameterSplitValue();
-
-                        // lowest and highest values of parameter space for chosen variable
-                        Range<Double> paramBounds = border.get(parameterIndex).span();
+                        double parameterSplitValue = (-derivationValue/denominator) == -0 ? 0 : -derivationValue/denominator;
 
                         if(successors) {
-                            if(derivationValue.denominator < 0 && paramBounds.upperEndpoint() >= parameterSplitValue) {
+                            if(denominator < 0 && paramBounds.upperEndpoint() >= parameterSplitValue) {
                                 lowerNegativeDirection = true;
 
                                 if(lowerParameterSplit == Double.NEGATIVE_INFINITY || (lowerParameterSplit > parameterSplitValue))
                                 lowerParameterSplit = parameterSplitValue;
                             }
-                            if(derivationValue.value < 0 && derivationValue.denominator > 0 && paramBounds.lowerEndpoint() <= parameterSplitValue) {
+                            if(derivationValue < 0 && denominator > 0 && paramBounds.lowerEndpoint() <= parameterSplitValue) {
                                 lowerNegativeDirection = true;
 
                                 if(upperParameterSplit == Double.POSITIVE_INFINITY || (upperParameterSplit < parameterSplitValue)) {
@@ -181,14 +183,14 @@ public class StateSpaceGenerator {
                                 }
                             }
                         } else {	// !successors
-                            if(derivationValue.denominator > 0 && paramBounds.upperEndpoint() >= parameterSplitValue) {
+                            if(denominator > 0 && paramBounds.upperEndpoint() >= parameterSplitValue) {
                                 lowerPositiveDirection = true;
 
                                 if(lowerParameterSplit == Double.NEGATIVE_INFINITY || (lowerParameterSplit > parameterSplitValue)) {
                                     lowerParameterSplit = parameterSplitValue;
                                 }
                             }
-                            if(derivationValue.value > 0 && derivationValue.denominator < 0 && paramBounds.lowerEndpoint() <= parameterSplitValue) {
+                            if(derivationValue > 0 && denominator < 0 && paramBounds.lowerEndpoint() <= parameterSplitValue) {
                                 lowerPositiveDirection = true;
 
                                 if(upperParameterSplit == Double.POSITIVE_INFINITY || (upperParameterSplit < parameterSplitValue)) {
@@ -198,21 +200,21 @@ public class StateSpaceGenerator {
                         }
                     } else {    // abs(denominator) == 0 (ERGO: it might be at border of state space)
                         if(successors) {
-                            if(derivationValue.value < 0) {
+                            if(derivationValue < 0) {
                                 lowerNegativeDirection = true;
-                                lowerParameterSplit = Double.NEGATIVE_INFINITY;
-                                upperParameterSplit = Double.POSITIVE_INFINITY;
+                                lowerParameterSplit = paramBounds.lowerEndpoint(); //Double.NEGATIVE_INFINITY;
+                                upperParameterSplit = paramBounds.upperEndpoint(); //Double.POSITIVE_INFINITY;
                             }
                         } else {	// !successors
-                            if(derivationValue.value > 0) {
+                            if(derivationValue > 0) {
                                 lowerPositiveDirection = true;
-                                lowerParameterSplit = Double.NEGATIVE_INFINITY;
-                                upperParameterSplit = Double.POSITIVE_INFINITY;
+                                lowerParameterSplit = paramBounds.lowerEndpoint(); //Double.NEGATIVE_INFINITY;
+                                upperParameterSplit = paramBounds.upperEndpoint(); //Double.POSITIVE_INFINITY;
                             }
                         }
                     }
                 } else {    // paramIndex == -1 (ERGO: no unknown parameter in equation)
-                    if (derivationValue.value < 0) {
+                    if (derivationValue < 0) {
                         lowerNegativeDirection = true;
                     } else {
                         lowerPositiveDirection = true;
@@ -246,29 +248,26 @@ public class StateSpaceGenerator {
             // cycle for every vertices in higher (n-1)-dimensional facet of this state
             for (int[] vertex : vertices) {
 
-                DerivationValue derivationValue = value(vertex, dimension);
+                calculateValue(vertex, dimension);
 
-                if (derivationValue.parameterIndex != -1) {
+                if (parameterIndex != -1) {
 
-                    parameterIndex = derivationValue.parameterIndex;
+                    // lowest and highest values of parameter space for chosen variable
+                    Range<Double> paramBounds = border.get(parameterIndex).span();
 
-                    if (Math.abs(derivationValue.denominator) != 0) {
+                    if (Math.abs(denominator) != 0) {
 
-                        double parameterSplit = derivationValue.getParameterSplitValue();
-
-
-                        // lowest and highest values of parameter space for chosen variable
-                        Range<Double> paramBounds = border.get(parameterIndex).span();
+                        double parameterSplit = (-derivationValue/denominator) == -0 ? 0 : -derivationValue/denominator;
 
                         if(!successors) {
-                            if(derivationValue.denominator < 0 && paramBounds.upperEndpoint() >= parameterSplit) {
+                            if(denominator < 0 && paramBounds.upperEndpoint() >= parameterSplit) {
                                 upperNegativeDirection = true;
 
                                 if(lowerParameterSplit == Double.NEGATIVE_INFINITY || (lowerParameterSplit > parameterSplit)) {
                                     lowerParameterSplit = parameterSplit;
                                 }
                             }
-                            if(derivationValue.value < 0 && derivationValue.denominator > 0 && paramBounds.lowerEndpoint() <= parameterSplit) {
+                            if(derivationValue < 0 && denominator > 0 && paramBounds.lowerEndpoint() <= parameterSplit) {
                                 upperNegativeDirection = true;
 
                                 if(upperParameterSplit == Double.POSITIVE_INFINITY || (upperParameterSplit < parameterSplit)) {
@@ -276,14 +275,14 @@ public class StateSpaceGenerator {
                                 }
                             }
                         } else {	// successors
-                            if(derivationValue.denominator > 0 && paramBounds.upperEndpoint() >= parameterSplit) {
+                            if(denominator > 0 && paramBounds.upperEndpoint() >= parameterSplit) {
                                 upperPositiveDirection = true;
 
                                 if(lowerParameterSplit == Double.NEGATIVE_INFINITY || (lowerParameterSplit > parameterSplit)) {
                                     lowerParameterSplit = parameterSplit;
                                 }
                             }
-                            if(derivationValue.value > 0 && derivationValue.denominator < 0 && paramBounds.lowerEndpoint() <= parameterSplit) {
+                            if(derivationValue > 0 && denominator < 0 && paramBounds.lowerEndpoint() <= parameterSplit) {
                                 upperPositiveDirection = true;
 
                                 if(upperParameterSplit == Double.POSITIVE_INFINITY || (upperParameterSplit < parameterSplit)) {
@@ -294,22 +293,22 @@ public class StateSpaceGenerator {
                     } else {    // abs(denominator) == 0 (ERGO: it might be at border of state space)
 
                         if(!successors) {
-                            if(derivationValue.value < 0) {
+                            if(derivationValue < 0) {
                                 upperNegativeDirection = true;
-                                lowerParameterSplit = Double.NEGATIVE_INFINITY;
-                                upperParameterSplit = Double.POSITIVE_INFINITY;
+                                lowerParameterSplit = paramBounds.lowerEndpoint(); //Double.NEGATIVE_INFINITY;
+                                upperParameterSplit = paramBounds.upperEndpoint(); //Double.POSITIVE_INFINITY;
                             }
                         } else {	// successors
-                            if(derivationValue.value > 0) {
+                            if(derivationValue > 0) {
                                 upperPositiveDirection = true;
-                                lowerParameterSplit = Double.NEGATIVE_INFINITY;
-                                upperParameterSplit = Double.POSITIVE_INFINITY;
+                                lowerParameterSplit = paramBounds.lowerEndpoint(); //Double.NEGATIVE_INFINITY;
+                                upperParameterSplit = paramBounds.upperEndpoint(); //Double.POSITIVE_INFINITY;
                             }
                         }
                     }
 
                 } else {    // paramIndex == -1 (ERGO: no unknown parameter in equation)
-                    if (derivationValue.value < 0) {
+                    if (derivationValue < 0) {
                         upperNegativeDirection = true;
                     } else {
                         upperPositiveDirection = true;
@@ -352,14 +351,14 @@ public class StateSpaceGenerator {
 
     /**
      * Compute derivation in given vertex for specified dimension by evaluating the function for given variable.
+     * Modifies global variables to contain Derivation of specified variable in given vertex as given by function specified in the model.
      * @param vertex Coordinates of thresholds where the computation should be performed.
      * @param dim Index of variable whose function should be evaluated.
-     * @return Derivation of specified variable in given vertex as given by function specified in the model.
      */
-    private DerivationValue value(int[] vertex, int dim) {
-        double sum = 0;
-        double denominator = 0;
-        int parameterIndex = -1;
+    private void calculateValue(int[] vertex, int dim) {
+        derivationValue = 0;
+        denominator = 0;
+        parameterIndex = -1;
 
         for (@NotNull SumMember sumMember : model.getEquationForVariable(dim)) {
             //init partial sum to constant part of the equation member
@@ -389,12 +388,10 @@ public class StateSpaceGenerator {
                 denominator += partialSum;
             } else {
                 //if sum member does not have a parameter, just add all of this to the final sum
-                sum += partialSum;
+                derivationValue += partialSum;
             }
 
         }
-
-        return new DerivationValue(sum, denominator, parameterIndex);
     }
 
     /**
@@ -528,25 +525,6 @@ public class StateSpaceGenerator {
         }
 
         return results;
-    }
-
-    /**
-     * Class that holds information about one dimension of derivation vector in some vertex.
-     */
-    private static class DerivationValue {
-        public final double value;
-        public final double denominator;
-        public final int parameterIndex;
-
-        public DerivationValue(double value, double denominator, int parameterIndex) {
-            this.value = value;
-            this.denominator = denominator;
-            this.parameterIndex = parameterIndex;
-        }
-
-        public double getParameterSplitValue() {
-            return (-value/denominator) == -0 ? 0 : -value/denominator;
-        }
     }
 
 }

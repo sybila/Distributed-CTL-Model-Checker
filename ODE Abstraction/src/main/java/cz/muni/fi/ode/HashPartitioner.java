@@ -1,19 +1,16 @@
 package cz.muni.fi.ode;
 
 import com.google.common.collect.Range;
+import cz.muni.fi.modelchecker.StateSpacePartitioner;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-/**
- * Created by daemontus on 04/02/15.
- */
-public class HashPartitioner implements CoordinatePartitioner {
+public class HashPartitioner implements StateSpacePartitioner<CoordinateNode> {
 
 
-    private final int size;
     private final int rank;
     @NotNull
     private final OdeModel model;
@@ -23,7 +20,6 @@ public class HashPartitioner implements CoordinatePartitioner {
     private List<Range<Integer>> limit = new ArrayList<>();
 
     public HashPartitioner(@NotNull OdeModel odeModel, int size, int rank) {
-        this.size = size;
         this.rank = rank;
         this.model = odeModel;
 
@@ -80,7 +76,6 @@ public class HashPartitioner implements CoordinatePartitioner {
         return rank;
     }
 
-    @Override
     public List<Range<Integer>> getMyLimit() {
         return new ArrayList<>(limit);
     }

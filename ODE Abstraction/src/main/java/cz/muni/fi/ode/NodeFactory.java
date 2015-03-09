@@ -1,12 +1,10 @@
 package cz.muni.fi.ode;
 
-import com.google.common.collect.Range;
 import cz.muni.fi.ctl.formula.Formula;
 import cz.muni.fi.ctl.formula.proposition.Contradiction;
 import cz.muni.fi.ctl.formula.proposition.FloatProposition;
 import cz.muni.fi.ctl.formula.proposition.Tautology;
 import cz.muni.fi.modelchecker.ModelAdapter;
-import cz.muni.fi.modelchecker.graph.ColorSet;
 import org.antlr.v4.runtime.misc.Nullable;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,12 +20,12 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
     private final Map<Long, CoordinateNode> borderNodes = new HashMap<>();
     private final OdeModel model;
     @NotNull
-    private final CoordinatePartitioner partitioner;
+    private final HashPartitioner partitioner;
     private final int myId;
     private boolean hasAllNodes = false;
     private StateSpaceGenerator generator;
 
-    public NodeFactory(OdeModel model, @NotNull CoordinatePartitioner partitioner) {
+    public NodeFactory(OdeModel model, @NotNull HashPartitioner partitioner) {
         this.model = model;
         this.partitioner = partitioner;
         this.myId = partitioner.getMyId();
@@ -163,18 +161,6 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
             node.purgeFormula(formula);
         }
     }
-
-
-    @NotNull
-    private native Map<CoordinateNode, TreeColorSet> getNativePredecessors(int[] node, ColorSet initial, Map<CoordinateNode, TreeColorSet> ret);
-
-    @NotNull
-    private native Map<CoordinateNode, TreeColorSet> getNativeSuccessors(int[] node, ColorSet initial, Map<CoordinateNode, TreeColorSet> ret);
-
-    @NotNull
-    private native Map<CoordinateNode, TreeColorSet> getNativeInit(String var, int op, double th, List<Range<Double>> limit, Map<CoordinateNode, TreeColorSet> ret);
-
-    public native void cacheAllNodes(List<Range<Double>> limit);
 
     public void setGenerator(StateSpaceGenerator generator) {
         this.generator = generator;

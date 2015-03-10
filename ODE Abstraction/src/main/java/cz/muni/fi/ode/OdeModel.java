@@ -54,6 +54,22 @@ public class OdeModel {
         return res;
     }
 
+    public String coordinateString(int[] coordinates) {
+        StringBuilder sb = new StringBuilder();
+        for (int i=0; i<coordinates.length; i++) {
+            sb
+                    .append("[")
+                    .append(thresholds.get(i).get(coordinates[i]))
+                    .append(",")
+                    .append(thresholds.get(i).get(coordinates[i] + 1))
+                    .append("]");
+            if ( i != coordinates.length - 1 ) {
+                sb.append(", ");
+            }
+        }
+        return sb.toString();
+    }
+
     public long getDimensionMultiplier(int dim) {
         return dimensionMultipliers[dim];
     }

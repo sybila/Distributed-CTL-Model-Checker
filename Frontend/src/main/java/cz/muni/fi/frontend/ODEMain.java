@@ -13,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 public class ODEMain {
 
@@ -68,7 +67,7 @@ public class ODEMain {
             for (@NotNull CoordinateNode node : factory.getNodes()) {
                 @NotNull TreeColorSet colorSet = factory.validColorsFor(node, formula);
                 if (!colorSet.isEmpty()) {
-                    System.out.println(Arrays.toString(node.coordinates)+" "+colorSet);
+                    System.out.println(model.coordinateString(node.coordinates)+" "+colorSet);
                 }
             }
         }

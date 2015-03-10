@@ -8,14 +8,18 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Is responsible for splitting state space to several chunks that can be processed on each machine separately.
+ * Also provides a minimal orthogonal enclosure around assigned state space for purposes of proposition evaluation.
+ */
 public class HashPartitioner implements StateSpacePartitioner<CoordinateNode> {
 
 
     private final int rank;
+    private int statesPerMachine;
+
     @NotNull
     private final OdeModel model;
-
-    private long statesPerMachine;
 
     private List<Range<Integer>> limit = new ArrayList<>();
 
@@ -23,7 +27,7 @@ public class HashPartitioner implements StateSpacePartitioner<CoordinateNode> {
         this.rank = rank;
         this.model = odeModel;
 
-        long stateCount = model.getStateCount();
+        int stateCount = (int) model.getStateCount();
         //find out how much states a machine will be dealing with
         statesPerMachine = stateCount / size;
         while (statesPerMachine * size <= stateCount) { //guarantee whole space is covered
@@ -64,7 +68,6 @@ public class HashPartitioner implements StateSpacePartitioner<CoordinateNode> {
         if (node.getOwner() == -1) {
             int owner = (int) (node.getHash() / statesPerMachine);
             node.setOwner(owner);
-            if (owner != 0) System.out.println(node.toString());
             return owner;
         } else {
             return node.getOwner();

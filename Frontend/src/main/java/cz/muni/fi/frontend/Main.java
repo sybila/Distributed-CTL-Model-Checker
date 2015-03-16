@@ -12,7 +12,7 @@ public class Main {
     }
 
     public static void main(@NotNull String[] args) throws InterruptedException, IOException {
-
+        //System.out.println("L "+Short.MIN_VALUE+" "+Short.MAX_VALUE);
     }
 
 }

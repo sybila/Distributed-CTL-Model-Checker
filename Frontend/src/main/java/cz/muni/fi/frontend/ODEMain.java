@@ -13,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Map;
 
 public class ODEMain {
 
@@ -57,6 +58,19 @@ public class ODEMain {
         //prepare model checker and run verification
         @NotNull ModelChecker<CoordinateNode, TreeColorSet> modelChecker = new ModelChecker<>(factory, partitioner, taskMessenger, terminatorFactory);
         modelChecker.verify(formula);
+
+        for (CoordinateNode node : factory.getNodes()) {
+            TreeColorSet result = model.getFullColorSet();
+            Map<CoordinateNode, TreeColorSet> successors = generator.getSuccessors(node, model.getFullColorSet());
+            for (Map.Entry<CoordinateNode, TreeColorSet> suc : successors.entrySet()) {
+                if (!suc.getKey().equals(node)) {
+                    result.subtract(suc.getValue());
+                }
+            }
+            if (!result.isEmpty()) {
+                System.out.println("Stab: "+model.coordinateString(node.coordinates)+" "+result+" "+successors.containsKey(node));
+            }
+        }
 
         //print results
         if (args.length >= 3 && args[args.length - 3].equals("--all")) {

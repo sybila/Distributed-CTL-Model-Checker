@@ -40,9 +40,10 @@ public class BitMapColorSet implements ColorSet {
     }
 
     @Override
-    public void union(ColorSet set1) {
+    public boolean union(ColorSet set1) {
         BitMapColorSet set = (BitMapColorSet) set1;
         values = values.or(set.values);
+        return true;
     }
 
     //used by native initializer

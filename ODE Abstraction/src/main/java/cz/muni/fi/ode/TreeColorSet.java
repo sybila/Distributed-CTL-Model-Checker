@@ -77,11 +77,16 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
     }
 
     @Override
-    public void union(@NotNull ColorSet set1) {
+    public boolean union(@NotNull ColorSet set1) {
         @NotNull TreeColorSet set = (TreeColorSet) set1;
+        boolean change = false;
         for (int i=0; i<size(); i++) {
-            get(i).addAll(set.get(i));
+            if (!get(i).enclosesAll(set.get(i))) {
+                change = true;
+                get(i).addAll(set.get(i));
+            }
         }
+        return change;
     }
 
     @NotNull

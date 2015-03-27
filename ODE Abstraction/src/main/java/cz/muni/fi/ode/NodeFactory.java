@@ -106,7 +106,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
         for (CoordinateNode node : nodeCache.values()) {
             TreeColorSet validColors = node.getValidColors(formula);
             if (validColors != null && !validColors.isEmpty()) {
-                results.put(node, validColors);
+                results.put(node, TreeColorSet.createCopy(validColors));
             }
         }
         return results;
@@ -152,7 +152,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
         }
         TreeColorSet colorSet = node.getValidColors(formula);
         if (colorSet == null) return TreeColorSet.createEmpty(model.parameterCount());
-        return colorSet;
+        return TreeColorSet.createCopy(colorSet);
     }
 
     @Override

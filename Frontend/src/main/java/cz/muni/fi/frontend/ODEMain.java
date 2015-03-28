@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
+import java.nio.ByteBuffer;
 
 public class ODEMain {
 
@@ -31,6 +31,8 @@ public class ODEMain {
         if (MPI.COMM_WORLD.Rank() == 0) {
             System.out.println("MPI started on "+MPI.COMM_WORLD.Size()+" machines.");
         }
+
+        MPI.Buffer_attach(ByteBuffer.allocateDirect(1000 * 1000));
 
         //read and normalize formula
         @NotNull FormulaParser parser = new FormulaParser();
@@ -59,7 +61,7 @@ public class ODEMain {
         @NotNull ModelChecker<CoordinateNode, TreeColorSet> modelChecker = new ModelChecker<>(factory, partitioner, taskMessenger, terminatorFactory);
         modelChecker.verify(formula);
 
-        for (CoordinateNode node : factory.getNodes()) {
+        /*for (CoordinateNode node : factory.getNodes()) {
             TreeColorSet result = model.getFullColorSet();
             Map<CoordinateNode, TreeColorSet> successors = generator.getSuccessors(node, model.getFullColorSet());
             for (Map.Entry<CoordinateNode, TreeColorSet> suc : successors.entrySet()) {
@@ -70,7 +72,7 @@ public class ODEMain {
             if (!result.isEmpty()) {
                 System.out.println("Stab: "+model.coordinateString(node.coordinates)+" "+result+" "+successors.containsKey(node));
             }
-        }
+        }*/
 
         //print results
         if (args.length >= 3 && args[args.length - 3].equals("--all")) {
@@ -85,6 +87,8 @@ public class ODEMain {
                 }
             }
         }
+
+        MPI.Buffer_detach();
 
         MPI.Finalize();
         System.err.println(MPI.COMM_WORLD.Rank()+" Duration: "+(System.currentTimeMillis() - start));

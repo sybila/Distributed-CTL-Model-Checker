@@ -67,8 +67,8 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Tree
             }
         }
         synchronized (this) {   //ensure message ordering
-            COMM.Isend(buffer, 0, buffer.length, MPI.INT, destinationNode, TAG);
-            COMM.Isend(toBuffer(data), 0, data.size(), MPI.DOUBLE, destinationNode, TAG);
+            COMM.Bsend(buffer, 0, buffer.length, MPI.INT, destinationNode, TAG);
+            COMM.Bsend(toBuffer(data), 0, data.size(), MPI.DOUBLE, destinationNode, TAG);
         }
     }
 
@@ -103,7 +103,7 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Tree
         @NotNull int[] buffer = new int[2*dimensions + model.parameterCount() + 3];
         buffer[0] = FINISH;
         //we have to finish other nodes because we can't send messages to ourselves (BUG)
-        COMM.Isend(buffer, 0, buffer.length, MPI.INT, (COMM.Rank() + 1) % COMM.Size(), TAG);
+        COMM.Bsend(buffer, 0, buffer.length, MPI.INT, (COMM.Rank() + 1) % COMM.Size(), TAG);
     }
 
     private static int sum(@NotNull int[] array) {

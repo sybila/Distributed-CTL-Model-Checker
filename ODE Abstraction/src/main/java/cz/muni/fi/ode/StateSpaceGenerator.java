@@ -364,22 +364,25 @@ public class StateSpaceGenerator {
             //init partial sum to constant part of the equation member
             double partialSum = sumMember.getConstant();
 
-            //multiply partialSum by actual value of every threshold relevant to this sum member
-            for (Integer variableIndex : sumMember.getVars()) {
-                //sum member indexes it's variables from 1, so we need to subtract 1 to fit model
-                partialSum *= model.getThresholdValueForVariableByIndex(variableIndex - 1, vertex[variableIndex - 1]);
-            }
-
             //multiply partialSum by values of all ramps relevant to this sum member
             for (@NotNull Ramp ramp : sumMember.getRamps()) {
                 //ramp, as sum member, indexes variables from 1, therefore -1
                 partialSum *= ramp.value(model.getThresholdValueForVariableByIndex(ramp.dim - 1, vertex[ramp.dim - 1]));
+                if (partialSum == 0) break;
             }
 
-            //multiply partialSum by values of all step functions relevant to this sum member
-            for (@NotNull Step step : sumMember.getSteps()) {
-                //step, as sum member, indexes variables from 1, therefore -1
-                partialSum *= step.value(model.getThresholdValueForVariableByIndex(step.dim - 1, vertex[step.dim - 1]));
+            if (partialSum != 0) {
+                //multiply partialSum by actual value of every threshold relevant to this sum member
+                for (Integer variableIndex : sumMember.getVars()) {
+                    //sum member indexes it's variables from 1, so we need to subtract 1 to fit model
+                    partialSum *= model.getThresholdValueForVariableByIndex(variableIndex - 1, vertex[variableIndex - 1]);
+                }
+
+                //multiply partialSum by values of all step functions relevant to this sum member
+                for (@NotNull Step step : sumMember.getSteps()) {
+                    //step, as sum member, indexes variables from 1, therefore -1
+                    partialSum *= step.value(model.getThresholdValueForVariableByIndex(step.dim - 1, vertex[step.dim - 1]));
+                }
             }
 
             if (sumMember.hasParam()) {

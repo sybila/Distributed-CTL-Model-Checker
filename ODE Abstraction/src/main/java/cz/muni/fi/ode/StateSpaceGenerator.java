@@ -472,6 +472,10 @@ public class StateSpaceGenerator {
         lowerBound = Math.max(lowerBound, coordinateBounds.get(variableIndex).lowerEndpoint());
         upperBound = Math.min(upperBound, coordinateBounds.get(variableIndex).upperEndpoint());
 
+        if (upperBound < lowerBound) {
+            return results;
+        }
+
         //helper array that holds incomplete coordinates during computation
         int[] coordinateBuffer = new int[model.getVariableCount()];
 
@@ -496,7 +500,7 @@ public class StateSpaceGenerator {
                 //the ones within restricted bounds, so we add extra conditions to account for that.
 
                 if (remainingWork[activeIndex] < 0) {
-                    remainingWork[activeIndex] = upperBound - 1; //-1 for upper node threshold
+                    remainingWork[activeIndex] = upperBound;
                 }
 
                 coordinateBuffer[activeIndex] = remainingWork[activeIndex];
@@ -511,7 +515,7 @@ public class StateSpaceGenerator {
                 //toward zero or global bound. After that, dimension is done and is marked accordingly (-1)
 
                 if (remainingWork[activeIndex] < 0) {   //if this is true, we are coming from lower dimension and we need to init new search
-                    remainingWork[activeIndex] = coordinateBounds.get(activeIndex).upperEndpoint() - 1; //-1 for upper node threshold
+                    remainingWork[activeIndex] = coordinateBounds.get(activeIndex).upperEndpoint();
                 }
 
                 coordinateBuffer[activeIndex] = remainingWork[activeIndex];

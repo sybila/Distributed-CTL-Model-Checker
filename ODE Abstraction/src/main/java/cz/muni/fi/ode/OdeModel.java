@@ -4,6 +4,7 @@ import com.google.common.collect.Range;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,6 +27,8 @@ public class OdeModel {
     @NotNull
     private final List<List<SumMember>> equations = new ArrayList<>();
 
+    final List<Range<Integer>> nodeIndexRange = new ArrayList<>();
+
     //local support data
     private long[] dimensionMultipliers;
     private long stateCount;
@@ -36,14 +39,20 @@ public class OdeModel {
 
     public void load() {
         cppLoad(filename);
+
+        for (Range<Integer> range : variableRange) {
+            nodeIndexRange.add(Range.closed(range.lowerEndpoint(), range.upperEndpoint() - 1));
+        }
+
         dimensionMultipliers = new long[getVariableCount()];
         stateCount = 1;
         //count all states and prepare ordering
         for (int i=0; i < getVariableCount(); i++) {
             dimensionMultipliers[i] = stateCount;
-            Range<Integer> range = getThresholdRanges().get(i);
-            stateCount *= range.upperEndpoint() - range.lowerEndpoint();
+            Range<Integer> range = nodeIndexRange.get(i);
+            stateCount *= range.upperEndpoint() - range.lowerEndpoint() + 1;
         }
+        System.out.println("Multipliers: "+ Arrays.toString(dimensionMultipliers));
     }
 
     public long nodeHash(@NotNull int[] nodeCoordinates) {

@@ -40,15 +40,14 @@ public class HashPartitioner implements StateSpacePartitioner<CoordinateNode> {
             myHighestState = stateCount - 1;
         }
         for (int i=0; i < odeModel.getVariableCount(); i++) {
-            Range<Integer> range = odeModel.getThresholdRanges().get(i);
-            int varRange = range.upperEndpoint() - range.lowerEndpoint();
-            if (varRange * model.getDimensionMultiplier(i) <= statesPerMachine) {    //this covers situations when var i is insignificant with respect to current partitioning
+            Range<Integer> range = odeModel.nodeIndexRange.get(i);
+            int statesInThisDimension = range.upperEndpoint() - range.lowerEndpoint() + 1;
+            if (statesInThisDimension * model.getDimensionMultiplier(i) <= statesPerMachine) {    //this covers situations when var i is insignificant with respect to current partitioning
                 limit.add(range);
             } else {    //we will get here only if number of indexes this variable covers is smaller than her actual span / short: if upperBound > lowerBound, there is less than varRange items between them
-                int lowerBound = (int) ((myLowestState / model.getDimensionMultiplier(i)) % varRange);
-                int upperBound = (int) ((myHighestState / model.getDimensionMultiplier(i)) % varRange);
-                upperBound++;
-                //System.out.println(rank+" "+lowerBound+" "+upperBound);
+                int lowerBound = (int) ((myLowestState / model.getDimensionMultiplier(i)) % statesInThisDimension);
+                int upperBound = (int) ((myHighestState / model.getDimensionMultiplier(i)) % statesInThisDimension);
+
                 if (upperBound < lowerBound) {  //sadly, this is how it works
                     limit.add(range);
                 } else {
@@ -60,7 +59,7 @@ public class HashPartitioner implements StateSpacePartitioner<CoordinateNode> {
                 }
             }
         }
-        System.out.println(rank+" Partitioner: Total states: "+stateCount+" States per machine: "+statesPerMachine+" My Ranges: "+ Arrays.toString(limit.toArray(new Range[limit.size()])));
+        System.out.println(rank+" Partitioner: Total states: "+stateCount+" States per machine: "+statesPerMachine+" My Ranges: "+ Arrays.toString(limit.toArray()) + " lowest: " + myLowestState + " highest: " + myHighestState);
     }
 
     @Override

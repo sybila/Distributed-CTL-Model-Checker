@@ -228,6 +228,7 @@ public:
 		jfieldID _varList;
 		jfieldID _thresholdList;
 		jfieldID _equationList;
+		jfieldID _variableOrder;
 	public:
 		class Instance : public AnyInstance<ModelClass> {
 		public:
@@ -235,12 +236,14 @@ public:
 			ListClass::Instance varList;
 			ListClass::Instance thresholds;
 			ListClass::Instance equations;
+			ListClass::Instance variableOrder;
 			Instance(jobject value, ModelClass * type) : 
 				AnyInstance(value, type), 
 				paramList(_type->_env->GetObjectField(_value, _type->_paramList), &(_type->_jvm->List)),
 				thresholds(_type->_env->GetObjectField(_value, _type->_thresholdList), &(_type->_jvm->List)),
 				equations(_type->_env->GetObjectField(_value, _type->_equationList), &(_type->_jvm->List)),
-				varList(_type->_env->GetObjectField(_value, _type->_varList), &(_type->_jvm->List)) {
+				varList(_type->_env->GetObjectField(_value, _type->_varList), &(_type->_jvm->List)),
+				variableOrder(_type->_env->GetObjectField(_value, _type->_variableOrder), &(_type->_jvm->List)) {
 			}
 		};
 		ModelClass(JVM * jvm) : AnyClass(jvm, "cz/muni/fi/ode/OdeModel") {
@@ -248,6 +251,7 @@ public:
 			_varList = _env->GetFieldID(_class, "variableRange", "Ljava/util/List;");
 			_thresholdList = _env->GetFieldID(_class, "thresholds", "Ljava/util/List;");
 			_equationList = _env->GetFieldID(_class, "equations", "Ljava/util/List;");
+			_variableOrder = _env->GetFieldID(_class, "variableOrder", "Ljava/util/List;");
 		}
 	};
 
@@ -273,18 +277,30 @@ public:
 			_upperEndPoint = _env->GetMethodID(_class, "upperEndpoint", "()Ljava/lang/Comparable;");
 			_lowerEndPoint = _env->GetMethodID(_class, "lowerEndpoint", "()Ljava/lang/Comparable;");
 		}
-		RangeClass::Instance open(double d1, double d2) {
-			return open(_jvm->Double.valueOf(d1), _jvm->Double.valueOf(d2));
+		RangeClass::Instance openInt(int d1, int d2) {
+		    return openInt(_jvm->Integer.valueOf(d1), _jvm->Integer.valueOf(d2));
 		}
-		RangeClass::Instance open(DoubleClass::Instance d1, DoubleClass::Instance d2) {
+		RangeClass::Instance openDouble(double d1, double d2) {
+			return openDouble(_jvm->Double.valueOf(d1), _jvm->Double.valueOf(d2));
+		}
+		RangeClass::Instance openDouble(DoubleClass::Instance d1, DoubleClass::Instance d2) {
 			return RangeClass::Instance(_env->CallStaticObjectMethod(_class, _open, d1.object(), d2.object()), this);
 		}
-		RangeClass::Instance closed(double d1, double d2) {
-			return closed(_jvm->Double.valueOf(d1), _jvm->Double.valueOf(d2));
+		RangeClass::Instance openInt(IntegerClass::Instance d1, IntegerClass::Instance d2) {
+        	return RangeClass::Instance(_env->CallStaticObjectMethod(_class, _open, d1.object(), d2.object()), this);
+       	}
+		RangeClass::Instance closedInt(int d1, int d2) {
+        	return closedInt(_jvm->Integer.valueOf(d1), _jvm->Integer.valueOf(d2));
+       	}
+		RangeClass::Instance closedDouble(double d1, double d2) {
+			return closedDouble(_jvm->Double.valueOf(d1), _jvm->Double.valueOf(d2));
 		}
-		RangeClass::Instance closed(DoubleClass::Instance d1, DoubleClass::Instance d2) {
+		RangeClass::Instance closedDouble(DoubleClass::Instance d1, DoubleClass::Instance d2) {
 			return RangeClass::Instance(_env->CallStaticObjectMethod(_class, _closed, d1.object(), d2.object()), this);
 		}
+		RangeClass::Instance closedInt(IntegerClass::Instance d1, IntegerClass::Instance d2) {
+   			return RangeClass::Instance(_env->CallStaticObjectMethod(_class, _closed, d1.object(), d2.object()), this);
+        }
 	};
 
 	class RangeSetClass : public AnyClass {
@@ -324,7 +340,7 @@ public:
 					auto ranges = values[dim];
 					auto  iter = ranges.begin();
 					for( ; iter != ranges.end(); ++iter ) {						
-						rangeSet.add(_type->_jvm->Range.closed(iter->first, iter->second));					
+						rangeSet.add(_type->_jvm->Range.closedDouble(iter->first, iter->second));
 					}
 				}
 			}

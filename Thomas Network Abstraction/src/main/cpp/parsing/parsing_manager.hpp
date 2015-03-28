@@ -46,6 +46,12 @@ namespace ParsingManager {
       return data_parser.parseNetwork(file);
    }
 
+   Model parseModelPath(const string & path) {
+      DataParser data_parser;
+      ifstream file(path, ios::in);
+      return data_parser.parseNetwork(file);  
+   }
+
    /**
     * @brief parseProperty parser a property from a property file
     */

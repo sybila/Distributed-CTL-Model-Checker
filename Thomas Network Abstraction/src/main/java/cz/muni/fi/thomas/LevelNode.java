@@ -11,16 +11,16 @@ import java.util.Map;
 
 public class LevelNode implements Node {
 
-    private int[] levels;
+    public int[] levels;
 
     private int owner = -1;
 
     @NotNull
     private final Map<Formula, BitMapColorSet> formulae = new HashMap<>();
 
-    private Map<LevelNode, BitMapColorSet> predecessors;
+    private Map<LevelNode, BitMapColorSet> predecessors = new HashMap<>();
 
-    private Map<LevelNode, BitMapColorSet> successors;
+    private Map<LevelNode, BitMapColorSet> successors = new HashMap<>();
 
     public LevelNode(@NotNull int[] levels) {
         this.levels = Arrays.copyOf(levels, levels.length);
@@ -30,20 +30,12 @@ public class LevelNode implements Node {
         return levels[dimension];
     }
 
-    public synchronized boolean hasPredecessorsFor() {
-        return predecessors != null;
+    public synchronized void addPredecessor(LevelNode predecessor, BitMapColorSet transitionColors) {
+        predecessors.put(predecessor, transitionColors);
     }
 
-    public synchronized void savePredecessors(@NotNull Map<LevelNode, BitMapColorSet> predecessors) {
-        this.predecessors = new HashMap<>(predecessors);
-    }
-
-    public synchronized boolean hasSuccessors() {
-        return successors != null;
-    }
-
-    public synchronized void saveSuccessors(@NotNull Map<LevelNode, BitMapColorSet> successors) {
-        this.successors = new HashMap<>(successors);
+    public synchronized void addSuccessor(LevelNode successor, BitMapColorSet transitionColors) {
+        successors.put(successor, transitionColors);
     }
 
     @NotNull
@@ -113,7 +105,12 @@ public class LevelNode implements Node {
     @NotNull
     @Override
     public String toString() {
-        return Arrays.toString(levels) +" formulae: "+formulae.toString();
+        return Arrays.toString(levels)/* +" formulae: "+formulae.toString()*/;
+    }
+
+    @NotNull
+    public String fullString() {
+        return toString() + " Successors: " + Arrays.toString(successors.entrySet().toArray())+" Predecessors: " + Arrays.toString(predecessors.entrySet().toArray());
     }
 
     public int getOwner() {

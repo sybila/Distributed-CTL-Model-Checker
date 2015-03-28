@@ -1,13 +1,10 @@
 package cz.muni.fi.ode;
 
-import com.google.common.collect.Range;
 import cz.muni.fi.ctl.formula.Formula;
 import cz.muni.fi.ctl.formula.proposition.Contradiction;
 import cz.muni.fi.ctl.formula.proposition.FloatProposition;
 import cz.muni.fi.ctl.formula.proposition.Tautology;
 import cz.muni.fi.modelchecker.ModelAdapter;
-import cz.muni.fi.modelchecker.StateSpacePartitioner;
-import cz.muni.fi.modelchecker.graph.ColorSet;
 import org.antlr.v4.runtime.misc.Nullable;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,16 +16,16 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
     @NotNull
     private final Set<FloatProposition> revealedPropositions = new HashSet<>();
 
-    private final Map<Integer, CoordinateNode> nodeCache = new HashMap<>();
-    private final Map<Integer, CoordinateNode> borderNodes = new HashMap<>();
+    private final Map<Long, CoordinateNode> nodeCache = new HashMap<>();
+    private final Map<Long, CoordinateNode> borderNodes = new HashMap<>();
     private final OdeModel model;
     @NotNull
-    private final CoordinatePartitioner partitioner;
+    private final HashPartitioner partitioner;
     private final int myId;
     private boolean hasAllNodes = false;
     private StateSpaceGenerator generator;
 
-    public NodeFactory(OdeModel model, @NotNull CoordinatePartitioner partitioner) {
+    public NodeFactory(OdeModel model, @NotNull HashPartitioner partitioner) {
         this.model = model;
         this.partitioner = partitioner;
         this.myId = partitioner.getMyId();
@@ -40,13 +37,13 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
     }
 
     public synchronized CoordinateNode getNode(@NotNull int[] coordinates) {
-        int hash = Arrays.hashCode(coordinates);
+        long hash = model.nodeHash(coordinates);
         if (nodeCache.containsKey(hash)) {
             return nodeCache.get(hash);
         } else if (borderNodes.containsKey(hash)) {
             return borderNodes.get(hash);
         } else {
-            @NotNull CoordinateNode n = new CoordinateNode(coordinates);
+            @NotNull CoordinateNode n = new CoordinateNode(coordinates, hash);
             if (partitioner.getNodeOwner(n) == myId) {
                 nodeCache.put(hash, n);
             } else {
@@ -83,7 +80,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
     public synchronized Map<CoordinateNode, TreeColorSet> initialNodes(@NotNull Formula formula) {
         if (formula instanceof Tautology) {
             if (!hasAllNodes) {
-                cacheAllNodes(partitioner.getMyLimit());
+                generator.cacheAllNodes();
                 hasAllNodes = true;
             }
             @NotNull Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
@@ -98,22 +95,18 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {
             @NotNull FloatProposition proposition = (FloatProposition) formula;
             revealedPropositions.add(proposition);
-            @NotNull Map<CoordinateNode, TreeColorSet> values = getNativeInit(
-                    proposition.getVariable(),
-                    proposition.getNativeOperator(),
-                    proposition.getThreshold(),
-                    partitioner.getMyLimit(), new HashMap<CoordinateNode, TreeColorSet>());
-            for (@NotNull Map.Entry<CoordinateNode, TreeColorSet> entry : values.entrySet()) {
-                entry.getKey().addFormula(proposition, entry.getValue());
+            for (CoordinateNode node : generator.initial(proposition)) {
+                //proposition is invariant to parameters
+                node.addFormula(proposition, model.getFullColorSet());
             }
             //values are not exclusively our inner nodes, so we can't return them directly.
             //return values;
         }
         @NotNull Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
-        for (@NotNull CoordinateNode n : nodeCache.values()) {
-            TreeColorSet validColors = n.getValidColors(formula);
+        for (CoordinateNode node : nodeCache.values()) {
+            TreeColorSet validColors = node.getValidColors(formula);
             if (validColors != null && !validColors.isEmpty()) {
-                results.put(n, validColors);
+                results.put(node, TreeColorSet.createCopy(validColors));
             }
         }
         return results;
@@ -123,7 +116,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
     @Override
     public synchronized Map<CoordinateNode, TreeColorSet> invertNodeSet(@NotNull Map<CoordinateNode, TreeColorSet> nodes) {
         if (!hasAllNodes) {
-            cacheAllNodes(partitioner.getMyLimit());
+            generator.cacheAllNodes();
             hasAllNodes = true;
         }
         @NotNull Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
@@ -153,31 +146,21 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {
             @NotNull FloatProposition proposition = (FloatProposition) formula;
             revealedPropositions.add(proposition);
-            @NotNull Map<CoordinateNode, TreeColorSet> values = getNativeInit(
-                    proposition.getVariable(),
-                    proposition.getNativeOperator(),
-                    proposition.getThreshold(),
-                    partitioner.getMyLimit(), new HashMap<CoordinateNode, TreeColorSet>());
-            for (@NotNull Map.Entry<CoordinateNode, TreeColorSet> entry : values.entrySet()) {
-                entry.getKey().addFormula(proposition, entry.getValue());
+            for (CoordinateNode n : generator.initial(proposition)) {
+                n.addFormula(proposition, model.getFullColorSet());
             }
         }
         TreeColorSet colorSet = node.getValidColors(formula);
         if (colorSet == null) return TreeColorSet.createEmpty(model.parameterCount());
-        return colorSet;
+        return TreeColorSet.createCopy(colorSet);
     }
 
-
-    @NotNull
-    private native Map<CoordinateNode, TreeColorSet> getNativePredecessors(int[] node, ColorSet initial, Map<CoordinateNode, TreeColorSet> ret);
-
-    @NotNull
-    private native Map<CoordinateNode, TreeColorSet> getNativeSuccessors(int[] node, ColorSet initial, Map<CoordinateNode, TreeColorSet> ret);
-
-    @NotNull
-    private native Map<CoordinateNode, TreeColorSet> getNativeInit(String var, int op, double th, List<Range<Double>> limit, Map<CoordinateNode, TreeColorSet> ret);
-
-    public native void cacheAllNodes(List<Range<Double>> limit);
+    @Override
+    public void purge(Formula formula) {
+        for (CoordinateNode node : nodeCache.values()) {
+            node.purgeFormula(formula);
+        }
+    }
 
     public void setGenerator(StateSpaceGenerator generator) {
         this.generator = generator;

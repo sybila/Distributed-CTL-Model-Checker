@@ -1,6 +1,5 @@
 package cz.muni.fi.frontend;
 
-import com.googlecode.javaewah.EWAHCompressedBitmap;
 import cz.muni.fi.ctl.FormulaNormalizer;
 import cz.muni.fi.ctl.FormulaParser;
 import cz.muni.fi.ctl.formula.Formula;
@@ -10,17 +9,16 @@ import cz.muni.fi.modelchecker.mpi.termination.MPITokenMessenger;
 import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import cz.muni.fi.ode.*;
 import mpi.MPI;
-import mpjbuf.BufferConstants;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.Map;
 
 public class ODEMain {
 
     static {
-        loadLibrary("ODE");
+        NativeUtils.loadLibrary("ODE");
     }
 
     public static void main(@NotNull String[] args) throws InterruptedException, IOException {
@@ -48,29 +46,42 @@ public class ODEMain {
         model.load();
 
         //@NotNull CoordinatePartitioner partitioner = new RectangularPartitioner(model, MPI.COMM_WORLD.Size(), MPI.COMM_WORLD.Rank());
-        @NotNull CoordinatePartitioner partitioner = new HashPartitioner(model, MPI.COMM_WORLD.Size(), MPI.COMM_WORLD.Rank());
+        @NotNull HashPartitioner partitioner = new HashPartitioner(model, MPI.COMM_WORLD.Size(), MPI.COMM_WORLD.Rank());
         @NotNull NodeFactory factory = new NodeFactory(model, partitioner);
-        @NotNull StateSpaceGenerator generator = new StateSpaceGenerator(model, true, factory);
+        @NotNull StateSpaceGenerator generator = new StateSpaceGenerator(model, factory, partitioner.getMyLimit());
         factory.setGenerator(generator);
 
         //prepare MPI communication environment
         @NotNull Terminator.TerminatorFactory terminatorFactory = new Terminator.TerminatorFactory(new MPITokenMessenger(MPI.COMM_WORLD));
-        @NotNull TaskMessenger<CoordinateNode, TreeColorSet> taskMessenger = new MpiTaskMessenger(MPI.COMM_WORLD, model.variableCount(), factory, model);
+        @NotNull TaskMessenger<CoordinateNode, TreeColorSet> taskMessenger = new MpiTaskMessenger(MPI.COMM_WORLD, model.getVariableCount(), factory, model);
 
         //prepare model checker and run verification
         @NotNull ModelChecker<CoordinateNode, TreeColorSet> modelChecker = new ModelChecker<>(factory, partitioner, taskMessenger, terminatorFactory);
         modelChecker.verify(formula);
 
+        for (CoordinateNode node : factory.getNodes()) {
+            TreeColorSet result = model.getFullColorSet();
+            Map<CoordinateNode, TreeColorSet> successors = generator.getSuccessors(node, model.getFullColorSet());
+            for (Map.Entry<CoordinateNode, TreeColorSet> suc : successors.entrySet()) {
+                if (!suc.getKey().equals(node)) {
+                    result.subtract(suc.getValue());
+                }
+            }
+            if (!result.isEmpty()) {
+                System.out.println("Stab: "+model.coordinateString(node.coordinates)+" "+result+" "+successors.containsKey(node));
+            }
+        }
+
         //print results
         if (args.length >= 3 && args[args.length - 3].equals("--all")) {
             for (@NotNull CoordinateNode node : factory.getNodes()) {
-                System.out.println(node.toString());
+                System.out.println(node.fullString());
             }
         } else if (args.length >= 3 && !args[args.length - 3].equals("--none")) {
             for (@NotNull CoordinateNode node : factory.getNodes()) {
                 @NotNull TreeColorSet colorSet = factory.validColorsFor(node, formula);
                 if (!colorSet.isEmpty()) {
-                    System.out.println(Arrays.toString(node.coordinates)+" "+colorSet);
+                    System.out.println(model.coordinateString(node.coordinates)+" "+colorSet);
                 }
             }
         }
@@ -78,31 +89,6 @@ public class ODEMain {
         MPI.Finalize();
         System.err.println(MPI.COMM_WORLD.Rank()+" Duration: "+(System.currentTimeMillis() - start));
         System.exit(0);
-    }
-
-
-    private static void loadLibrary(String name) {
-        try {
-            System.loadLibrary(name);
-            System.out.println(name+" module loaded from include path.");
-        } catch (UnsatisfiedLinkError e) {
-            try {
-                switch (OsCheck.getOperatingSystemType()) {
-                    case MacOS:
-                        NativeUtils.loadLibraryFromJar("/lib"+name+".jnilib");
-                        break;
-                    case Linux:
-                        NativeUtils.loadLibraryFromJar("/lib"+name+".so");
-                        break;
-                    default:
-                        System.out.println("Unsupported operating system for module: "+name);
-                        break;
-                }
-                System.out.println(name+" module loaded from jar file.");
-            } catch (Exception e1) {
-                System.out.println("Unable to load module: "+name+", problem: "+e1.toString());
-            }
-        }
     }
 
 }

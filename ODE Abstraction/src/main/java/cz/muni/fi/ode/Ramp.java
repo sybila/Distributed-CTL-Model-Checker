@@ -24,13 +24,17 @@ public class Ramp {
         this.negative = negative;
     }
 
-    double value(double value) {
-        double res = (value - min) / (max - min);
-        if (res < 0)
-            res = 0;
-        else if (res > 1)
-            res = 1;
-        return (/*min_value + */(res * (max_value - min_value)));
+    double value(double x) {
+        if (x >= min && x < max) {
+            double res = (x - min) / (max - min);
+            if (negative) {
+                return min_value - res * Math.abs(max_value - min_value);
+            } else {
+                return min_value + res * Math.abs(max_value - min_value);
+            }
+        } else {
+            return 0;
+        }
     }
 
     @NotNull

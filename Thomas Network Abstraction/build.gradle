@@ -18,6 +18,7 @@ dependencies {
 
 
 ext {
+    compiler = "g++"    //override compiler
     objDir = "build/objs/"
     binDir = "build/binaries/"
     srcDir = "src/main/cpp/"
@@ -55,13 +56,35 @@ task compileGenerator(dependsOn: 'createDirs', type:Exec) {
 task buildGenerator(dependsOn: 'compileGenerator', type:Exec) {
     if (os.equals('darwin')) {
         args    "-dynamiclib",
+                "-lgecodesupport",
+                "-lgecodekernel",
+                "-lgecodesearch",
+                "-lgecodeminimodel",
+                "-lgecodeint",
                 "-o", binDir+"lib"+nativeName+".jnilib",
                 objDir+"generator.o"
     } else {
         args    "-shared",
+                "-lgecodesupport",
+                "-lgecodekernel",
+                "-lgecodesearch",
+                "-lgecodeminimodel",
+                "-lgecodeint",
                 "-o", binDir+"lib"+nativeName+".so",
                 objDir+"generator.o"
     }
+    executable compiler
+}
+
+task buildParamPrinter(type:Exec) {
+    args    "-std=c++11",
+            "-lgecodesupport",
+            "-lgecodekernel",
+            "-lgecodesearch",
+            "-lgecodeminimodel",
+            "-lgecodeint",
+            "-o", "paramPrinter",
+            srcDir+"paramSpacePrinter.cpp"
     executable compiler
 }
 
@@ -69,7 +92,7 @@ task buildGenerator(dependsOn: 'compileGenerator', type:Exec) {
 task generateModelIncludeFiles(dependsOn: 'fullJar', type:Exec) {
     args    "-o", srcDir+"jni_include/Model.h",
             "-classpath", "build/libs/"+project.name+"-full-"+project.version+".jar",
-            "cz.muni.fi.thomas.NetworkModel"
+            "cz.muni.fi.thomas.NativeModel"
     executable "javah"
 }
 

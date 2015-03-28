@@ -13,7 +13,7 @@ public class BitMapColorSet implements ColorSet {
     public static BitMapColorSet createCopy(BitMapColorSet other) {
         BitMapColorSet result = new BitMapColorSet();
         try {
-            result.values = (EWAHCompressedBitmap) other.clone();
+            result.values = other.values.clone();
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
@@ -40,14 +40,29 @@ public class BitMapColorSet implements ColorSet {
     }
 
     @Override
-    public void union(ColorSet set1) {
+    public boolean union(ColorSet set1) {
         BitMapColorSet set = (BitMapColorSet) set1;
         values = values.or(set.values);
+        return true;
+    }
+
+    //used by native initializer
+    public void unset(int i) {
+        values.clear(i);
+    }
+
+    @Override
+    public String toString() {
+        return (isFull() ? "ANY" : values.toString()) + " " + values.sizeInBytes() + " " + values.sizeInBits();
     }
 
     @Override
     public boolean isEmpty() {
         return values.isEmpty();
+    }
+
+    public boolean isFull() {
+        return values.cardinality() == values.sizeInBits();
     }
 
     public boolean encloses(BitMapColorSet set) {

@@ -36,6 +36,14 @@ namespace ConstructionManager {
 		return result;
 	}
 
+	UnparametrizedStructure computeStructure(const Model & model, const Kinetics & kinetics) {
+		// Create the UKS
+		UnparametrizedStructureBuilder unparametrized_structure_builder(model, PropertyAutomaton(), kinetics);
+		UnparametrizedStructure unparametrized_structure = unparametrized_structure_builder.buildStructure();
+		//	cout << "hi" << endl;
+		return unparametrized_structure;
+	}
+
 	/**
 	 * Function that constructs all the data in a cascade of temporal builders.
 	 */

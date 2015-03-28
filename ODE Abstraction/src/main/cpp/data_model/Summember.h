@@ -27,14 +27,18 @@ public:
         ramp(const ramp& r) : dim(r.dim), min(r.min), max(r.max), min_value(r.min_value), max_value(r.max_value), negative(r.negative) {}
 
 
-		value_type value(value_type value) const
+		value_type value(value_type x) const
 		{
-			value_type res = (value - min) / (max - min);
-			if (res < 0)
-				res = 0;
-			else if (res > 1)
-				res = 1;
-			return (/*min_value + */(res * (max_value - min_value)));
+		    if (x >= min && x < max) {
+                double res = (x - min) / (max - min);
+                if (negative) {
+                    return min_value - res * abs(max_value - min_value);
+                } else {
+                    return min_value + res * abs(max_value - min_value);
+                }
+            } else {
+                return 0;
+            }
 		}
 
 		friend std::ostream& operator<<(std::ostream& out, const ramp& r) {

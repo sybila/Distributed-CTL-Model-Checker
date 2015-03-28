@@ -173,7 +173,7 @@ class ArgumentParser {
          break;
 
       default:
-         throw invalid_argument("Unknown switch -" + s);
+         throw invalid_argument("Unknown switch -" + std::string(1,s));
          break;
       }
    }

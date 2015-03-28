@@ -56,7 +56,7 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
         Parser parser(modelfile2);
         parser.parse();
         odeModel = parser.returnStorage();
-        odeModel.RunAbstraction();
+        odeModel.RunAbstraction(false);
         generator = new StateSpaceGenerator(odeModel, true);
 
 /*
@@ -81,16 +81,18 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
         for (int i = 0; i < paramRanges.size(); ++i)
         {
         	//closed, because we also accept singular points
-	        auto newRange = jvm.Range.closed(paramRanges[i].first, paramRanges[i].second);
+	        auto newRange = jvm.Range.closedDouble(paramRanges[i].first, paramRanges[i].second);
 	        model.paramList.add(newRange.object());
         }
-        //read threashold ranges and add them to javao model object
+        //read threashold ranges and add them to java model object
         for (int i = 0; i < odeModel.getDims(); ++i)
         {
         	//write threshold range
         	std::vector<double> thresholds = odeModel.getThresholdsForVariable(i);
-	        auto newRange = jvm.Range.closed(0, thresholds.size() - 1);
+	        auto newRange = jvm.Range.closedInt(0, thresholds.size() - 1);
 	        model.varList.add(newRange.object());
+	        //init name->index function
+	        model.variableOrder.add(env->NewStringUTF(odeModel.getVariable(i).c_str()));
 	        //copy thresholds
         	auto tList = jvm.List.create();
         	for (int j = 0; j < thresholds.size(); j++) {
@@ -202,7 +204,7 @@ JNIEXPORT jobject JNICALL Java_cz_muni_fi_ode_NodeFactory_getNativeInit(
 		Operators(jOp), 
 		(double) jTh, 
 		borders
-	);	
+	);
 	saveStatesToMap(data, results, factory, jvm);
 	return results.object();
 }

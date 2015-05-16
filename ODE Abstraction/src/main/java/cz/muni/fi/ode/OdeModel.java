@@ -117,6 +117,10 @@ public class OdeModel {
         throw new IllegalArgumentException(var+" is not a variable of this model. ");
     }
 
+    public String getVariableNameByIndex(int index) {
+        return variableOrder.get(index);
+    }
+
     public int getVariableCount() {
         return variableRange.size();
     }

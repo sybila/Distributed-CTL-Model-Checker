@@ -1,6 +1,10 @@
 package cz.muni.fi.frontend;
 
+import com.google.common.collect.Range;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import cz.muni.fi.ctl.formula.proposition.Tautology;
+import cz.muni.fi.export.*;
 import cz.muni.fi.ode.*;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,44 +32,58 @@ public class TransitionMain {
         @NotNull StateSpaceGenerator generator = new StateSpaceGenerator(model, factory, partitioner.getMyLimit());
         factory.setGenerator(generator);
 
-        //prepare MPI communication environment
-        //@NotNull Terminator.TerminatorFactory terminatorFactory = new Terminator.TerminatorFactory(new MPITokenMessenger(MPI.COMM_WORLD));
-        //@NotNull TaskMessenger<CoordinateNode, TreeColorSet> taskMessenger = new MpiTaskMessenger(MPI.COMM_WORLD, model.getVariableCount(), factory, model);
-
-        //prepare model checker and run verification
-       // @NotNull ModelChecker<CoordinateNode, TreeColorSet> modelChecker = new ModelChecker<>(factory, partitioner, taskMessenger, terminatorFactory);
-        //modelChecker.verify(formula);
-        // generator.cacheAllNodes();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        Model exported = new Model();
 
         for (int i=0; i<model.getVariableCount(); i++) {
-            System.out.println("Thresholds for var "+i+": ");
+            Variable variable = new Variable();
+            variable.name = model.getVariableNameByIndex(i);
             for (int j=0; j<model.getThresholdCountForVariable(i); j++) {
-                System.out.print(model.getThresholdValueForVariableByIndex(i, j) + ",");
+                variable.thresholds.add(model.getThresholdValueForVariableByIndex(i, j));
             }
-            System.out.println();
+            exported.variables.add(variable);
         }
 
-        for (Map.Entry<CoordinateNode, TreeColorSet> data : factory.initialNodes(Tautology.INSTANCE).entrySet()) {
-            System.out.println("From " + data.getKey() + ": ");
-            for (Map.Entry<CoordinateNode, TreeColorSet> succ : factory.successorsFor(data.getKey(), null).entrySet()) {
-                System.out.println(succ.getKey()+": "+succ.getValue());
-            }
-        }
-
-        //print results
-        /*if (args.length >= 3 && args[args.length - 3].equals("--all")) {
-            for (@NotNull CoordinateNode node : factory.getNodes()) {
-                System.out.println(node.fullString());
-            }
-        } else if (args.length >= 3 && !args[args.length - 3].equals("--none")) {
-            for (@NotNull CoordinateNode node : factory.getNodes()) {
-                @NotNull TreeColorSet colorSet = factory.validColorsFor(node, formula);
-                if (!colorSet.isEmpty()) {
-                    System.out.println(model.coordinateString(node.coordinates)+" "+colorSet);
+        for (Map.Entry<CoordinateNode, TreeColorSet> entry : factory.initialNodes(Tautology.INSTANCE).entrySet()) {
+            Successor.Successors successors = new Successor.Successors();
+            successors.origin = convertNode(entry.getKey(), model);
+            for (Map.Entry<CoordinateNode, TreeColorSet> succ : factory.successorsFor(entry.getKey(), null).entrySet()) {
+                Successor successor = new Successor();
+                successor.target = convertNode(succ.getKey(), model);
+                for (int i=0; i < succ.getValue().size(); i++) {
+                    Parameter parameter = new Parameter();
+                    parameter.index = i;
+                    Successor.Param param = new Successor.Param();
+                    param.parameter = parameter;
+                    for (Range<Double> range : succ.getValue().get(i).asRanges()) {
+                        Interval<Double> interval = new Interval<>();
+                        interval.low = range.lowerEndpoint();
+                        interval.high = range.upperEndpoint();
+                        param.intervals.add(interval);
+                    }
+                    successor.colours.add(param);
                 }
+                successors.transitions.add(successor);
             }
-        }*/
+            exported.transitions.add(successors);
+        }
 
+        System.out.println(gson.toJson(exported));
+
+    }
+
+    private static Node convertNode(CoordinateNode cn, OdeModel model) {
+        Node node = new Node();
+        for (int k : cn.coordinates) {
+            node.coordinates.add(k);
+        }
+        for (int i=0; i < cn.coordinates.length; i++) {
+            Interval<Double> interval = new Interval<>();
+            interval.low = model.getThresholdValueForVariableByIndex(i, cn.coordinates[i]);
+            interval.high = model.getThresholdValueForVariableByIndex(i, cn.coordinates[i] + 1);
+            node.thresholds.add(interval);
+        }
+        return node;
     }
 
 }

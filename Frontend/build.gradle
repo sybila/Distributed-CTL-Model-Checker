@@ -14,6 +14,7 @@ dependencies {
     compile project(':ODE Abstraction')
     compile project(':Thomas Network Abstraction')
     compile files('../libs/mpj.jar')
+    compile 'com.google.code.gson:gson:2.3.1'
 }
 
 //create a single Jar with all dependencies
@@ -24,18 +25,6 @@ task odeJar(type: Jar) {
                     'Main-Class': 'cz.muni.fi.frontend.ODEMain'
     }
     baseName = project.name + '-ode'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-}
-
-//create a single Jar with all dependencies
-task thomasJar(type: Jar) {
-    manifest {
-        attributes  'Implementation-Title': 'Biodivine CTL',
-                'Implementation-Version': version,
-                'Main-Class': 'cz.muni.fi.frontend.ThomasMain'
-    }
-    baseName = project.name + '-thomas'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }

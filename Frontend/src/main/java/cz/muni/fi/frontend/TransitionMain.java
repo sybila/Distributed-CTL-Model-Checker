@@ -33,7 +33,7 @@ public class TransitionMain {
         @NotNull StateSpaceGenerator generator = new StateSpaceGenerator(model, factory, partitioner.getMyLimit());
         factory.setGenerator(generator);
 
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        Gson gson = new GsonBuilder()/*.setPrettyPrinting()*/.create();
         Model exported = new Model();
 
         for (int i=0; i<model.getVariableCount(); i++) {

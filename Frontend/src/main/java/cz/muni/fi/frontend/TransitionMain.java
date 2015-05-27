@@ -4,16 +4,17 @@ import com.google.common.collect.Range;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import cz.muni.fi.ctl.formula.proposition.Tautology;
-import cz.muni.fi.export.*;
+import cz.muni.fi.export.Model;
+import cz.muni.fi.export.Transition;
+import cz.muni.fi.export.Variable;
 import cz.muni.fi.ode.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 
-/**
- * Created by daemontus on 12/05/15.
- */
 public class TransitionMain {
 
     static {
@@ -45,45 +46,30 @@ public class TransitionMain {
         }
 
         for (Map.Entry<CoordinateNode, TreeColorSet> entry : factory.initialNodes(Tautology.INSTANCE).entrySet()) {
-            Successor.Successors successors = new Successor.Successors();
-            successors.origin = convertNode(entry.getKey(), model);
             for (Map.Entry<CoordinateNode, TreeColorSet> succ : factory.successorsFor(entry.getKey(), null).entrySet()) {
-                Successor successor = new Successor();
-                successor.target = convertNode(succ.getKey(), model);
+                Transition transition = new Transition();
+                transition.source = convertNode(entry.getKey());
+                transition.destination = convertNode(succ.getKey());
+                transition.colours = new double[succ.getValue().size()][2];
                 for (int i=0; i < succ.getValue().size(); i++) {
-                    Parameter parameter = new Parameter();
-                    parameter.index = i;
-                    Successor.Param param = new Successor.Param();
-                    param.parameter = parameter;
-                    for (Range<Double> range : succ.getValue().get(i).asRanges()) {
-                        Interval<Double> interval = new Interval<>();
-                        interval.low = range.lowerEndpoint();
-                        interval.high = range.upperEndpoint();
-                        param.intervals.add(interval);
+                    Set<Range<Double>> ranges = succ.getValue().get(i).asRanges();
+                    if (ranges.size() != 1) {
+                        throw new IllegalStateException(" A transition has more than one interval per parameter ");
                     }
-                    successor.colours.add(param);
+                    Range<Double> range = ranges.iterator().next();
+                    transition.colours[i][0] = range.lowerEndpoint();
+                    transition.colours[i][1] = range.upperEndpoint();
                 }
-                successors.transitions.add(successor);
+                exported.transitions.add(transition);
             }
-            exported.transitions.add(successors);
         }
 
         System.out.println(gson.toJson(exported));
 
     }
 
-    private static Node convertNode(CoordinateNode cn, OdeModel model) {
-        Node node = new Node();
-        for (int k : cn.coordinates) {
-            node.coordinates.add(k);
-        }
-        for (int i=0; i < cn.coordinates.length; i++) {
-            Interval<Double> interval = new Interval<>();
-            interval.low = model.getThresholdValueForVariableByIndex(i, cn.coordinates[i]);
-            interval.high = model.getThresholdValueForVariableByIndex(i, cn.coordinates[i] + 1);
-            node.thresholds.add(interval);
-        }
-        return node;
+    private static int[] convertNode(CoordinateNode cn) {
+        return Arrays.copyOf(cn.coordinates, cn.coordinates.length);
     }
 
 }

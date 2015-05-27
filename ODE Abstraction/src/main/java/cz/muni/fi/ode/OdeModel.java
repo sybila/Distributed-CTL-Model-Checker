@@ -52,7 +52,7 @@ public class OdeModel {
             Range<Integer> range = nodeIndexRange.get(i);
             stateCount *= range.upperEndpoint() - range.lowerEndpoint() + 1;
         }
-        System.out.println("Multipliers: "+ Arrays.toString(dimensionMultipliers));
+        System.err.println("Multipliers: "+ Arrays.toString(dimensionMultipliers));
     }
 
     public long nodeHash(@NotNull int[] nodeCoordinates) {

@@ -11,6 +11,6 @@ public class Model {
 
     public final List<Variable> variables = new ArrayList<>();
 
-    public final List<Successor.Successors> transitions = new ArrayList<>();
+    public final List<Transition> transitions = new ArrayList<>();
 
 }

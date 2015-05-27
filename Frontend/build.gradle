@@ -52,3 +52,14 @@ task transJar(type: Jar) {
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
+
+task patternJar(type: Jar) {
+    manifest {
+        attributes  'Implementation-Title': 'Biodivine CTL',
+                'Implementation-Version': version,
+                'Main-Class': 'cz.muni.fi.frontend.PatternMain'
+    }
+    baseName = project.name + '-trans'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}

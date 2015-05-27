@@ -59,7 +59,7 @@ public class HashPartitioner implements StateSpacePartitioner<CoordinateNode> {
                 }
             }
         }
-        System.out.println(rank+" Partitioner: Total states: "+stateCount+" States per machine: "+statesPerMachine+" My Ranges: "+ Arrays.toString(limit.toArray()) + " lowest: " + myLowestState + " highest: " + myHighestState);
+        System.err.println(rank+" Partitioner: Total states: "+stateCount+" States per machine: "+statesPerMachine+" My Ranges: "+ Arrays.toString(limit.toArray()) + " lowest: " + myLowestState + " highest: " + myHighestState);
     }
 
     @Override

@@ -18,7 +18,7 @@ public class NativeUtils {
     public static void loadLibrary(String name) {
         try {
             System.loadLibrary(name);
-            System.out.println(name+" module loaded from include path.");
+            System.err.println(name+" module loaded from include path.");
         } catch (UnsatisfiedLinkError e) {
             try {
                 switch (OsCheck.getOperatingSystemType()) {
@@ -29,12 +29,12 @@ public class NativeUtils {
                         NativeUtils.loadLibraryFromJar("/lib"+name+".so");
                         break;
                     default:
-                        System.out.println("Unsupported operating system for module: "+name);
+                        System.err.println("Unsupported operating system for module: "+name);
                         break;
                 }
-                System.out.println(name+" module loaded from jar file.");
+                System.err.println(name+" module loaded from jar file.");
             } catch (Exception e1) {
-                System.out.println("Unable to load module: "+name+", problem: "+e1.toString());
+                System.err.println("Unable to load module: "+name+", problem: "+e1.toString());
             }
         }
     }

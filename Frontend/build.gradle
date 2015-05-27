@@ -59,7 +59,7 @@ task patternJar(type: Jar) {
                 'Implementation-Version': version,
                 'Main-Class': 'cz.muni.fi.frontend.PatternMain'
     }
-    baseName = project.name + '-trans'
+    baseName = project.name + '-pattern'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }

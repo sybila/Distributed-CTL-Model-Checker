@@ -103,6 +103,20 @@ public class PatternMain {
             System.out.println(model.coordinateString(source.getKey().coordinates)+" "+source.getValue());
         }
 
+        System.out.println(" Multi-sinks: ");
+        for (Map.Entry<CoordinateNode, TreeColorSet> sink : sinks.entrySet()) {
+            for (Map.Entry<CoordinateNode, TreeColorSet> sink2 : sinks.entrySet()) {
+                if (sink.getKey().equals(sink2.getKey())) continue;
+
+                TreeColorSet common = TreeColorSet.createCopy(sink.getValue());
+                common.intersect(sink2.getValue());
+                if (!common.isEmpty()) {
+                    System.out.println(model.coordinateString(sink.getKey().coordinates)+" "+sink.getValue());
+                }
+
+            }
+        }
+
     }
 
 

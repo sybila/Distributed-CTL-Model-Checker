@@ -6,7 +6,9 @@ import cz.muni.fi.ode.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class PatternMain {
@@ -104,19 +106,20 @@ public class PatternMain {
         }
 
         System.out.println(" Multi-sinks: ");
-        for (Map.Entry<CoordinateNode, TreeColorSet> sink : sinks.entrySet()) {
-            for (Map.Entry<CoordinateNode, TreeColorSet> sink2 : sinks.entrySet()) {
-                if (sink.getKey().equals(sink2.getKey())) continue;
-
-                TreeColorSet common = TreeColorSet.createCopy(sink.getValue());
-                common.intersect(sink2.getValue());
+        List<Map.Entry<CoordinateNode, TreeColorSet>> nodes = new ArrayList<>(sinks.entrySet());
+        for (int i=0; i<nodes.size(); i++) {
+            for (int j=i+1; j<nodes.size(); j++) {
+                TreeColorSet common = TreeColorSet.createCopy(nodes.get(i).getValue());
+                common.intersect(nodes.get(j).getValue());
                 if (!common.isEmpty()) {
-                    System.out.println(model.coordinateString(sink.getKey().coordinates)+" "+sink.getValue());
+                    System.out.println(
+                            common + ": " +
+                            model.coordinateString(nodes.get(i).getKey().coordinates) + " " +
+                            model.coordinateString(nodes.get(j).getKey().coordinates)
+                    );
                 }
-
             }
         }
-
     }
 
 

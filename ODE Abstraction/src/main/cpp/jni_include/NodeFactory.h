@@ -7,38 +7,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-/*
- * Class:     cz_muni_fi_ode_NodeFactory
- * Method:    getNativePredecessors
- * Signature: ([ILcz/muni/fi/modelchecker/graph/ColorSet;Ljava/util/Map;)Ljava/util/Map;
- */
-JNIEXPORT jobject JNICALL Java_cz_muni_fi_ode_NodeFactory_getNativePredecessors
-  (JNIEnv *, jobject, jintArray, jobject, jobject);
-
-/*
- * Class:     cz_muni_fi_ode_NodeFactory
- * Method:    getNativeSuccessors
- * Signature: ([ILcz/muni/fi/modelchecker/graph/ColorSet;Ljava/util/Map;)Ljava/util/Map;
- */
-JNIEXPORT jobject JNICALL Java_cz_muni_fi_ode_NodeFactory_getNativeSuccessors
-  (JNIEnv *, jobject, jintArray, jobject, jobject);
-
-/*
- * Class:     cz_muni_fi_ode_NodeFactory
- * Method:    getNativeInit
- * Signature: (Ljava/lang/String;IDLjava/util/List;Ljava/util/Map;)Ljava/util/Map;
- */
-JNIEXPORT jobject JNICALL Java_cz_muni_fi_ode_NodeFactory_getNativeInit
-  (JNIEnv *, jobject, jstring, jint, jdouble, jobject, jobject);
-
-/*
- * Class:     cz_muni_fi_ode_NodeFactory
- * Method:    cacheAllNodes
- * Signature: (Ljava/util/List;)V
- */
-JNIEXPORT void JNICALL Java_cz_muni_fi_ode_NodeFactory_cacheAllNodes
-  (JNIEnv *, jobject, jobject);
-
 #ifdef __cplusplus
 }
 #endif

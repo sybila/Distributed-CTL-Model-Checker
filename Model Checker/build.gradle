@@ -1,6 +1,18 @@
-apply plugin: 'java'
+buildscript {
+    ext.kotlin_version = '0.12.1230'
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
 
-sourceCompatibility = 1.7
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+
 version = '1.0'
 
 repositories {
@@ -10,8 +22,16 @@ repositories {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
     compile 'com.intellij:annotations:5.1'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    compile 'com.github.daemontus:jafra:1.0.0'
+    compile 'com.lmax:disruptor:3.3.2'
     compile files('../libs/mpj.jar')
     compile project(':CTL Parser')
+}
+
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+    test.java.srcDirs += 'src/test/kotlin'
 }
 
 //create a single Jar with all dependencies

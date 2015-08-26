@@ -1,6 +1,18 @@
+buildscript {
+    ext.kotlin_version = '0.12.1230'
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
 //------------- CONFIG --------------
 
 apply plugin: 'java'
+apply plugin: 'kotlin'
 
 sourceCompatibility = 1.7
 version = '1.0'
@@ -15,6 +27,7 @@ dependencies {
     compile project(':Model Checker')
     compile files('../libs/mpj.jar')
     compile 'com.intellij:annotations:5.1'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     compile 'com.google.guava:guava:18.0'
 }
 
@@ -23,6 +36,11 @@ ext {
     binDir = "build/binaries/"
     srcDir = "src/main/cpp/"
     nativeName = "ODE"
+}
+
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
+    test.java.srcDirs += 'src/test/kotlin'
 }
 
 //----------- CPP GENERATOR BUILD TASKS -----------

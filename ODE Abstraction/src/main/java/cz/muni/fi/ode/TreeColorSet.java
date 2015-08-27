@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Set;
 
 public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSet {
@@ -168,5 +169,18 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
         for (int i=0; i<size(); i++) {
             get(i).removeAll(set.get(i));
         }
+    }
+
+    RectParamSpace toRectSpace() {
+
+        Interval[] array = new Interval[size()];
+        for (int i=0; i<size(); i++) {
+            Set<Range<Double>> set = get(i).asRanges();
+            if (set.size() != 1) throw new IllegalStateException("Cannot convert "+this);
+            Range<Double> first = set.iterator().next();
+            array[i] = new Interval(first.lowerEndpoint(), first.upperEndpoint());
+        }
+        return new RectParamSpace(Collections.singleton(new Rect(array)));
+
     }
 }

@@ -3,10 +3,7 @@ package cz.muni.fi.ode;
 import com.google.common.collect.Range;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Represents one ODE model
@@ -28,6 +25,8 @@ public class OdeModel {
     private final List<List<SumMember>> equations = new ArrayList<>();
 
     final List<Range<Integer>> nodeIndexRange = new ArrayList<>();
+
+    final Set<Rect> fullParameters = new HashSet<>();
 
     //local support data
     private long[] dimensionMultipliers;
@@ -52,7 +51,14 @@ public class OdeModel {
             Range<Integer> range = nodeIndexRange.get(i);
             stateCount *= range.upperEndpoint() - range.lowerEndpoint() + 1;
         }
-        System.err.println("Multipliers: "+ Arrays.toString(dimensionMultipliers));
+        System.err.println("Multipliers: " + Arrays.toString(dimensionMultipliers));
+
+        Interval[] array = new Interval[parameterRange.size()];
+        for (int i = 0; i < parameterRange.size(); i++) {
+            array[i] = new Interval(parameterRange.get(i).lowerEndpoint(), parameterRange.get(i).upperEndpoint());
+        }
+        fullParameters.add(new Rect(array));
+
     }
 
     public long nodeHash(@NotNull int[] nodeCoordinates) {
@@ -100,7 +106,11 @@ public class OdeModel {
     }
 
     @NotNull
-    public TreeColorSet getFullColorSet() {
+    public RectParamSpace getFullColorSet() {
+        return new RectParamSpace(fullParameters);
+    }
+
+    public TreeColorSet getFullTreeColorSet() {
         @NotNull TreeColorSet set = TreeColorSet.createEmpty(parameterRange.size());
         for (int i = 0; i < set.size(); i++) {
             set.get(i).add(parameterRange.get(i));

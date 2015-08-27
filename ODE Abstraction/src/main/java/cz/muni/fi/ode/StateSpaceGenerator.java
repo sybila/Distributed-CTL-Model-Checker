@@ -65,7 +65,7 @@ public class StateSpaceGenerator {
      * @return A set of transitions in form of a map with "predecessor->transition borders" pairs.
      */
     @NotNull
-    public Map<CoordinateNode, TreeColorSet> getPredecessors(@NotNull CoordinateNode from, @NotNull TreeColorSet borders) {
+    public Map<CoordinateNode, RectParamSpace> getPredecessors(@NotNull CoordinateNode from, @NotNull TreeColorSet borders) {
         return getDirectedEdges(from, borders, false);
     }
 
@@ -76,7 +76,7 @@ public class StateSpaceGenerator {
      * @return A set of transitions in form of a map with "successor->transition borders" pairs.
      */
     @NotNull
-    public Map<CoordinateNode, TreeColorSet> getSuccessors(@NotNull CoordinateNode from, @NotNull TreeColorSet borders) {
+    public Map<CoordinateNode, RectParamSpace> getSuccessors(@NotNull CoordinateNode from, @NotNull TreeColorSet borders) {
         return getDirectedEdges(from, borders, true);
     }
 
@@ -135,9 +135,9 @@ public class StateSpaceGenerator {
     }
 
     @NotNull
-    private Map<CoordinateNode, TreeColorSet> getDirectedEdges(@NotNull CoordinateNode from, @NotNull TreeColorSet border, boolean successors) {
+    private Map<CoordinateNode, RectParamSpace> getDirectedEdges(@NotNull CoordinateNode from, @NotNull TreeColorSet border, boolean successors) {
 
-        @NotNull Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
+        @NotNull Map<CoordinateNode, RectParamSpace> results = new HashMap<>();
 
         boolean hasSelfLoop = true;
 
@@ -236,7 +236,7 @@ public class StateSpaceGenerator {
                         newPS = TreeColorSet.createCopy(border);
                     }
 
-                    results.put(factory.getNode(newStateCoors), newPS);
+                    results.put(factory.getNode(newStateCoors), newPS.toRectSpace());
                 }
             }
 
@@ -329,7 +329,7 @@ public class StateSpaceGenerator {
                         newPS = TreeColorSet.createCopy(border);
                     }
 
-                    results.put(factory.getNode(newStateCoors), newPS);
+                    results.put(factory.getNode(newStateCoors), newPS.toRectSpace());
                 }
             }
 
@@ -343,7 +343,7 @@ public class StateSpaceGenerator {
         }
 
         if(hasSelfLoop) {
-            results.put(from, border);
+            results.put(from, border.toRectSpace());
         }
 
         return results;

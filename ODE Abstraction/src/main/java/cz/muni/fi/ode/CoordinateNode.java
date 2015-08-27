@@ -17,9 +17,9 @@ public class CoordinateNode implements Node {
     private int owner = -1;
 
     @NotNull
-    private final Map<Formula, TreeColorSet> formulae = new HashMap<>();
+    private final Map<Formula, RectParamSpace> formulae = new HashMap<>();
 
-    private Map<CoordinateNode, TreeColorSet> predecessors;
+    private Map<CoordinateNode, RectParamSpace> predecessors;
 
     public CoordinateNode(@NotNull int[] coordinates, long hash) {
         this.coordinates = new int[coordinates.length];
@@ -31,16 +31,16 @@ public class CoordinateNode implements Node {
         return predecessors != null;
     }
 
-    public synchronized void savePredecessors(@NotNull Map<CoordinateNode, TreeColorSet> predecessors) {
+    public synchronized void savePredecessors(@NotNull Map<CoordinateNode, RectParamSpace> predecessors) {
         this.predecessors = new HashMap<>();
         this.predecessors.putAll(predecessors);
     }
 
     @NotNull
-    public synchronized Map<CoordinateNode, TreeColorSet> getPredecessors(TreeColorSet borders) {
-        @NotNull Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
-        for (@NotNull Map.Entry<CoordinateNode, TreeColorSet> entry : predecessors.entrySet()) {
-            @NotNull TreeColorSet colorSet = TreeColorSet.createCopy(entry.getValue());
+    public synchronized Map<CoordinateNode, RectParamSpace> getPredecessors(RectParamSpace borders) {
+        @NotNull Map<CoordinateNode, RectParamSpace> results = new HashMap<>();
+        for (@NotNull Map.Entry<CoordinateNode, RectParamSpace> entry : predecessors.entrySet()) {
+            @NotNull RectParamSpace colorSet = new RectParamSpace(entry.getValue().getItems());
             colorSet.intersect(borders);
             if (!colorSet.isEmpty()) {
                 results.put(entry.getKey(), colorSet);
@@ -57,15 +57,15 @@ public class CoordinateNode implements Node {
         formulae.remove(formula);
     }
 
-    public synchronized TreeColorSet getValidColors(Formula formula) {
+    public synchronized RectParamSpace getValidColors(Formula formula) {
         return formulae.get(formula);
     }
 
-    public synchronized boolean addFormula(Formula formula, @NotNull TreeColorSet colors) {
+    public synchronized boolean addFormula(Formula formula, @NotNull RectParamSpace colors) {
         if (colors.isEmpty()) return false;
-        TreeColorSet colorSet = formulae.get(formula);
+        RectParamSpace colorSet = formulae.get(formula);
         if (colorSet == null) {
-            formulae.put(formula, TreeColorSet.createCopy(colors));
+            formulae.put(formula, new RectParamSpace(colors.getItems()));
             return true;
         } else {
             if (colorSet.encloses(colors)) {

@@ -1,19 +1,14 @@
 package cz.muni.fi.frontend;
 
-import com.google.common.collect.Range;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import cz.muni.fi.ctl.formula.proposition.Tautology;
 import cz.muni.fi.export.Model;
-import cz.muni.fi.export.Transition;
 import cz.muni.fi.export.Variable;
 import cz.muni.fi.ode.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.Set;
 
 public class TransitionMain {
 
@@ -44,9 +39,9 @@ public class TransitionMain {
             }
             exported.variables.add(variable);
         }
-
-        for (Map.Entry<CoordinateNode, TreeColorSet> entry : factory.initialNodes(Tautology.INSTANCE).entrySet()) {
-            for (Map.Entry<CoordinateNode, TreeColorSet> succ : factory.successorsFor(entry.getKey(), null).entrySet()) {
+/* TODO
+        for (Map.Entry<CoordinateNode, RectParamSpace> entry : factory.initialNodes(Tautology.INSTANCE).entrySet()) {
+            for (Map.Entry<CoordinateNode, RectParamSpace> succ : factory.successorsFor(entry.getKey(), null).entrySet()) {
                 Transition transition = new Transition();
                 transition.source = convertNode(entry.getKey());
                 transition.destination = convertNode(succ.getKey());
@@ -62,7 +57,7 @@ public class TransitionMain {
                 }
                 exported.transitions.add(transition);
             }
-        }
+        }*/
 
         System.out.println(gson.toJson(exported));
 

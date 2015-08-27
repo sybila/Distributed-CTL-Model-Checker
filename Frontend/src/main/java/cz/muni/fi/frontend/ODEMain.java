@@ -55,10 +55,10 @@ public class ODEMain {
 
         //prepare MPI communication environment
         @NotNull Terminator.TerminatorFactory terminatorFactory = new Terminator.TerminatorFactory(new MPITokenMessenger(MPI.COMM_WORLD));
-        @NotNull TaskMessenger<CoordinateNode, TreeColorSet> taskMessenger = new MpiTaskMessenger(MPI.COMM_WORLD, model.getVariableCount(), factory, model);
+        @NotNull TaskMessenger<CoordinateNode, RectParamSpace> taskMessenger = new MpiTaskMessenger(MPI.COMM_WORLD, model.getVariableCount(), factory, model);
 
         //prepare model checker and run verification
-        @NotNull ModelChecker<CoordinateNode, TreeColorSet> modelChecker = new ModelChecker<>(factory, partitioner, taskMessenger, terminatorFactory);
+        @NotNull ModelChecker<CoordinateNode, RectParamSpace> modelChecker = new ModelChecker<>(factory, partitioner, taskMessenger, terminatorFactory);
         modelChecker.verify(formula);
 
         /*for (CoordinateNode node : factory.getNodes()) {
@@ -81,7 +81,7 @@ public class ODEMain {
             }
         } else if (args.length >= 3 && !args[args.length - 3].equals("--none")) {
             for (@NotNull CoordinateNode node : factory.getNodes()) {
-                @NotNull TreeColorSet colorSet = factory.validColorsFor(node, formula);
+                @NotNull RectParamSpace colorSet = factory.validColorsFor(node, formula);
                 if (!colorSet.isEmpty()) {
                     System.out.println(model.coordinateString(node.coordinates)+" "+colorSet);
                 }

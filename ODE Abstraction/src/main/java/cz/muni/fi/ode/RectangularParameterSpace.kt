@@ -108,7 +108,7 @@ data class Rect(val ranges: Array<Interval>) {
     fun get(i: Int): Interval = ranges[i]
 }
 
-public data class RectParamSpace(private var items: Set<Rect> = setOf()): ColorSet {
+public data class RectParamSpace(var items: Set<Rect> = setOf()): ColorSet {
 
     companion object {
         fun empty() = RectParamSpace()
@@ -119,6 +119,7 @@ public data class RectParamSpace(private var items: Set<Rect> = setOf()): ColorS
             val newItems = HashSet<Rect>()
             for (r in items) {
                 for (other in set.items) {
+                  //  println("R: $r O: $other")
                     val intersection = r intersect other
                     if (!intersection.isEmpty()) newItems.add(intersection)
                 }
@@ -151,6 +152,12 @@ public data class RectParamSpace(private var items: Set<Rect> = setOf()): ColorS
         } else {
             throw IllegalStateException("Illegal set: $set")
         }
+    }
+
+    fun encloses(set: RectParamSpace): Boolean {
+        val o = this.copy()
+        o intersect set
+        return o == this
     }
 
     private fun normalize() {

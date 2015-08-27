@@ -23,8 +23,8 @@ public class PatternMain {
         @NotNull final OdeModel model = new OdeModel(args[args.length - 1]);
         model.load();
 
-        final ConcurrentHashMap<CoordinateNode, TreeColorSet> sinks = new ConcurrentHashMap<>();
-        final ConcurrentHashMap<CoordinateNode, TreeColorSet> sources = new ConcurrentHashMap<>();
+        final ConcurrentHashMap<CoordinateNode, RectParamSpace> sinks = new ConcurrentHashMap<>();
+        final ConcurrentHashMap<CoordinateNode, RectParamSpace> sources = new ConcurrentHashMap<>();
 
         final int processor_count = 8;
         List<Thread> runners = new ArrayList<>();
@@ -46,20 +46,20 @@ public class PatternMain {
 
 
         System.out.println(" Sink nodes: ");
-        for (Map.Entry<CoordinateNode, TreeColorSet> sink : sinks.entrySet()) {
+        for (Map.Entry<CoordinateNode, RectParamSpace> sink : sinks.entrySet()) {
             System.out.println(model.coordinateString(sink.getKey().coordinates)+" "+sink.getValue());
         }
 
         System.out.println(" Source nodes: ");
-        for (Map.Entry<CoordinateNode, TreeColorSet> source : sources.entrySet()) {
+        for (Map.Entry<CoordinateNode, RectParamSpace> source : sources.entrySet()) {
             System.out.println(model.coordinateString(source.getKey().coordinates)+" "+source.getValue());
         }
 
         System.out.println(" Multi-sinks: ");
-        List<Map.Entry<CoordinateNode, TreeColorSet>> nodes = new ArrayList<>(sinks.entrySet());
+        List<Map.Entry<CoordinateNode, RectParamSpace>> nodes = new ArrayList<>(sinks.entrySet());
         for (int i=0; i<nodes.size(); i++) {
             for (int j=i+1; j<nodes.size(); j++) {
-                TreeColorSet common = TreeColorSet.createCopy(nodes.get(i).getValue());
+                RectParamSpace common = new RectParamSpace(nodes.get(i).getValue().getItems());
                 common.intersect(nodes.get(j).getValue());
                 if (!common.isEmpty()) {
                     System.out.println(
@@ -77,8 +77,8 @@ public class PatternMain {
             int rank,
             boolean weak,
             OdeModel model,
-            ConcurrentHashMap<CoordinateNode, TreeColorSet> sinkOutput,
-            ConcurrentHashMap<CoordinateNode, TreeColorSet> sourceOutput) {
+            ConcurrentHashMap<CoordinateNode, RectParamSpace> sinkOutput,
+            ConcurrentHashMap<CoordinateNode, RectParamSpace> sourceOutput) {
 
         @NotNull HashPartitioner partitioner = new HashPartitioner(model, size, rank);
         @NotNull NodeFactory factory = new NodeFactory(model, partitioner);
@@ -99,21 +99,21 @@ public class PatternMain {
                 System.out.println(rank + ": " + p+"% ");
             }
 
-            Map<CoordinateNode, TreeColorSet> successors = factory.successorsFor(entry, null);
-            Map<CoordinateNode, TreeColorSet> predecessors = factory.predecessorsFor(entry, null);
+            Map<CoordinateNode, RectParamSpace> successors = factory.successorsFor(entry, null);
+            Map<CoordinateNode, RectParamSpace> predecessors = factory.predecessorsFor(entry, null);
 
             //if we have enough edges
             if (weak || predecessors.size() >= 2*model.getVariableCount()) {
-                TreeColorSet sinkColours = model.getFullColorSet();
+                RectParamSpace sinkColours = model.getFullColorSet();
 
-                for (Map.Entry<CoordinateNode, TreeColorSet> predecessor : predecessors.entrySet()) {
+                for (Map.Entry<CoordinateNode, RectParamSpace> predecessor : predecessors.entrySet()) {
                     if (predecessor.getKey().equals(entry)) continue;    //skip self loops
                     sinkColours.intersect(predecessor.getValue());
                     if (sinkColours.isEmpty()) break;
                 }
 
                 if (!sinkColours.isEmpty()) {
-                    for (Map.Entry<CoordinateNode, TreeColorSet> successor : successors.entrySet()) {
+                    for (Map.Entry<CoordinateNode, RectParamSpace> successor : successors.entrySet()) {
                         if (successor.getKey().equals(entry)) continue;    //skip self loops
                         sinkColours.subtract(successor.getValue());
                         if (sinkColours.isEmpty()) break;
@@ -128,9 +128,9 @@ public class PatternMain {
             }
 
             if (weak || successors.size() >= 2*model.getVariableCount()) {
-                TreeColorSet sourceColours = model.getFullColorSet();
+                RectParamSpace sourceColours = model.getFullColorSet();
 
-                for (Map.Entry<CoordinateNode, TreeColorSet> successor : successors.entrySet()) {
+                for (Map.Entry<CoordinateNode, RectParamSpace> successor : successors.entrySet()) {
                     if (successor.getKey().equals(entry)) continue;    //skip self loops
                     sourceColours.intersect(successor.getValue());
                     if (sourceColours.isEmpty()) break;
@@ -138,7 +138,7 @@ public class PatternMain {
 
                 if (!sourceColours.isEmpty()) {
 
-                    for (Map.Entry<CoordinateNode, TreeColorSet> predecessor : predecessors.entrySet()) {
+                    for (Map.Entry<CoordinateNode, RectParamSpace> predecessor : predecessors.entrySet()) {
                         if (predecessor.getKey().equals(entry)) continue;    //skip self loops
                         sourceColours.subtract(predecessor.getValue());
                         if (sourceColours.isEmpty()) break;

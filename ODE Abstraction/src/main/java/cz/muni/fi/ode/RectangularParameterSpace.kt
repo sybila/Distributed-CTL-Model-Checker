@@ -1,5 +1,6 @@
 package cz.muni.fi.ode
 
+import cz.muni.fi.modelchecker.graph.ColorSet
 import java.util.Arrays
 import java.util.HashSet
 
@@ -85,6 +86,7 @@ data class Rect(val ranges: Array<Interval>) {
 
     fun subtract(other: Rect): Set<Rect> {
         if (this.isEmpty() || other.isEmpty()) return setOf(this)
+        if (this.intersect(other).isEmpty()) return setOf(this)
         val working = Arrays.copyOf(ranges, ranges.size())
         val result = HashSet<Rect>()
         for (dim in ranges.indices) {
@@ -104,4 +106,88 @@ data class Rect(val ranges: Array<Interval>) {
     }
 
     fun get(i: Int): Interval = ranges[i]
+}
+
+public data class RectParamSpace(private var items: Set<Rect> = setOf()): ColorSet {
+
+    companion object {
+        fun empty() = RectParamSpace()
+    }
+
+    override fun intersect(set: ColorSet?) {
+        if (set != null && set is RectParamSpace) {
+            val newItems = HashSet<Rect>()
+            for (r in items) {
+                for (other in set.items) {
+                    val intersection = r intersect other
+                    if (!intersection.isEmpty()) newItems.add(intersection)
+                }
+            }
+            this.items = newItems
+            normalize()
+        } else {
+            throw IllegalStateException("Illegal set: $set")
+        }
+    }
+
+    override fun subtract(set: ColorSet?) {
+        if (set != null && set is RectParamSpace) {
+            for (other in set.items) {  //have to update items every iteration so that we perform on space partitioned in previous iteration
+                items = items.flatMap { it subtract other }.toSet()
+            }
+            normalize()
+        } else {
+            throw IllegalStateException("Illegal set: $set")
+        }
+    }
+
+    override fun union(set: ColorSet?): Boolean {
+        if (set != null && set is RectParamSpace) {
+            val new = items.union(set.items)
+            val old = items
+            this.items = new
+            normalize()
+            return new != old
+        } else {
+            throw IllegalStateException("Illegal set: $set")
+        }
+    }
+
+    private fun normalize() {
+
+        //remove redundant items
+        val notRedundant = HashSet<Rect>()
+
+        for (r in items) {
+            var redundant = items.any { it != r && it encloses r }
+            if (!redundant) notRedundant.add(r)
+        }
+
+        items = notRedundant
+
+        //try to merge items
+        val merged = HashSet<Rect>()
+        val removed = HashSet<Rect>()
+
+        for (r in items) {
+
+            var merge = items.firstOrNull { it != r && it !in removed && r merge it != null }
+
+            if (merge != null) {
+                merged.add(merge.merge(r))
+                removed.add(merge)
+            } else {
+                merged.add(r)
+            }
+        }
+
+        items = merged
+
+    }
+
+    override fun isEmpty(): Boolean {
+        return items.isEmpty()
+    }
+
+
 }

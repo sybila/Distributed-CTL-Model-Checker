@@ -19,21 +19,25 @@ public class PatternMain {
 
     public static void main(@NotNull final String[] args) throws InterruptedException, IOException {
 
+        long startLoad = System.currentTimeMillis();
+
         //read and prepare model
         @NotNull final OdeModel model = new OdeModel(args[args.length - 1]);
         model.load();
 
+        long startComputation = System.currentTimeMillis();
+
         final ConcurrentHashMap<CoordinateNode, RectParamSpace> sinks = new ConcurrentHashMap<>();
         final ConcurrentHashMap<CoordinateNode, RectParamSpace> sources = new ConcurrentHashMap<>();
 
-        final int processor_count = 8;
+        final int processor_count = Integer.parseInt(args[args.length - 2]);
         List<Thread> runners = new ArrayList<>();
         for (int i=0; i < processor_count; i++) {
             final int finalI = i;
             Thread runner = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    processPatterns(8, finalI, args.length > 1, model, sinks, sources);
+                    processPatterns(processor_count, finalI, args.length >= 1, model, sinks, sources);
                 }
             });
             runner.start();
@@ -43,6 +47,8 @@ public class PatternMain {
         for (int i=0; i < processor_count; i++) {
             runners.get(i).join();
         }
+
+        long startPrinting = System.currentTimeMillis();
 
 
         System.out.println(" Sink nodes: ");
@@ -63,13 +69,21 @@ public class PatternMain {
                 common.intersect(nodes.get(j).getValue());
                 if (!common.isEmpty()) {
                     System.out.println(
-                            common + ": " +
-                            model.coordinateString(nodes.get(i).getKey().coordinates) + " " +
+                            common + " - " +
+                            "First state: " + model.coordinateString(nodes.get(i).getKey().coordinates) + " Second state: " +
                             model.coordinateString(nodes.get(j).getKey().coordinates)
                     );
                 }
             }
         }
+
+        long end = System.currentTimeMillis();
+
+        System.out.println("Abstraction time: " + (startComputation - startLoad)+"ms");
+        System.out.println("Computation time: " + (startPrinting - startComputation)+"ms");
+        System.out.println("Printing time: " + (end - startPrinting)+"ms");
+        System.out.println("Total: " + (end - startLoad)+"ms");
+
     }
 
     private static void processPatterns(
@@ -87,16 +101,16 @@ public class PatternMain {
 
         int counter = 0;
         int p = 0;
-        System.out.println(rank + ": Caching...");
+        //System.out.println(rank + ": Caching...");
         generator.cacheAllNodes();
-        System.out.println(rank + ": Cached");
+        //System.out.println(rank + ": Cached");
         Collection<CoordinateNode> initial = factory.getNodes();
         for (CoordinateNode entry : initial) {
             counter++;
             if (counter > initial.size() / 100) {
                 p++;
                 counter = 0;
-                System.out.println(rank + ": " + p+"% ");
+                System.err.println(rank + ": " + p+"% ");
             }
 
             Map<CoordinateNode, RectParamSpace> successors = factory.successorsFor(entry, null);

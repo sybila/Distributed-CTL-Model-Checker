@@ -37,7 +37,7 @@ public class PatternMain {
             Thread runner = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    processPatterns(processor_count, finalI, args.length >= 1, model, sinks, sources);
+                    processPatterns(processor_count, finalI, args.length > 2, model, sinks, sources);
                 }
             });
             runner.start();

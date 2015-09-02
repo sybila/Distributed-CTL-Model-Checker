@@ -1,6 +1,6 @@
 package cz.muni.fi.modelchecker;
 
-import cz.muni.fi.ctl.formula.Formula;
+import cz.muni.fi.ctl.Formula;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
 import org.jetbrains.annotations.NotNull;

@@ -1,6 +1,6 @@
 package cz.muni.fi.modelchecker.verification;
 
-import cz.muni.fi.ctl.formula.Formula;
+import cz.muni.fi.ctl.Formula;
 import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.StateSpacePartitioner;
 import cz.muni.fi.modelchecker.graph.ColorSet;

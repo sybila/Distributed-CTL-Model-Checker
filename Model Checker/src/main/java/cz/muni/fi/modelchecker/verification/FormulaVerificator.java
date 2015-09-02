@@ -1,9 +1,7 @@
 package cz.muni.fi.modelchecker.verification;
 
-import cz.muni.fi.ctl.formula.Formula;
-import cz.muni.fi.ctl.formula.operator.BinaryOperator;
-import cz.muni.fi.ctl.formula.operator.Operator;
-import cz.muni.fi.ctl.formula.operator.UnaryOperator;
+import cz.muni.fi.ctl.Formula;
+import cz.muni.fi.ctl.Op;
 import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.StateSpacePartitioner;
 import cz.muni.fi.modelchecker.graph.ColorSet;
@@ -40,19 +38,19 @@ public class FormulaVerificator<N extends Node, C extends ColorSet> {
     }
 
     public void verifyFormula(@NotNull Formula formula) {
-        @NotNull Operator operator = formula.getOperator();
+        @NotNull Op operator = formula.getOperator();
         FormulaProcessor processor;
-        if (operator == UnaryOperator.NEGATION) {
+        if (operator == Op.NEGATION) {
             processor = new NegationVerificator<>(model, formula, terminatorFactory.createNew());
-        } else if(operator == BinaryOperator.AND) {
+        } else if(operator == Op.AND) {
             processor = new AndVerificator<>(model, formula, terminatorFactory.createNew());
-        } else if(operator == BinaryOperator.OR) {
+        } else if(operator == Op.OR) {
             processor = new OrVerificator<>(model, formula, terminatorFactory.createNew());
-        } else if(operator == BinaryOperator.EXISTS_UNTIL) {
+        } else if(operator == Op.EXISTS_UNTIL) {
             processor = new ExistsUntilVerificator<>(model, partitioner, formula, terminatorFactory, taskMessenger);
-        } else if(operator == BinaryOperator.ALL_UNTIL) {
+        } else if(operator == Op.ALL_UNTIL) {
             processor = new AllUntilVerificator<>(model, partitioner, formula, terminatorFactory, taskMessenger);
-        } else if(operator == UnaryOperator.EXISTS_NEXT) {
+        } else if(operator == Op.EXISTS_NEXT) {
             processor = new NextVerificator<>(model, partitioner, formula, terminatorFactory, taskMessenger);
         } else {
             throw new IllegalArgumentException("Cannot verify operator: "+operator);

@@ -1,7 +1,7 @@
 package cz.muni.fi.modelchecker;
 
-import cz.muni.fi.ctl.formula.Formula;
-import cz.muni.fi.ctl.formula.proposition.Proposition;
+import cz.muni.fi.ctl.Atom;
+import cz.muni.fi.ctl.Formula;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
 import cz.muni.fi.modelchecker.mpi.tasks.TaskMessenger;
@@ -52,7 +52,7 @@ public class ModelChecker<N extends Node, C extends ColorSet> {
     public void verify(@NotNull Formula formula) {
 
         //return from proposition or from formula that has been already processed
-        if (formula instanceof Proposition || processedFormulas.contains(formula)) return;
+        if (formula instanceof Atom || processedFormulas.contains(formula)) return;
         //process formulas recursively
         for (@NotNull Formula sub : formula.getSubFormulas()) {
             verify(sub);

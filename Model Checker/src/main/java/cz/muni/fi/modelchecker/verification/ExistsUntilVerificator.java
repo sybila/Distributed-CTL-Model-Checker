@@ -1,6 +1,6 @@
 package cz.muni.fi.modelchecker.verification;
 
-import cz.muni.fi.ctl.formula.Formula;
+import cz.muni.fi.ctl.Formula;
 import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.StateSpacePartitioner;
 import cz.muni.fi.modelchecker.graph.ColorSet;
@@ -29,7 +29,7 @@ class ExistsUntilVerificator<N extends Node, C extends ColorSet> extends MergeQu
     @Override
     protected void prepareQueue() {
         //fill queue with initial nodes
-        @NotNull Map<N, C> initialNodes = model.initialNodes(formula.getSubFormulaAt(1));
+        @NotNull Map<N, C> initialNodes = model.initialNodes(formula.get(1));
         System.out.println("Initial nodes: "+initialNodes.size());
         for (@NotNull Map.Entry<N, C> initial : initialNodes.entrySet()) {
             if (model.addFormula(initial.getKey(), formula, initial.getValue())) {  //add formula to all initial nodes
@@ -54,7 +54,7 @@ class ExistsUntilVerificator<N extends Node, C extends ColorSet> extends MergeQu
                     //if predecessor is mine, intersect colors where sub formula 0 holds and add them
                     //if addition has changed anything, proceed evaluation with reduced colors
                     C candidates = predecessor.getValue();
-                    candidates.intersect(model.validColorsFor(predecessor.getKey(), formula.getSubFormulaAt(0)));
+                    candidates.intersect(model.validColorsFor(predecessor.getKey(), formula.get(0)));
                     if (model.addFormula(predecessor.getKey(), formula, candidates)) {
                         addToQueue(predecessor.getKey(), candidates);
                     }
@@ -71,7 +71,7 @@ class ExistsUntilVerificator<N extends Node, C extends ColorSet> extends MergeQu
         synchronized (queue) {  //must be synchronized because we are accessing model
             //intersect received colors with my colors in node,
             //if this is not empty and there are new colors, run back
-            candidates.intersect(model.validColorsFor(internal, formula.getSubFormulaAt(0)));
+            candidates.intersect(model.validColorsFor(internal, formula.get(0)));
             if (model.addFormula(internal, formula, candidates)) {
                 addToQueue(internal, candidates);
             }

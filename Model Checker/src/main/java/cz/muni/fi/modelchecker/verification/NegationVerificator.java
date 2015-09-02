@@ -1,6 +1,6 @@
 package cz.muni.fi.modelchecker.verification;
 
-import cz.muni.fi.ctl.formula.Formula;
+import cz.muni.fi.ctl.Formula;
 import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
@@ -20,7 +20,7 @@ class NegationVerificator<N extends Node, C extends ColorSet> extends StaticProc
 
     @Override
     protected void processModel() {
-        @NotNull Map<N, C> nodes = model.initialNodes(formula.getSubFormulaAt(0));
+        @NotNull Map<N, C> nodes = model.initialNodes(formula.get(0));
         @NotNull Map<N, C> inversion = model.invertNodeSet(nodes);
         for (@NotNull Map.Entry<N, C> entry : inversion.entrySet()) {
             model.addFormula(entry.getKey(), formula, entry.getValue());

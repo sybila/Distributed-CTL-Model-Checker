@@ -2,7 +2,7 @@ package cz.muni.fi.ode;
 
 import com.google.common.collect.Range;
 import com.google.common.math.IntMath;
-import cz.muni.fi.ctl.formula.proposition.FloatProposition;
+import cz.muni.fi.ctl.FloatProposition;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -93,8 +93,8 @@ public class StateSpaceGenerator {
         //find index of threshold where proposition valuation changes
         int thresholdIndex = 0;
         for(int i = 0; i < model.getThresholdCountForVariable(variableIndex); i++) {
-            if(model.getThresholdValueForVariableByIndex(variableIndex, i) > proposition.getThreshold()) {
-                switch (proposition.getFloatOperator()) {
+            if(model.getThresholdValueForVariableByIndex(variableIndex, i) > proposition.getValue()) {
+                switch (proposition.getFloatOp()) {
                     case GT:
                     case LT_EQ:
                         thresholdIndex = i;
@@ -108,14 +108,14 @@ public class StateSpaceGenerator {
                 }
                 break;
             }
-            if(model.getThresholdValueForVariableByIndex(variableIndex, i) == proposition.getThreshold()) {
+            if(model.getThresholdValueForVariableByIndex(variableIndex, i) == proposition.getValue()) {
                 thresholdIndex = i;
                 break;
             }
         }
 
         //Return nodes with right combination of thresholds.
-        switch (proposition.getFloatOperator()) {
+        switch (proposition.getFloatOp()) {
             case GT_EQ:
             case GT:
                 return enumerateStates(variableIndex, thresholdIndex, model.getThresholdCountForVariable(variableIndex) - 1);

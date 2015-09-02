@@ -1,6 +1,6 @@
 package cz.muni.fi.modelchecker.verification;
 
-import cz.muni.fi.ctl.formula.Formula;
+import cz.muni.fi.ctl.Formula;
 import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
@@ -20,10 +20,10 @@ class OrVerificator<N extends Node, C extends ColorSet> extends StaticProcessor<
 
     @Override
     protected void processModel() {
-        for (@NotNull Map.Entry<N, C> entry : model.initialNodes(formula.getSubFormulaAt(0)).entrySet()) {
+        for (@NotNull Map.Entry<N, C> entry : model.initialNodes(formula.get(0)).entrySet()) {
             model.addFormula(entry.getKey(), formula, entry.getValue());
         }
-        for (@NotNull Map.Entry<N, C> entry : model.initialNodes(formula.getSubFormulaAt(1)).entrySet()) {
+        for (@NotNull Map.Entry<N, C> entry : model.initialNodes(formula.get(1)).entrySet()) {
             model.addFormula(entry.getKey(), formula, entry.getValue());
         }
     }

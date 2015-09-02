@@ -1,6 +1,6 @@
 package cz.muni.fi.modelchecker.verification;
 
-import cz.muni.fi.ctl.formula.Formula;
+import cz.muni.fi.ctl.Formula;
 import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.StateSpacePartitioner;
 import cz.muni.fi.modelchecker.graph.ColorSet;
@@ -57,7 +57,7 @@ class AllUntilVerificator<N extends Node, C extends ColorSet> extends MergeQueue
             //if there are colors covered by every edge, intersect them
             //with valid colors for sub formula 0, add them as valid and enqueue them for inspection
             if (!candidates.isEmpty()) {
-                candidates.intersect(model.validColorsFor(predecessor, formula.getSubFormulaAt(0)));
+                candidates.intersect(model.validColorsFor(predecessor, formula.get(0)));
                 if (model.addFormula(predecessor, formula, candidates)) {
                     addToQueue(predecessor, candidates);
                 }
@@ -77,7 +77,7 @@ class AllUntilVerificator<N extends Node, C extends ColorSet> extends MergeQueue
     @Override
     protected void prepareQueue() {
         //enqueue all nodes where second formula holds, but do not mark them as true yet
-        for(@NotNull Map.Entry<N, C> entry : model.initialNodes(formula.getSubFormulaAt(1)).entrySet()) {
+        for(@NotNull Map.Entry<N, C> entry : model.initialNodes(formula.get(1)).entrySet()) {
             addToQueue(entry.getKey(), entry.getValue());
         }
     }

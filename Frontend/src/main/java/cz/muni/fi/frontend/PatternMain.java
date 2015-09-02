@@ -1,9 +1,11 @@
 package cz.muni.fi.frontend;
 
 
+import cz.muni.fi.ctl.*;
 import cz.muni.fi.ode.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,6 +21,12 @@ public class PatternMain {
 
     public static void main(@NotNull final String[] args) throws InterruptedException, IOException {
 
+        Parser parser = new Parser();
+        Normalizer normalizer = new Normalizer();
+        Formula parsed = parser.parse(new File(args[args.length - 2])).get("pattern");
+        final Formula pattern = normalizer.normalize(parsed);
+        System.out.println("Checking formula: "+pattern);
+
         long startLoad = System.currentTimeMillis();
 
         //read and prepare model
@@ -27,17 +35,16 @@ public class PatternMain {
 
         long startComputation = System.currentTimeMillis();
 
-        final ConcurrentHashMap<CoordinateNode, RectParamSpace> sinks = new ConcurrentHashMap<>();
-        final ConcurrentHashMap<CoordinateNode, RectParamSpace> sources = new ConcurrentHashMap<>();
+        final ConcurrentHashMap<CoordinateNode, RectParamSpace> results = new ConcurrentHashMap<>();
 
-        final int processor_count = Integer.parseInt(args[args.length - 2]);
+        final int processor_count = Integer.parseInt(args[args.length - 3]);
         List<Thread> runners = new ArrayList<>();
         for (int i=0; i < processor_count; i++) {
             final int finalI = i;
             Thread runner = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    processPatterns(processor_count, finalI, args.length > 2, model, sinks, sources);
+                    processPatterns(processor_count, finalI, args.length > 3, model, pattern, results);
                 }
             });
             runner.start();
@@ -51,16 +58,16 @@ public class PatternMain {
         long startPrinting = System.currentTimeMillis();
 
 
-        System.out.println(" Sink nodes: ");
-        for (Map.Entry<CoordinateNode, RectParamSpace> sink : sinks.entrySet()) {
+        System.out.println(" Results: ");
+        for (Map.Entry<CoordinateNode, RectParamSpace> sink : results.entrySet()) {
             System.out.println(model.coordinateString(sink.getKey().coordinates)+" "+sink.getValue());
         }
-
+/*
         System.out.println(" Source nodes: ");
         for (Map.Entry<CoordinateNode, RectParamSpace> source : sources.entrySet()) {
             System.out.println(model.coordinateString(source.getKey().coordinates)+" "+source.getValue());
-        }
-
+        }*/
+/*
         System.out.println(" Multi-sinks: ");
         List<Map.Entry<CoordinateNode, RectParamSpace>> nodes = new ArrayList<>(sinks.entrySet());
         for (int i=0; i<nodes.size(); i++) {
@@ -75,7 +82,7 @@ public class PatternMain {
                     );
                 }
             }
-        }
+        }*/
 
         long end = System.currentTimeMillis();
 
@@ -91,8 +98,8 @@ public class PatternMain {
             int rank,
             boolean weak,
             OdeModel model,
-            ConcurrentHashMap<CoordinateNode, RectParamSpace> sinkOutput,
-            ConcurrentHashMap<CoordinateNode, RectParamSpace> sourceOutput) {
+            Formula formula,
+            ConcurrentHashMap<CoordinateNode, RectParamSpace> output) {
 
         @NotNull HashPartitioner partitioner = new HashPartitioner(model, size, rank);
         @NotNull NodeFactory factory = new NodeFactory(model, partitioner);
@@ -107,17 +114,20 @@ public class PatternMain {
         Collection<CoordinateNode> initial = factory.getNodes();
         for (CoordinateNode entry : initial) {
             counter++;
-            if (counter > initial.size() / 100) {
+            if (counter % (initial.size() / 100) == 0) {
                 p++;
-                counter = 0;
                 System.err.println(rank + ": " + p+"% ");
             }
 
             Map<CoordinateNode, RectParamSpace> successors = factory.successorsFor(entry, null);
             Map<CoordinateNode, RectParamSpace> predecessors = factory.predecessorsFor(entry, null);
 
+            RectParamSpace result = checkProperty(formula, entry, successors, predecessors, model, factory);
+
+            if (!result.isEmpty()) output.put(entry, result);
+
             //if we have enough edges
-            if (weak || predecessors.size() >= 2*model.getVariableCount()) {
+            /*if (weak || predecessors.size() >= 2*model.getVariableCount()) {
                 RectParamSpace sinkColours = model.getFullColorSet();
 
                 for (Map.Entry<CoordinateNode, RectParamSpace> predecessor : predecessors.entrySet()) {
@@ -165,9 +175,45 @@ public class PatternMain {
                 }
 
 
-            }
+            }*/
 
         }
     }
 
+    private static RectParamSpace checkProperty(
+            Formula property,
+            CoordinateNode node,
+            Map<CoordinateNode, RectParamSpace> successors,
+            Map<CoordinateNode, RectParamSpace> predecessors,
+            OdeModel model,
+            NodeFactory factory) {
+        if (property instanceof DirectionProposition) {
+            DirectionProposition dp = (DirectionProposition) property;
+            int varIndex = model.getVariableIndexByName(dp.getVariable());
+            CoordinateNode target = dp.getFacet() == Facet.POSITIVE ? factory.above(node, varIndex) : factory.below(node, varIndex);
+            if (target == null) return RectParamSpace.Companion.empty();
+            else {
+                RectParamSpace res = dp.getDirection() == Direction.IN ? predecessors.get(target) : successors.get(target);
+                return res == null ? RectParamSpace.Companion.empty() : res;
+            }
+        } else if (property.getOperator() == Op.NEGATION) {
+            RectParamSpace s = model.getFullColorSet();
+            s.subtract(checkProperty(property.get(0), node, successors, predecessors, model, factory));
+            return s;
+        } else if (property.getOperator() == Op.AND) {
+            RectParamSpace s1 = checkProperty(property.get(0), node, successors, predecessors, model, factory);
+            RectParamSpace s2 = checkProperty(property.get(1), node, successors, predecessors, model, factory);
+            RectParamSpace result = new RectParamSpace(s1.getItems());
+            result.intersect(s2);
+            return result;
+        } else if (property.getOperator() == Op.OR) {
+            RectParamSpace s1 = checkProperty(property.get(0), node, successors, predecessors, model, factory);
+            RectParamSpace s2 = checkProperty(property.get(1), node, successors, predecessors, model, factory);
+            RectParamSpace result = new RectParamSpace(s1.getItems());
+            result.union(s2);
+            return result;
+        } else {
+            throw new IllegalStateException("Unsupported operator: "+property.getOperator());
+        }
+    }
 }

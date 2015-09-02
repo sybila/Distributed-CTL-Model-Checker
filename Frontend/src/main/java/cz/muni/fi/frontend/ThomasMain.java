@@ -1,25 +1,6 @@
 package cz.muni.fi.frontend;
 
-import cz.muni.fi.ctl.FormulaNormalizer;
-import cz.muni.fi.ctl.FormulaParser;
-import cz.muni.fi.ctl.formula.Formula;
-import cz.muni.fi.modelchecker.ModelChecker;
-import cz.muni.fi.modelchecker.StateSpacePartitioner;
-import cz.muni.fi.modelchecker.mpi.tasks.BlockingTaskMessenger;
-import cz.muni.fi.modelchecker.mpi.tasks.OnTaskListener;
-import cz.muni.fi.modelchecker.mpi.tasks.TaskMessenger;
-import cz.muni.fi.modelchecker.mpi.termination.MPITokenMessenger;
-import cz.muni.fi.modelchecker.mpi.termination.Terminator;
-import cz.muni.fi.thomas.BitMapColorSet;
-import cz.muni.fi.thomas.LevelNode;
-import cz.muni.fi.thomas.NativeModel;
-import cz.muni.fi.thomas.NetworkModel;
-import mpi.MPI;
-import org.jetbrains.annotations.NotNull;
-
-import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 /**
  * Created by daemontus on 09/02/15.
@@ -31,7 +12,7 @@ public class ThomasMain {
     }
 
     public static void main(String[] args) throws IOException {
-
+/*
 
         //prepare benchmark
         long start = System.currentTimeMillis();
@@ -112,7 +93,7 @@ public class ThomasMain {
                 System.out.println();
             }
         }*/
-
+/*
         //print results
         System.out.println(" ---------  RESULTS --------- ");
         if (args.length >= 3 && args[args.length - 3].equals("--all")) {
@@ -130,7 +111,7 @@ public class ThomasMain {
 
         MPI.Finalize();
         System.err.println(MPI.COMM_WORLD.Rank()+" Duration: "+(System.currentTimeMillis() - start));
-        System.exit(0);
+        System.exit(0);*/
     }
 
 }

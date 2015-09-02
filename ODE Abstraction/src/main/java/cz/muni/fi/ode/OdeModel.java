@@ -61,6 +61,13 @@ public class OdeModel {
 
     }
 
+    public boolean isValidNode(int[] coords) {
+        for (int i=0; i<coords.length; i++) {
+            if (coords[i] < 0 || coords[i] >= thresholds.get(i).size() - 1) return false;
+        }
+        return true;
+    }
+
     public long nodeHash(@NotNull int[] nodeCoordinates) {
         long res = 0;
         for (int i=0; i < dimensionMultipliers.length; i++) {

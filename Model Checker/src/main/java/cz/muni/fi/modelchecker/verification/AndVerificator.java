@@ -1,6 +1,6 @@
 package cz.muni.fi.modelchecker.verification;
 
-import cz.muni.fi.ctl.formula.Formula;
+import cz.muni.fi.ctl.Formula;
 import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
@@ -20,8 +20,8 @@ class AndVerificator<N extends Node, C extends ColorSet> extends StaticProcessor
 
     @Override
     protected void processModel() {
-        @NotNull Map<N, C> first = model.initialNodes(formula.getSubFormulaAt(0));
-        @NotNull Map<N, C> second = model.initialNodes(formula.getSubFormulaAt(1));
+        @NotNull Map<N, C> first = model.initialNodes(formula.get(0));
+        @NotNull Map<N, C> second = model.initialNodes(formula.get(1));
         //intersect node sets
         for (@NotNull Map.Entry<N, C> entry : first.entrySet()) {
             C colorSet = second.get(entry.getKey());

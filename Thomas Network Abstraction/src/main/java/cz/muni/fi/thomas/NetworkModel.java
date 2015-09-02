@@ -1,9 +1,8 @@
 package cz.muni.fi.thomas;
 
-import cz.muni.fi.ctl.formula.Formula;
-import cz.muni.fi.ctl.formula.proposition.Contradiction;
-import cz.muni.fi.ctl.formula.proposition.FloatProposition;
-import cz.muni.fi.ctl.formula.proposition.Tautology;
+import cz.muni.fi.ctl.CtlPackage;
+import cz.muni.fi.ctl.FloatProposition;
+import cz.muni.fi.ctl.Formula;
 import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.StateSpacePartitioner;
 import org.jetbrains.annotations.NotNull;
@@ -79,14 +78,14 @@ public class NetworkModel implements ModelAdapter<LevelNode, BitMapColorSet> {
     @NotNull
     @Override
     public Map<LevelNode, BitMapColorSet> initialNodes(@NotNull Formula formula) {
-        if (formula instanceof Tautology) {
+        if (formula == CtlPackage.getTrue()) {
             @NotNull Map<LevelNode, BitMapColorSet> results = new HashMap<>();
             for (LevelNode node : nodeCache.values()) {
                 results.put(node, BitMapColorSet.createFull(paramSpaceWidth));
             }
             return results;
         }
-        if (formula instanceof Contradiction) {
+        if (formula == CtlPackage.getFalse()) {
             return new HashMap<>();
         }
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {
@@ -127,8 +126,8 @@ public class NetworkModel implements ModelAdapter<LevelNode, BitMapColorSet> {
     @NotNull
     @Override
     public BitMapColorSet validColorsFor(@NotNull LevelNode node, @NotNull Formula formula) {
-        if (formula instanceof Tautology) return BitMapColorSet.createFull(paramSpaceWidth);
-        if (formula instanceof Contradiction) return new BitMapColorSet();
+        if (formula == CtlPackage.getTrue()) return BitMapColorSet.createFull(paramSpaceWidth);
+        if (formula == CtlPackage.getFalse()) return new BitMapColorSet();
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {
             revealProposition((FloatProposition) formula);
         }
@@ -143,9 +142,10 @@ public class NetworkModel implements ModelAdapter<LevelNode, BitMapColorSet> {
 
     private void revealProposition(FloatProposition proposition) {
         for (LevelNode entry : nodeCache.values()) {
-            if (proposition.evaluate((double) entry.getLevel(variableOrdering.indexOf(proposition.getVariable())))) {
+            throw new IllegalStateException("Not supported now");
+            /*if (proposition.evaluate((double) entry.getLevel(variableOrdering.indexOf(proposition.getVariable())))) {
                 entry.addFormula(proposition, BitMapColorSet.createFull(paramSpaceWidth));
-            }
+            }*/
         }
         revealedPropositions.add(proposition);
     }

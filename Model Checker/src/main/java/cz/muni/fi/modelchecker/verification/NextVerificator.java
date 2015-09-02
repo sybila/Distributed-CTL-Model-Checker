@@ -1,6 +1,6 @@
 package cz.muni.fi.modelchecker.verification;
 
-import cz.muni.fi.ctl.formula.Formula;
+import cz.muni.fi.ctl.Formula;
 import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.StateSpacePartitioner;
 import cz.muni.fi.modelchecker.graph.ColorSet;
@@ -60,7 +60,7 @@ class NextVerificator<N extends Node, C extends ColorSet> implements FormulaProc
 
         //find all nodes that match sub formula
         Set<Map.Entry<N, C>> entries;
-        entries = model.initialNodes(formula.getSubFormulaAt(0)).entrySet();
+        entries = model.initialNodes(formula.get(0)).entrySet();
 
         for (@NotNull Map.Entry<N, C> initial : entries) {
             //for each node, find it's predecessors

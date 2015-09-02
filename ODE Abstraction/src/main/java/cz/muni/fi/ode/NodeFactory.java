@@ -1,9 +1,8 @@
 package cz.muni.fi.ode;
 
-import cz.muni.fi.ctl.formula.Formula;
-import cz.muni.fi.ctl.formula.proposition.Contradiction;
-import cz.muni.fi.ctl.formula.proposition.FloatProposition;
-import cz.muni.fi.ctl.formula.proposition.Tautology;
+import cz.muni.fi.ctl.CtlPackage;
+import cz.muni.fi.ctl.FloatProposition;
+import cz.muni.fi.ctl.Formula;
 import cz.muni.fi.modelchecker.ModelAdapter;
 import org.antlr.v4.runtime.misc.Nullable;
 import org.jetbrains.annotations.NotNull;
@@ -29,6 +28,22 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, RectParamSpace>
         this.model = model;
         this.partitioner = partitioner;
         this.myId = partitioner.getMyId();
+    }
+
+    public CoordinateNode above(CoordinateNode node, int dim) {
+        int[] newCoords = Arrays.copyOf(node.coordinates, node.coordinates.length);
+        newCoords[dim]++;
+        if (model.isValidNode(newCoords)) {
+            return getNode(newCoords);
+        } else return null;
+    }
+
+    public CoordinateNode below(CoordinateNode node, int dim) {
+        int[] newCoords = Arrays.copyOf(node.coordinates, node.coordinates.length);
+        newCoords[dim]--;
+        if (model.isValidNode(newCoords)) {
+            return getNode(newCoords);
+        } else return null;
     }
 
     @NotNull
@@ -82,7 +97,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, RectParamSpace>
     @NotNull
     @Override
     public synchronized Map<CoordinateNode, RectParamSpace> initialNodes(@NotNull Formula formula) {
-        if (formula instanceof Tautology) {
+        if (formula == CtlPackage.getTrue()) {
             if (!hasAllNodes) {
                 generator.cacheAllNodes();
                 hasAllNodes = true;
@@ -93,7 +108,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, RectParamSpace>
             }
             return results;
         }
-        if (formula instanceof Contradiction) {
+        if (formula == CtlPackage.getFalse()) {
             return new HashMap<>();
         }
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {
@@ -145,8 +160,8 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, RectParamSpace>
     @NotNull
     @Override
     public synchronized RectParamSpace validColorsFor(@NotNull CoordinateNode node, @NotNull Formula formula) {
-        if (formula instanceof Tautology) return model.getFullColorSet();
-        if (formula instanceof Contradiction) return RectParamSpace.Companion.empty();
+        if (formula == CtlPackage.getTrue()) return model.getFullColorSet();
+        if (formula == CtlPackage.getFalse()) return RectParamSpace.Companion.empty();
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {
             @NotNull FloatProposition proposition = (FloatProposition) formula;
             revealedPropositions.add(proposition);

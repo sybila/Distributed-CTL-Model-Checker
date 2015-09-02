@@ -114,7 +114,7 @@ public class PatternMain {
         Collection<CoordinateNode> initial = factory.getNodes();
         for (CoordinateNode entry : initial) {
             counter++;
-            if (counter % (initial.size() / 100) == 0) {
+            if (initial.size() < 100 || counter % (initial.size() / 100) == 0) {
                 p++;
                 System.err.println(rank + ": " + p+"% ");
             }

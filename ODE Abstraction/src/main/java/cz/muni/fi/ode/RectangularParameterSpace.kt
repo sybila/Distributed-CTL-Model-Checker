@@ -1,8 +1,7 @@
 package cz.muni.fi.ode
 
 import cz.muni.fi.modelchecker.graph.ColorSet
-import java.util.Arrays
-import java.util.HashSet
+import java.util.*
 
 //We need our own interval, because we do not allow single points (i.e. (3,3)) as valid intervals
 //rest is copied from original Kotlin range
@@ -178,10 +177,13 @@ public data class RectParamSpace(var items: Set<Rect> = setOf()): ColorSet {
 
         for (r in items) {
 
-            var merge = items.firstOrNull { it != r && it !in removed && r merge it != null }
+            var merge = items
+                    .filter { it != r && it !in removed }
+                    .map { r merge it }
+                    .filterNotNull().firstOrNull()
 
             if (merge != null) {
-                merged.add(merge.merge(r))
+                merged.add(merge)
                 removed.add(merge)
             } else {
                 merged.add(r)

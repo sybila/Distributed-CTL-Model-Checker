@@ -1,5 +1,6 @@
 package cz.muni.fi.modelchecker.verification;
 
+import com.github.daemontus.jafra.Terminator;
 import cz.muni.fi.ctl.Formula;
 import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.StateSpacePartitioner;
@@ -7,7 +8,6 @@ import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
 import cz.muni.fi.modelchecker.mpi.tasks.OnTaskListener;
 import cz.muni.fi.modelchecker.mpi.tasks.TaskMessenger;
-import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -20,7 +20,7 @@ abstract class MergeQueueProcessor<N extends Node, C extends ColorSet> implement
 
 
     @NotNull
-    private final Terminator.TerminatorFactory terminatorFactory;
+    private final Terminator.Factory terminatorFactory;
     @NotNull
     final StateSpacePartitioner<N> partitioner;
     @NotNull
@@ -41,7 +41,7 @@ abstract class MergeQueueProcessor<N extends Node, C extends ColorSet> implement
             @NotNull ModelAdapter<N, C> model,
             @NotNull StateSpacePartitioner<N> partitioner,
             @NotNull Formula formula,
-            @NotNull Terminator.TerminatorFactory terminatorFactory,
+            @NotNull Terminator.Factory terminatorFactory,
             @NotNull TaskMessenger<N, C> taskMessenger
     ) {
         this.terminatorFactory = terminatorFactory;

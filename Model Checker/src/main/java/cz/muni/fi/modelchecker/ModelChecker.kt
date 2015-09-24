@@ -1,15 +1,15 @@
 package cz.muni.fi.modelchecker
 
+import com.github.daemontus.jafra.Terminator
 import cz.muni.fi.ctl.Atom
 import cz.muni.fi.ctl.Formula
 import cz.muni.fi.ctl.Op
-import cz.muni.fi.modelchecker.mpi.termination.Terminator
 import mpjbuf.IllegalArgumentException
 import java.util.*
 
 public class ModelChecker<N: Node, C: Colors<C>>(
         partition: Partition<N, C>,
-        private val terminators: Terminator.TerminatorFactory,
+        private val terminators: Terminator.Factory,
         private val messengers: Messenger.Factory<N, C>
 ): Partition<N, C> by partition {
 

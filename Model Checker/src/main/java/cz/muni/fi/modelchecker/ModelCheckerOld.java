@@ -1,11 +1,11 @@
 package cz.muni.fi.modelchecker;
 
+import com.github.daemontus.jafra.Terminator;
 import cz.muni.fi.ctl.Atom;
 import cz.muni.fi.ctl.Formula;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
 import cz.muni.fi.modelchecker.mpi.tasks.TaskMessenger;
-import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import cz.muni.fi.modelchecker.verification.FormulaVerificator;
 import org.jetbrains.annotations.NotNull;
 
@@ -39,7 +39,7 @@ public class ModelCheckerOld<N extends Node, C extends ColorSet> {
             @NotNull ModelAdapter<N, C> model,
             @NotNull StateSpacePartitioner<N> partitioner,
             @NotNull TaskMessenger<N, C> taskMessenger,
-            @NotNull Terminator.TerminatorFactory terminatorFactory) {
+            @NotNull Terminator.Factory terminatorFactory) {
         verificator = new FormulaVerificator<>(model, partitioner, taskMessenger, terminatorFactory);
         this.model = model;
         this.partitioner = partitioner;

@@ -1,10 +1,10 @@
 package cz.muni.fi.modelchecker.verification;
 
+import com.github.daemontus.jafra.Terminator;
 import cz.muni.fi.ctl.Formula;
 import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
-import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;

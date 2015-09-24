@@ -1,5 +1,6 @@
 package cz.muni.fi.modelchecker.verification;
 
+import com.github.daemontus.jafra.Terminator;
 import cz.muni.fi.ctl.Formula;
 import cz.muni.fi.modelchecker.ModelAdapter;
 import cz.muni.fi.modelchecker.StateSpacePartitioner;
@@ -7,7 +8,6 @@ import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
 import cz.muni.fi.modelchecker.mpi.tasks.OnTaskListener;
 import cz.muni.fi.modelchecker.mpi.tasks.TaskMessenger;
-import cz.muni.fi.modelchecker.mpi.termination.Terminator;
 import org.antlr.v4.runtime.misc.Nullable;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,7 +20,7 @@ import java.util.Set;
 class NextVerificator<N extends Node, C extends ColorSet> implements FormulaProcessor, OnTaskListener<N, C> {
 
     @NotNull
-    private final Terminator.TerminatorFactory terminatorFactory;
+    private final Terminator.Factory terminatorFactory;
     @NotNull
     private final StateSpacePartitioner<N> partitioner;
     @NotNull
@@ -40,7 +40,7 @@ class NextVerificator<N extends Node, C extends ColorSet> implements FormulaProc
             @NotNull ModelAdapter<N, C> model,
             @NotNull StateSpacePartitioner<N> partitioner,
             @NotNull Formula formula,
-            @NotNull Terminator.TerminatorFactory terminatorFactory,
+            @NotNull Terminator.Factory terminatorFactory,
             @NotNull TaskMessenger<N,C> taskMessenger
     ) {
         this.model = model;

@@ -16,7 +16,7 @@ import java.util.Set;
  * Main class representing one fully configured model checker.
  */
 @SuppressWarnings("UnusedDeclaration")  //this is a library class
-public class ModelChecker<N extends Node, C extends ColorSet> {
+public class ModelCheckerOld<N extends Node, C extends ColorSet> {
 
     @NotNull
     private final Set<Formula> processedFormulas = new HashSet<>();
@@ -35,7 +35,7 @@ public class ModelChecker<N extends Node, C extends ColorSet> {
      * @param taskMessenger Provides communication channels between processes.
      * @param terminatorFactory Creates new pre-configured terminators.
      */
-    public ModelChecker(
+    public ModelCheckerOld(
             @NotNull ModelAdapter<N, C> model,
             @NotNull StateSpacePartitioner<N> partitioner,
             @NotNull TaskMessenger<N, C> taskMessenger,

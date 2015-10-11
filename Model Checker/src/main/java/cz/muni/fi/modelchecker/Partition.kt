@@ -7,9 +7,9 @@ public interface Colors<C> {
 
     fun intersect(other: C): C
 
-    fun minus(other: C): C
+    operator fun minus(other: C): C
 
-    fun plus(other: C): C
+    operator fun plus(other: C): C
 
     fun isEmpty(): Boolean
 

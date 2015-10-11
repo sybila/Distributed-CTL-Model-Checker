@@ -10,10 +10,16 @@ import java.util.concurrent.LinkedBlockingQueue
 import kotlin.concurrent.thread
 
 public class ModelChecker<N: Node, C: Colors<C>>(
-        partition: Partition<N, C>,
+        fragment: KripkeFragment<N, C>,
+        colorSpace: ColorSpace<C>,
+        partitionFunction: PartitionFunction<N>,
         private val terminators: Terminator.Factory,
         private val messengers: Messenger.Factory<N, C>
-): Partition<N, C> by partition {
+):
+        KripkeFragment<N, C> by fragment,
+        PartitionFunction<N> by partitionFunction,
+        ColorSpace<C> by colorSpace
+{
 
     private val getOrEmpty: Map<N, C>.(N) -> C = { this.getOrElse(it, { emptyColors }) }
     private val getOrFull: Map<N, C>.(N) -> C = { this.getOrElse(it, { fullColors }) }

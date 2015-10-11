@@ -3,6 +3,8 @@ package cz.muni.fi.modelchecker
 import cz.muni.fi.ctl.Atom
 
 
+public interface Node { }
+
 public interface Colors<C> {
 
     fun intersect(other: C): C
@@ -15,9 +17,7 @@ public interface Colors<C> {
 
 }
 
-public interface Node { }
-
-public interface Partition<N: Node, C: Colors<C>> {
+public interface ColorSpace<C: Colors<C>> {
 
     /**
      * Invert given color set with respect to the model bounds.
@@ -34,6 +34,24 @@ public interface Partition<N: Node, C: Colors<C>> {
      */
     val emptyColors: C
 
+}
+
+public interface PartitionFunction<N: Node> {
+
+    /**
+     * Get ID of partition which owns given node.
+     */
+    val ownerId: N.() -> Int
+
+    /**
+     * My partition ID.
+     */
+    val myId: Int
+
+}
+
+public interface KripkeFragment<N: Node, C: Colors<C>> {
+
     /**
      * Find all successors for given node. (Even in different partitions)
      */
@@ -45,22 +63,13 @@ public interface Partition<N: Node, C: Colors<C>> {
     val predecessors: N.() -> Map<N, C>
 
     /**
-     * Find all nodes (and respective colors) where given atomic proposition holds in this partition.
-     */
-    fun validNodes(a: Atom): Map<N, C>
-
-    /**
-     * Set of all nodes of the partition
+     * Set of all (inner) nodes of the partition
      */
     fun allNodes(): Set<N>
 
     /**
-     * Get ID of partition which owns given node.
+     * Find all nodes (and respective colors) where given atomic proposition holds in this partition.
      */
-    val ownerId: N.() -> Int
+    fun validNodes(a: Atom): Map<N, C>
 
-    /**
-     * My partition ID.
-     */
-    val myId: Int
 }

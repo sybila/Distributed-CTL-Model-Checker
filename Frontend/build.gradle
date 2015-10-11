@@ -9,7 +9,6 @@ repositories {
 
 dependencies {
     compile 'com.intellij:annotations:5.1'
-    compile project(':CTL Parser')
     compile project(':Model Checker')
     compile project(':ODE Abstraction')
     compile project(':Thomas Network Abstraction')

@@ -18,7 +18,7 @@ allprojects {
         //compiler (preferably g++) that can handle the level of c++11 used in this project
         compiler = "g++-5"
         //path to your jdk home folder
-        jdk = "/Library/Java/JavaVirtualMachines/jdk1.7.0_71.jdk/Contents/Home"
+        jdk = "/Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home"
         //allowed values: linux/darwin (windows is not supported for now)
         os = "darwin"
     }

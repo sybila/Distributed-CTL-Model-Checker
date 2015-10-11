@@ -4,8 +4,8 @@ import cz.muni.fi.ctl.CtlPackage;
 import cz.muni.fi.ctl.FloatProposition;
 import cz.muni.fi.ctl.Formula;
 import cz.muni.fi.modelchecker.ModelAdapter;
-import org.antlr.v4.runtime.misc.Nullable;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -70,7 +70,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, RectParamSpace>
 
     @NotNull
     @Override
-    public synchronized Map<CoordinateNode, RectParamSpace> predecessorsFor(@NotNull CoordinateNode to, @org.jetbrains.annotations.Nullable @Nullable RectParamSpace borders) {
+    public synchronized Map<CoordinateNode, RectParamSpace> predecessorsFor(@NotNull CoordinateNode to, @Nullable RectParamSpace borders) {
         if (borders == null) {
             borders = model.getFullColorSet();
         }
@@ -83,7 +83,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, RectParamSpace>
 
     @NotNull
     @Override
-    public synchronized Map<CoordinateNode, RectParamSpace> successorsFor(@NotNull CoordinateNode from, @org.jetbrains.annotations.Nullable @Nullable RectParamSpace borders) {
+    public synchronized Map<CoordinateNode, RectParamSpace> successorsFor(@NotNull CoordinateNode from, @Nullable RectParamSpace borders) {
         if (borders == null) {
             borders = model.getFullColorSet();
         }

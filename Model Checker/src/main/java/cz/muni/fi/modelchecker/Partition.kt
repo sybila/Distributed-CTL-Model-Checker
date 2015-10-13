@@ -73,3 +73,9 @@ public interface KripkeFragment<N: Node, C: Colors<C>> {
     fun validNodes(a: Atom): Map<N, C>
 
 }
+
+public data class Edge<N: Node, C: Colors<C>>(
+        public val start: N,
+        public val end: N,
+        public val colors: C
+)

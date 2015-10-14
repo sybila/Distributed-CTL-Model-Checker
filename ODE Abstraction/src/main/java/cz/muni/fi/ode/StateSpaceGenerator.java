@@ -2,10 +2,13 @@ package cz.muni.fi.ode;
 
 import com.google.common.collect.Range;
 import com.google.common.math.IntMath;
+import cz.muni.fi.ctl.FloatOp;
 import cz.muni.fi.ctl.FloatProposition;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+
+import static cz.muni.fi.ctl.FloatOp.*;
 
 /**
  * Generates the state space from provided ODE model.
@@ -94,18 +97,12 @@ public class StateSpaceGenerator {
         int thresholdIndex = 0;
         for(int i = 0; i < model.getThresholdCountForVariable(variableIndex); i++) {
             if(model.getThresholdValueForVariableByIndex(variableIndex, i) > proposition.getValue()) {
-                switch (proposition.getFloatOp()) {
-                    case GT:
-                    case LT_EQ:
-                        thresholdIndex = i;
-                        break;
-                    case LT:
-                    case GT_EQ:
-                        thresholdIndex = i-1;
-                        break;
-                    default:
-                        throw new IllegalArgumentException("Unsupported operator.");
-                }
+                FloatOp op = proposition.getFloatOp();
+                if (op == GT || op == LT_EQ) {
+                    thresholdIndex = i;
+                } else if (op == LT || op == GT_EQ) {
+                    thresholdIndex = i-1;
+                } else throw new IllegalArgumentException("Unsupported operator.");
                 break;
             }
             if(model.getThresholdValueForVariableByIndex(variableIndex, i) == proposition.getValue()) {
@@ -115,15 +112,13 @@ public class StateSpaceGenerator {
         }
 
         //Return nodes with right combination of thresholds.
-        switch (proposition.getFloatOp()) {
-            case GT_EQ:
-            case GT:
-                return enumerateStates(variableIndex, thresholdIndex, model.getThresholdCountForVariable(variableIndex) - 1);
-            case LT_EQ:
-            case LT:
-                return enumerateStates(variableIndex, 0, thresholdIndex);
-            default:
-                throw new IllegalArgumentException("Unsupported operator.");
+        FloatOp op = proposition.getFloatOp();
+        if (op == GT_EQ || op == GT) {
+            return enumerateStates(variableIndex, thresholdIndex, model.getThresholdCountForVariable(variableIndex) - 1);
+        } else if (op == LT_EQ || op == LT) {
+            return enumerateStates(variableIndex, 0, thresholdIndex);
+        } else {
+            throw new IllegalArgumentException("Unsupported operator.");
         }
     }
 

@@ -1,5 +1,6 @@
 package cz.muni.fi.ode
 
+import cz.muni.fi.modelchecker.Colors
 import cz.muni.fi.modelchecker.graph.ColorSet
 import java.util.*
 
@@ -38,6 +39,10 @@ data class Interval(val start: Double, val end: Double) {
     companion object {
         /** An empty range of values of type Double. */
         public val EMPTY: Interval = Interval(0.0, 0.0)
+    }
+
+    override fun toString(): String {
+        return "($start, $end)"
     }
 }
 
@@ -104,10 +109,32 @@ data class Rect(val ranges: Array<Interval>) {
         return result
     }
 
-    fun get(i: Int): Interval = ranges[i]
+    operator fun get(i: Int): Interval = ranges[i]
+
+    /*override fun toString(): String {
+        return "{$ranges}"
+    }*/
 }
 
-public data class RectParamSpace(var items: Set<Rect> = setOf()): ColorSet {
+public data class RectParamSpace(var items: Set<Rect> = setOf()): ColorSet, Colors<RectParamSpace> {
+
+    override fun intersect(other: RectParamSpace): RectParamSpace {
+        val copy = this.copy()
+        copy.intersect(other as ColorSet?)
+        return copy
+    }
+
+    override fun minus(other: RectParamSpace): RectParamSpace {
+        val copy = this.copy()
+        copy.subtract(other)
+        return copy
+    }
+
+    override fun plus(other: RectParamSpace): RectParamSpace {
+        val copy = this.copy()
+        copy.union(other)
+        return copy
+    }
 
     companion object {
         fun empty() = RectParamSpace()
@@ -198,5 +225,7 @@ public data class RectParamSpace(var items: Set<Rect> = setOf()): ColorSet {
         return items.isEmpty()
     }
 
-
+    override fun toString(): String {
+        return "[$items]"
+    }
 }

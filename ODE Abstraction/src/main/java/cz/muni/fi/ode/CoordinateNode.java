@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CoordinateNode implements Node {
+public class CoordinateNode implements Node, cz.muni.fi.modelchecker.Node {
 
     public int[] coordinates;
     private long hash;

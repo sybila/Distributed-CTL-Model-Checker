@@ -6,27 +6,20 @@ import cz.muni.fi.ctl.Formula
 import cz.muni.fi.ctl.Op
 import mpjbuf.IllegalArgumentException
 import java.util.*
-import java.util.concurrent.LinkedBlockingQueue
-import kotlin.concurrent.thread
 
 public class ModelChecker<N: Node, C: Colors<C>>(
         fragment: KripkeFragment<N, C>,
-        colorSpace: ColorSpace<C>,
-        partitionFunction: PartitionFunction<N>,
+        private val partitionFunction: PartitionFunction<N>,
         private val terminators: Terminator.Factory,
         private val messengers: Messenger.Factory<N, C>
 ):
         KripkeFragment<N, C> by fragment,
-        PartitionFunction<N> by partitionFunction,
-        ColorSpace<C> by colorSpace
+        PartitionFunction<N> by partitionFunction
 {
 
-    private val getOrEmpty: Map<N, C>.(N) -> C = { this.getOrElse(it, { emptyColors }) }
-    private val getOrFull: Map<N, C>.(N) -> C = { this.getOrElse(it, { fullColors }) }
+    private val results: MutableMap<Formula, MapWithDefault<N, C>> = HashMap()
 
-    private val results: MutableMap<Formula, Map<N, C>> = HashMap()
-
-    public fun verify(f: Formula): Map<N, C> {
+    public fun verify(f: Formula): MapWithDefault<N, C> {
         if (f !in results) {
             results[f] = if (f is Atom) {
                 validNodes(f)
@@ -43,86 +36,53 @@ public class ModelChecker<N: Node, C: Colors<C>>(
         return results[f]!!
     }
 
-    private fun checkNegation(f: Formula): Map<N, C> = globalBarrier {
-        val original = verify(f[0])
-        allNodes()
-                .filter { original[it] != fullColors }  //get rid of full colored nodes
-                .toMap({ it }, { fullColors - original.getOrEmpty(it) })  //create color diffs
-    }
+    private fun checkNegation(f: Formula): MapWithDefault<N, C> = allNodes() subtract verify(f[0])
 
-    private fun checkAnd(f: Formula): Map<N, C> = globalBarrier {
-        val r1 = verify(f[1])
-        verify(f[0]).mapValues { it.value intersect r1.getOrEmpty(it.key) }
-    }
+    private fun checkAnd(f: Formula): MapWithDefault<N, C> = verify(f[0]) intersect verify(f[1])
 
-    private fun checkOr(f: Formula): Map<N, C> = globalBarrier {
-        val r0 = verify(f[0])
-        val r1 = verify(f[1])
-        (r0.keySet() + r1.keySet()).toMap({ it }, { r0.getOrEmpty(it) + r1.getOrEmpty(it) })
-    }
+    private fun checkOr(f: Formula): MapWithDefault<N, C> = verify(f[0]) union verify(f[1])
 
-    private fun checkExistUntil(f: Formula): Map<N, C> {
-        val r0 = verify(f[0])
-        val taskQueue = LinkedBlockingQueue<Job<N, C>>()
-        val terminator = terminators.createNew()
+    private fun checkExistUntil(f: Formula): MapWithDefault<N, C> {
 
+        val f0 = verify(f[0])
+        val f1 = verify(f[1])
+        val result = HashMap<N, C>().withDefaultMutable(f0.default)
 
-        val messenger = messengers.createNew {
-            synchronized(taskQueue) {   //Can we do better?
-                terminator.messageReceived()
-                taskQueue.add(it)
-            }
-        }
+        val jobQueue = SingleThreadJobQueue(
+                messengers, terminators, partitionFunction,
+                Job.EU(f1.keySet().first(), f1.values().first()).javaClass  //TODO: There must be a better way to do this
+        )
 
-        val results = HashMap<N, C>()   //No need for sync, updated only from following thread
-
-        //push given colors from given node into it's predecessors
-        val pushBack: (N, C) -> Unit = { node, colors ->
-            for ((predecessor, edgeColors) in node.predecessors()) {
-                val job = Job.EUTask(predecessor, colors intersect edgeColors)
-                if (node.ownerId() == myId) {
-                    taskQueue.add(job)
-                } else {
-                    messenger.sendTask(job)
-                    terminator.messageSent()
-                }
+        fun pushBack(node: N, colors: C) {
+            for ((predecessor, edgeColors) in node.predecessors()) {    //push to predecessors
+                val intersection = edgeColors intersect colors
+                if (intersection.isNotEmpty()) jobQueue.post(Job.EU(predecessor, intersection))
             }
         }
 
         //prepare queue
-        for ((node, colors) in verify(f[1])) {
-            results[node] = colors
-            pushBack(node, colors)
+        for ((node, colors) in f1) {
+            if (result.addOrUnion(node, colors)) pushBack(node, colors)
         }
 
-        val worker = thread {
-            var task = taskQueue.take()
-            while (task is Job.EUTask<N, C>) {
-                val (node, pushed) = task
-
-                //intersect and save as valid
-                val valid = pushed intersect r0.getOrEmpty(node)
-                results[node] = results.getOrEmpty(node) + valid
-
-                pushBack(node, valid)
-
-                synchronized(taskQueue) {   //sync receive/done signals with the queue take
-                    if (taskQueue.isEmpty()) terminator.setDone()
-                    task = taskQueue.take()
-                }
-            }
-            if (task !is Job.Poison) throw IllegalStateException("Somehow a different task got here! $task")
-            //just finish - we received poison, everything is fine :)
+        jobQueue.start { val (node, colors) = it
+            val intersection = colors intersect f0.getOrDefault(node)
+            if (result.addOrUnion(node, intersection)) pushBack(node, intersection)
         }
 
-        terminator.waitForTermination()
+        jobQueue.finish()
 
-        return globalBarrier {
-            taskQueue.add(Job.Poison())
-            worker.join()
-            messenger.close()
-            results
-        }
+        return result.toMap()
+    }
+
+    private fun checkAllUntil(f: Formula): MapWithDefault<N, C> {
+
+        val f0 = verify(f[0])
+        val f1 = verify(f[1])
+        val result = HashMap<N, C>().withDefaultMutable(f0.default)
+
+
+        return result.toMap()
     }
 
     private fun <T> globalBarrier(f: () -> T): T {

@@ -33,6 +33,13 @@ interface Job<N: Node, C: Colors<C>>: Message<N, C> {
     ) : Job<N, C> {
         override val target: N = node
     }
+
+    data class EX<N: Node, C: Colors<C>>(
+            val node: N,
+            val colors: C
+    ) : Job<N, C> {
+        override val target: N = node
+    }
 }
 
 interface Message<N: Node, C: Colors<C>> {

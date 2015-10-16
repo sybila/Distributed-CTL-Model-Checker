@@ -28,6 +28,7 @@ public class ModelChecker<N: Node, C: Colors<C>>(
                     Op.NEGATION -> checkNegation(f)
                     Op.AND -> checkAnd(f)
                     Op.OR -> checkOr(f)
+                    Op.EXISTS_NEXT -> checkExistNext(f)
                     Op.EXISTS_UNTIL -> checkExistUntil(f)
                     else -> throw IllegalArgumentException("Unsupported operator: ${f.operator}")
                 }
@@ -41,6 +42,33 @@ public class ModelChecker<N: Node, C: Colors<C>>(
     private fun checkAnd(f: Formula): MapWithDefault<N, C> = verify(f[0]) intersect verify(f[1])
 
     private fun checkOr(f: Formula): MapWithDefault<N, C> = verify(f[0]) union verify(f[1])
+
+    private fun checkExistNext(f: Formula): MapWithDefault<N, C> {
+
+        val r = verify(f[0])
+
+        val result = HashMap<N, C>().withDefaultMutable(r.default)
+
+        val jobQueue = SingleThreadJobQueue(
+                messengers, terminators, partitionFunction,
+                Job.EX(r.keySet().first(), r.values().first()).javaClass  //TODO: There must be a better way to do this
+        )
+
+        for ((node, colors) in r) {
+            for ((predecessor, edgeColors) in node.predecessors()) {
+                val intersection = colors intersect edgeColors
+                if (intersection.isNotEmpty()) jobQueue.post(Job.EX(predecessor, intersection))
+            }
+        }
+
+        jobQueue.start { val (node, colors) = it
+            result.addOrUnion(node, colors)
+        }
+
+        jobQueue.finish()
+
+        return result.toMap()
+    }
 
     private fun checkExistUntil(f: Formula): MapWithDefault<N, C> {
 

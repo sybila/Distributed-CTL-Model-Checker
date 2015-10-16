@@ -45,19 +45,21 @@ public class ModelChecker<N: Node, C: Colors<C>>(
 
     private fun checkExistNext(f: Formula): MapWithDefault<N, C> {
 
-        val r = verify(f[0])
+        val phi = verify(f[0])
 
-        val result = HashMap<N, C>().withDefaultMutable(r.default)
+        val result = HashMap<N, C>().withDefaultMutable(phi.default)
 
         val jobQueue = SingleThreadJobQueue(
                 messengers, terminators, partitionFunction,
                 Job.EU::class.java as Class<Job.EX<N, C>>  //TODO: There must be a better way to do this
         )
 
-        for ((node, colors) in r) {
+        //Push colors from all nodes where phi holds - targets are nodes where EX phi holds.
+        for ((node, colors) in phi) {
             pushBack(node, colors, jobQueue) { s, t, c -> Job.EX(t, c) }
         }
 
+        //Mark all targets as valid for EX phi
         jobQueue.start { val (node, colors) = it
             synchronized(result) { result.addOrUnion(node, colors) }
         }
@@ -69,9 +71,9 @@ public class ModelChecker<N: Node, C: Colors<C>>(
 
     private fun checkExistUntil(f: Formula): MapWithDefault<N, C> {
 
-        val f0 = verify(f[0])
-        val f1 = verify(f[1])
-        val result = HashMap<N, C>().withDefaultMutable(f0.default)
+        val phi_1 = verify(f[0])
+        val phi_2 = verify(f[1])
+        val result = HashMap<N, C>().withDefaultMutable(phi_1.default)
 
         val jobQueue = SingleThreadJobQueue(
                 messengers, terminators, partitionFunction,
@@ -80,13 +82,14 @@ public class ModelChecker<N: Node, C: Colors<C>>(
 
         fun pushBack(node: N, colors: C) = pushBack(node, colors, jobQueue) { s, t, c -> Job.EU(t, c) }
 
-        //prepare queue
-        for ((node, colors) in f1) {
+        //Mark all nodes where phi_2 holds as valid and push colors from them
+        for ((node, colors) in phi_2) {
             if (result.addOrUnion(node, colors)) pushBack(node, colors)
         }
 
+        //Mark all targets as valid for intersection with phi_1 and continue pushing colors if something changed
         jobQueue.start { val (node, colors) = it
-            val intersection = colors intersect f0.getOrDefault(node)
+            val intersection = colors intersect phi_1.getOrDefault(node)
             val modified = synchronized(result) { result.addOrUnion(node, intersection) }
             if (modified) pushBack(node, intersection)
         }
@@ -98,9 +101,14 @@ public class ModelChecker<N: Node, C: Colors<C>>(
 
     private fun checkAllUntil(f: Formula): MapWithDefault<N, C> {
 
-        val f0 = verify(f[0])
-        val f1 = verify(f[1])
-        val result = HashMap<N, C>().withDefaultMutable(f0.default)
+        val phi_1 = verify(f[0])
+        val phi_2 = verify(f[1])
+        val result = HashMap<N, C>().withDefaultMutable(phi_1.default)
+
+        //Remembers which successors have been covered by explored edges (successors are lazily initialized)
+        //Algorithm modifies the contents to satisfy following invariant:
+        //uncoveredEdges(x,y) = { c such that there is an edge into y and !(phi_2 or (phi_1 AU phi_2)) holds in y }
+        //Note: Maybe we could avoid this if we also allowed results for border states in results map.
         val uncoveredEdges = HashMap<N, MutableMap<N, C>>()
 
         val jobQueue = SingleThreadJobQueue(
@@ -110,21 +118,25 @@ public class ModelChecker<N: Node, C: Colors<C>>(
 
         fun pushBack(node: N, colors: C) = pushBack(node, colors, jobQueue) { s, t, c -> Job.AU(s, t, c) }
 
-        for ((node, colors) in f1) pushBack(node, colors)
+        //Push from all nodes where phi_2 holds, but do not mark anything
+        for ((node, colors) in phi_2) pushBack(node, colors)
 
+        //Update info about uncovered edges and if some colors become fully covered,
+        //mark the target and push them further
         jobQueue.start { val (source, node, colors) = it
-            synchronized(uncoveredEdges) {
+            synchronized(uncoveredEdges) {  //Lazy init map with successors
                 if (node !in uncoveredEdges) uncoveredEdges[node] = HashMap(node.successors())
             }
             val uncoveredSuccessors = uncoveredEdges[node]!!
             val validColors = synchronized(uncoveredSuccessors) {
+                //cover pushed edge
                 //Would this be reasonably faster if we removed empty sets from map completely?
                 uncoveredSuccessors[source] == uncoveredSuccessors[source]!! - colors
-
+                //Compute what colors became covered by this change
                 //Or should we cache results of this reduction?
-                f0.getOrDefault(node) intersect (colors - uncoveredSuccessors.values().reduce { a, b -> a union b })
+                phi_1.getOrDefault(node) intersect (colors - uncoveredSuccessors.values().reduce { a, b -> a union b })
             }
-            if (validColors.isNotEmpty()) {
+            if (validColors.isNotEmpty()) { //if some colors survived all of this, mark them and push further
                 val modified = synchronized(result) { result.addOrUnion(node, validColors) }
                 if (modified) pushBack(node, validColors)
             }

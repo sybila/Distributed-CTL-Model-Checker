@@ -15,6 +15,7 @@ public interface Colors<C> {
 
     fun isEmpty(): Boolean
 
+    fun isNotEmpty(): Boolean = !isEmpty()
 }
 
 public interface ColorSpace<C: Colors<C>> {

@@ -8,7 +8,6 @@ import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
 import cz.muni.fi.modelchecker.mpi.tasks.OnTaskListener;
 import cz.muni.fi.modelchecker.mpi.tasks.TaskMessenger;
-import org.antlr.v4.runtime.misc.Nullable;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
@@ -31,7 +30,6 @@ class NextVerificator<N extends Node, C extends ColorSet> implements FormulaProc
     private final TaskMessenger<N, C> taskMessenger;
     private final int myId;
 
-    @Nullable
     private Terminator terminator;
 
     private boolean working;

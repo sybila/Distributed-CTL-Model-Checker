@@ -1,16 +1,19 @@
 package cz.muni.fi.modelchecker
 
 import cz.muni.fi.ctl.Atom
-import java.util.*
 
-
+/**
+ * Represents a Node
+ */
 public interface Node { }
 
+/**
+ * Represents a set of colors (parameters) of the model.
+ * All operations should behave as normal mathematical set.
+ */
 public interface Colors<C> {
 
     fun intersect(other: C): C
-
-    fun invert(): C
 
     operator fun minus(other: C): C
 
@@ -23,69 +26,6 @@ public interface Colors<C> {
     fun union(other: C): C = this + other
 
     fun subtract(other: C): C = this - other
-
-    fun complement(): C = invert()
-
-}
-
-public fun <N: Node, C: Colors<C>> MapWithDefault<N, C>.union(
-        other: MapWithDefault<N, C>
-): MapWithDefault<N, C> {
-    val result = LinkedHashMap<N, C>(Math.max((size()/.75f).toInt() + 1, 16))
-    for (key in this.keySet() + other.keySet()) {
-        result[key] = this.getOrDefault(key) + other.getOrDefault(key)
-    }
-    return result.withDefault(default)
-}
-
-public fun <N: Node, C: Colors<C>> MapWithDefault<N, C>.subtract(
-        other: MapWithDefault<N, C>
-): MapWithDefault<N, C> {
-    val result = LinkedHashMap<N, C>(Math.max((size()/.75f).toInt() + 1, 16))
-    for ((key, value) in this) {
-        val remainder = value - other.getOrDefault(key)
-        if (remainder.isNotEmpty()) result[key] = remainder
-    }
-    return result.withDefault(default)
-}
-
-public fun <N: Node, C: Colors<C>> MapWithDefault<N, C>.intersect(
-        other: MapWithDefault<N, C>
-): MapWithDefault<N, C> {
-    val result = LinkedHashMap<N, C>(Math.max((size()/.75f).toInt() + 1, 16))
-    for ((key, value) in this) {
-        val intersection = value intersect other.getOrDefault(key)
-        if (intersection.isNotEmpty()) result[key] = intersection
-    }
-    return result.withDefault(default)
-}
-
-/** Returns true if value in map has changed **/
-public fun <N: Node, C: Colors<C>> MutableMapWithDefault<N, C>.addOrUnion(
-        node: N, colors: C
-): Boolean {
-    val oldColors = getOrDefault(node)
-    val newColors = oldColors union colors
-    if (newColors.isNotEmpty()) put(node, newColors)
-    return newColors != oldColors
-}
-
-public interface ColorSpace<C: Colors<C>> {
-
-    /**
-     * Invert given color set with respect to the model bounds.
-     */
-    val invert: C.() -> C
-
-    /**
-     * Set of all colors of the model.
-     */
-    val fullColors: C
-
-    /**
-     * Empty set of colors.
-     */
-    val emptyColors: C
 
 }
 
@@ -103,30 +43,42 @@ public interface PartitionFunction<N: Node> {
 
 }
 
+
+/**
+ * Note: Several invariants should hold for each valid Kripke fragment
+ * 1. validNodes should always return subset of allNodes (with respect to colors).
+ * 2. for every node N and color C from allNodes, successors(N) should be non empty.
+ * 3. Border states set is a union of all successors/predecessors minus all nodes (with respect to colors).
+ * 4. If N is successor of M for colors C, M is predecessor of N for colors C.
+ * 5. The default value in all node sets is always an empty color space.
+ */
 public interface KripkeFragment<N: Node, C: Colors<C>> {
 
     /**
-     * Find all successors for given node. (Even in different partitions)
+     * Find all successors of given node. (Even in different fragments)
      */
-    val successors: N.() -> MapWithDefault<N, C>
+    val successors: N.() -> NodeSet<N, C>
 
     /**
-     * Find all predecessors for given node. (Even in different partitions)
+     * Find all predecessors of given node. (Even in different fragments)
      */
-    val predecessors: N.() -> MapWithDefault<N, C>
+    val predecessors: N.() -> NodeSet<N, C>
 
     /**
-     * Map of all (inner) nodes of the partition with colors for which they are valid
+     * Map of all (non border) nodes of the fragment with colors for which they are valid
      */
-    fun allNodes(): MapWithDefault<N, C>
+    fun allNodes(): NodeSet<N, C>
 
     /**
-     * Find all nodes (and respective colors) where given atomic proposition holds in this partition.
+     * Find all nodes (and respective colors) where given atomic proposition holds in this fragment.
      */
-    fun validNodes(a: Atom): MapWithDefault<N, C>
+    fun validNodes(a: Atom): NodeSet<N, C>
 
 }
 
+/**
+ * Utility data class
+ */
 public data class Edge<N: Node, C: Colors<C>>(
         public val start: N,
         public val end: N,

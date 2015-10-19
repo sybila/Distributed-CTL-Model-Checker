@@ -7,6 +7,8 @@ import cz.muni.fi.ctl.Op
 import mpjbuf.IllegalArgumentException
 import java.util.*
 
+public inline fun <reified T: Any> genericClass(): Class<T> = T::class.java
+
 public class ModelChecker<N: Node, C: Colors<C>>(
         fragment: KripkeFragment<N, C>,
         private val partitionFunction: PartitionFunction<N>,
@@ -17,9 +19,9 @@ public class ModelChecker<N: Node, C: Colors<C>>(
         PartitionFunction<N> by partitionFunction
 {
 
-    private val results: MutableMap<Formula, MapWithDefault<N, C>> = HashMap()
+    private val results: MutableMap<Formula, NodeSet<N, C>> = HashMap()
 
-    public fun verify(f: Formula): MapWithDefault<N, C> {
+    public fun verify(f: Formula): NodeSet<N, C> {
         if (f !in results) {
             results[f] = if (f is Atom) {
                 validNodes(f)
@@ -37,21 +39,21 @@ public class ModelChecker<N: Node, C: Colors<C>>(
         return results[f]!!
     }
 
-    private fun checkNegation(f: Formula): MapWithDefault<N, C> = allNodes() subtract verify(f[0])
+    private fun checkNegation(f: Formula): NodeSet<N, C> = allNodes() subtract verify(f[0])
 
-    private fun checkAnd(f: Formula): MapWithDefault<N, C> = verify(f[0]) intersect verify(f[1])
+    private fun checkAnd(f: Formula): NodeSet<N, C> = verify(f[0]) intersect verify(f[1])
 
-    private fun checkOr(f: Formula): MapWithDefault<N, C> = verify(f[0]) union verify(f[1])
+    private fun checkOr(f: Formula): NodeSet<N, C> = verify(f[0]) union verify(f[1])
 
-    private fun checkExistNext(f: Formula): MapWithDefault<N, C> {
+    private fun checkExistNext(f: Formula): NodeSet<N, C> {
 
         val phi = verify(f[0])
 
-        val result = HashMap<N, C>().withDefaultMutable(phi.default)
+        val result = HashMap<N, C>().toMutableNodeSet(phi.default)
 
         val jobQueue = SingleThreadJobQueue(
                 messengers, terminators, partitionFunction,
-                Job.EU::class.java as Class<Job.EX<N, C>>  //TODO: There must be a better way to do this
+                genericClass<Job.EX<N, C>>()
         )
 
         //Push colors from all nodes where phi holds - targets are nodes where EX phi holds.
@@ -61,49 +63,49 @@ public class ModelChecker<N: Node, C: Colors<C>>(
 
         //Mark all targets as valid for EX phi
         jobQueue.start { val (node, colors) = it
-            synchronized(result) { result.addOrUnion(node, colors) }
+            synchronized(result) { result.putOrUnion(node, colors) }
         }
 
         jobQueue.finish()
 
-        return result.toMap()
+        return result
     }
 
-    private fun checkExistUntil(f: Formula): MapWithDefault<N, C> {
+    private fun checkExistUntil(f: Formula): NodeSet<N, C> {
 
         val phi_1 = verify(f[0])
         val phi_2 = verify(f[1])
-        val result = HashMap<N, C>().withDefaultMutable(phi_1.default)
+        val result = HashMap<N, C>().toMutableNodeSet(phi_1.default)
 
         val jobQueue = SingleThreadJobQueue(
                 messengers, terminators, partitionFunction,
-                Job.EU::class.java as Class<Job.EU<N, C>>  //TODO: There must be a better way to do this
+                genericClass<Job.EU<N, C>>()
         )
 
         fun pushBack(node: N, colors: C) = pushBack(node, colors, jobQueue) { s, t, c -> Job.EU(t, c) }
 
         //Mark all nodes where phi_2 holds as valid and push colors from them
         for ((node, colors) in phi_2) {
-            if (result.addOrUnion(node, colors)) pushBack(node, colors)
+            if (result.putOrUnion(node, colors)) pushBack(node, colors)
         }
 
         //Mark all targets as valid for intersection with phi_1 and continue pushing colors if something changed
         jobQueue.start { val (node, colors) = it
             val intersection = colors intersect phi_1.getOrDefault(node)
-            val modified = synchronized(result) { result.addOrUnion(node, intersection) }
+            val modified = synchronized(result) { result.putOrUnion(node, intersection) }
             if (modified) pushBack(node, intersection)
         }
 
         jobQueue.finish()
 
-        return result.toMap()
+        return result
     }
 
-    private fun checkAllUntil(f: Formula): MapWithDefault<N, C> {
+    private fun checkAllUntil(f: Formula): NodeSet<N, C> {
 
         val phi_1 = verify(f[0])
         val phi_2 = verify(f[1])
-        val result = HashMap<N, C>().withDefaultMutable(phi_1.default)
+        val result = HashMap<N, C>().toMutableNodeSet(phi_1.default)
 
         //Remembers which successors have been covered by explored edges (successors are lazily initialized)
         //Algorithm modifies the contents to satisfy following invariant:
@@ -113,7 +115,7 @@ public class ModelChecker<N: Node, C: Colors<C>>(
 
         val jobQueue = SingleThreadJobQueue(
                 messengers, terminators, partitionFunction,
-                Job.AU::class.java as Class<Job.AU<N, C>>  //TODO: There must be a better way to do this
+                genericClass<Job.AU<N, C>>()
         )
 
         fun pushBack(node: N, colors: C) = pushBack(node, colors, jobQueue) { s, t, c -> Job.AU(s, t, c) }
@@ -137,13 +139,13 @@ public class ModelChecker<N: Node, C: Colors<C>>(
                 phi_1.getOrDefault(node) intersect (colors - uncoveredSuccessors.values().reduce { a, b -> a union b })
             }
             if (validColors.isNotEmpty()) { //if some colors survived all of this, mark them and push further
-                val modified = synchronized(result) { result.addOrUnion(node, validColors) }
+                val modified = synchronized(result) { result.putOrUnion(node, validColors) }
                 if (modified) pushBack(node, validColors)
             }
         }
 
         jobQueue.finish()
-        return result.toMap()
+        return result
     }
 
     private fun <J: Job<N, C>> pushBack(node: N, colors: C, jobQueue: JobQueue<N, C, J>, jobConstructor: (N, N, C) -> J) {

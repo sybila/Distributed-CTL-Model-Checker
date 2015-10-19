@@ -43,6 +43,14 @@ public class ExplicitPartitionFunction<N: Node>(
     override val myId: Int = id
 }
 
+public class FunctionalPartitionFunction(
+        private val id: Int,
+        private val function: (IDNode) -> Int
+) : PartitionFunction<IDNode> {
+    override val ownerId: IDNode.() -> Int = {function(this)}
+    override val myId: Int = id
+}
+
 public class ExplicitKripkeFragment(
         nodes: Map<IDNode, IDColors>,
         edges: Set<Edge<IDNode, IDColors>>,

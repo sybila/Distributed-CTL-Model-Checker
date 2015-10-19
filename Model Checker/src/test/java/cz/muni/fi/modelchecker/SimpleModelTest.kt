@@ -6,6 +6,12 @@ import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 
+fun nodeSetOf(vararg pairs: Pair<IDNode, IDColors>): NodeSet<IDNode, IDColors>
+        = pairs.toMap({it.first}, {it.second}).toNodeSet(IDColors())
+
+fun nodeSetOf(pairs: List<Pair<IDNode, IDColors>>): NodeSet<IDNode, IDColors>
+        = pairs.toMap({it.first}, {it.second}).toNodeSet(IDColors())
+
 class ExplicitKripkeFragmentTest {
 
     val n1 = IDNode(0)
@@ -16,64 +22,178 @@ class ExplicitKripkeFragmentTest {
 
     @Test fun invalidStructureTest() {
 
-        assertFailsWith(IllegalArgumentException::class) {
-            ExplicitKripkeFragment(setOf(), setOf(Edge(n1, n1, IDColors(1))), mapOf())
+        assertFailsWith(IllegalArgumentException::class) {  //Extra edge
+            ExplicitKripkeFragment(mapOf(), setOf(Edge(n1, n1, IDColors(1))), mapOf())
         }
 
-        assertFailsWith(IllegalArgumentException::class) {
-            ExplicitKripkeFragment(setOf(), setOf(),
+        assertFailsWith(IllegalArgumentException::class) {  //Extra atom
+            ExplicitKripkeFragment(mapOf(), setOf(),
                     mapOf(Pair(FloatProposition("foo", FloatOp.EQ, 1.0), mapOf(Pair(n1, IDColors(2)))))
             )
         }
 
+        assertFailsWith(IllegalArgumentException::class) {  //Extra atom param
+            ExplicitKripkeFragment(mapOf(Pair(n1, IDColors(1))), setOf(),
+                    mapOf(Pair(FloatProposition("foo", FloatOp.EQ, 1.0), mapOf(Pair(n1, IDColors(2)))))
+            )
+        }
+
+        assertFailsWith(IllegalArgumentException::class) {  //Missing successor
+            ExplicitKripkeFragment(mapOf(Pair(n1, IDColors(1))), setOf(), mapOf())
+        }
+
     }
 
-    @Test fun edgeTest() {
+    @Test fun edgeTestWithBorders() {
+
+        val ks = ExplicitKripkeFragment( nodeSetOf(
+                Pair(n1, IDColors(1,2,3)),
+                Pair(n2, IDColors(1,2,3)),
+                Pair(n3, IDColors(3,4,5)),
+                Pair(n4, IDColors(3,4,5))
+        ), setOf(
+                Edge(n1, n2, IDColors(2,3)),
+                Edge(n1, n5, IDColors(1)),
+                Edge(n2, n1, IDColors(1)),
+                Edge(n2, n2, IDColors(2)),
+                Edge(n2, n3, IDColors(3)),
+                Edge(n3, n4, IDColors(3,4)),
+                Edge(n3, n5, IDColors(5)),
+                Edge(n4, n1, IDColors(3)),
+                Edge(n4, n3, IDColors(5)),
+                Edge(n4, n4, IDColors(4))
+        ), mapOf())
+
+        assertEquals(nodeSetOf(
+                Pair(n2, IDColors(2,3)),
+                Pair(n5, IDColors(1))
+        ), n1.run(ks.successors))
+
+        assertEquals(nodeSetOf(
+                Pair(n1, IDColors(1)),
+                Pair(n2, IDColors(2)),
+                Pair(n3, IDColors(3))
+        ), n2.run(ks.successors))
+
+        assertEquals(nodeSetOf(
+                Pair(n4, IDColors(3,4)),
+                Pair(n5, IDColors(5))
+        ), n3.run(ks.successors))
+
+        assertEquals(nodeSetOf(
+                Pair(n1, IDColors(3)),
+                Pair(n3, IDColors(5)),
+                Pair(n4, IDColors(4))
+        ), n4.run(ks.successors))
+
+        assertEquals(nodeSetOf(), n5.run(ks.successors))
+
+        assertEquals(nodeSetOf(
+                Pair(n2, IDColors(1)),
+                Pair(n4, IDColors(3))
+        ), n1.run(ks.predecessors))
+
+        assertEquals(nodeSetOf(
+                Pair(n1, IDColors(2,3)),
+                Pair(n2, IDColors(2))
+        ), n2.run(ks.predecessors))
+
+        assertEquals(nodeSetOf(
+                Pair(n2, IDColors(3)),
+                Pair(n4, IDColors(5))
+        ), n3.run(ks.predecessors))
+
+        assertEquals(nodeSetOf(
+                Pair(n3, IDColors(3,4)),
+                Pair(n4, IDColors(4))
+        ), n4.run(ks.predecessors))
+
+        assertEquals(nodeSetOf(
+                Pair(n1, IDColors(1)),
+                Pair(n3, IDColors(5))
+        ), n5.run(ks.predecessors))
+    }
+
+    @Test fun edgeTestNoBorders() {
+
+        val fullColors = IDColors(1,2,3,4,5)
+        val nodes = setOf(n1, n2, n3, n4, n5).toMap({it}, {fullColors})
 
         val ks = ExplicitKripkeFragment(
-                setOf(n1, n2, n3, n4, n5),
-                setOf(
+                nodes, nodes.map { Edge(it.key, it.key, it.value) }.toSet() + setOf(
                         Edge(n1, n2, IDColors(2)),
                         Edge(n1, n4, IDColors(2,4)),
                         Edge(n1, n3, IDColors(2)),
-                        Edge(n2, n2, IDColors(3,4)),
+                        Edge(n2, n5, IDColors(3,4)),
                         Edge(n3, n1, IDColors(1,2)),
                         Edge(n4, n3, IDColors(1,2,3,4,5)),
                         Edge(n3, n5, IDColors(2,3))
                 ), mapOf())
 
-        assertEquals(mapOf(
-                Pair(n2, IDColors(2)), Pair(n4, IDColors(2,4)), Pair(n3, IDColors(2))
+        assertEquals(nodeSetOf(
+                Pair(n1, fullColors),
+                Pair(n2, IDColors(2)),
+                Pair(n4, IDColors(2,4)),
+                Pair(n3, IDColors(2))
         ), n1.run(ks.successors))
 
-        assertEquals(mapOf(Pair(n2, IDColors(3,4))), n2.run(ks.successors))
+        assertEquals(nodeSetOf(
+                Pair(n2, fullColors),
+                Pair(n5, IDColors(3,4))
+        ), n2.run(ks.successors))
 
-        assertEquals(mapOf(Pair(n1, IDColors(1,2)), Pair(n5, IDColors(2,3))), n3.run(ks.successors))
+        assertEquals(nodeSetOf(
+                Pair(n3, fullColors),
+                Pair(n1, IDColors(1,2)),
+                Pair(n5, IDColors(2,3))
+        ), n3.run(ks.successors))
 
-        assertEquals(mapOf(Pair(n3, IDColors(1,2,3,4,5))), n4.run(ks.successors))
+        assertEquals(nodeSetOf(
+                Pair(n4, fullColors),
+                Pair(n3, fullColors)
+        ), n4.run(ks.successors))
 
-        assertEquals(mapOf<IDNode, IDColors>(), n5.run(ks.successors))
+        assertEquals(nodeSetOf(Pair(n5, fullColors)), n5.run(ks.successors))
 
-        assertEquals(mapOf(Pair(n3, IDColors(1,2))), n1.run(ks.predecessors))
+        assertEquals(nodeSetOf(
+                Pair(n1, fullColors),
+                Pair(n3, IDColors(1,2))
+        ), n1.run(ks.predecessors))
 
-        assertEquals(mapOf(Pair(n1, IDColors(2)), Pair(n2, IDColors(3,4))), n2.run(ks.predecessors))
+        assertEquals(nodeSetOf(
+                Pair(n1, IDColors(2)),
+                Pair(n2, fullColors)
+        ), n2.run(ks.predecessors))
 
-        assertEquals(mapOf(Pair(n4, IDColors(1,2,3,4,5)), Pair(n1, IDColors(2))), n3.run(ks.predecessors))
+        assertEquals(nodeSetOf(
+                Pair(n1, IDColors(2)),
+                Pair(n3, fullColors),
+                Pair(n4, fullColors)
+        ), n3.run(ks.predecessors))
 
-        assertEquals(mapOf(Pair(n1, IDColors(2,4))), n4.run(ks.predecessors))
+        assertEquals(nodeSetOf(
+                Pair(n1, IDColors(2,4)),
+                Pair(n4, fullColors)
+        ), n4.run(ks.predecessors))
 
-        assertEquals(mapOf(Pair(n3, IDColors(2,3))), n5.run(ks.predecessors))
+        assertEquals(nodeSetOf(
+                Pair(n2, IDColors(3,4)),
+                Pair(n3, IDColors(2,3)),
+                Pair(n5, fullColors)
+        ), n5.run(ks.predecessors))
 
     }
 
     @Test fun allNodesTest() {
-        val ks = ExplicitKripkeFragment(setOf(n1, n2, n4), setOf(), mapOf())
-        assertEquals(setOf(n1, n2, n4), ks.allNodes())
+        val nodes = setOf(n1, n2, n4).toMap({it}, {IDColors(it.id)})
+        val ks = ExplicitKripkeFragment(nodes, nodes.map { Edge(it.key, it.key, it.value) }.toSet(), mapOf())
+        assertEquals(nodeSetOf(IDColors(),Pair(n1, IDColors(0)), Pair(n2, IDColors(1)), Pair(n4, IDColors(3))), ks.allNodes())
     }
 
     @Test fun validNodesTest() {
         val ks = ExplicitKripkeFragment(
-                setOf(n1, n3, n5), setOf(), mapOf(
+                setOf(n1, n3, n5).toMap({it}, { IDColors(1,2,3) })
+                , setOf(n1, n3, n5).map { Edge(it, it, IDColors(1,2,3)) }.toSet(), mapOf(
                     Pair(
                             FloatProposition("name", FloatOp.EQ, 3.14),
                             listOf(n1).map { Pair(it, IDColors(1,2)) }.toMap()
@@ -84,8 +204,8 @@ class ExplicitKripkeFragmentTest {
                     )
         ))
 
-        assertEquals(listOf(n1).map { Pair(it, IDColors(1,2)) }.toMap(), ks.validNodes(FloatProposition("name", FloatOp.EQ, 3.14)))
-        assertEquals(listOf(n1, n5).map { Pair(it, IDColors(2,3)) }.toMap(), ks.validNodes(FloatProposition("other", FloatOp.GT_EQ, 2.2)))
+        assertEquals(nodeSetOf(listOf(n1).map { Pair(it, IDColors(1,2)) }), ks.validNodes(FloatProposition("name", FloatOp.EQ, 3.14)))
+        assertEquals(nodeSetOf(listOf(n1, n5).map { Pair(it, IDColors(2,3)) }), ks.validNodes(FloatProposition("other", FloatOp.GT_EQ, 2.2)))
     }
 
 
@@ -157,47 +277,6 @@ class ExplicitPartitionFunctionTest {
             n1.run(function.ownerId)
         }
     }
-}
-
-class IDColorSpaceTest {
-
-    @Test fun illegalSpaceTest() {
-        assertFailsWith(IllegalArgumentException::class) {
-            IDColorSpace(-1)
-        }
-    }
-
-    @Test fun fullSpaceTest() {
-        val space1 = IDColorSpace(0)
-        assertEquals(IDColors(0), space1.fullColors)
-
-        val space2 = IDColorSpace(10)
-        assertEquals(IDColors(0,1,2,3,4,5,6,7,8,9,10), space2.fullColors)
-    }
-
-    @Test fun emptySpaceTest() {
-        val space1 = IDColorSpace(0)
-        assertEquals(IDColors(), space1.emptyColors)
-
-        val space2 = IDColorSpace(10)
-        assertEquals(IDColors(), space2.emptyColors)
-    }
-
-    @Test fun invertSpaceTest() {
-        val space1 = IDColorSpace(0)
-        val space2 = IDColorSpace(5)
-        assertEquals(IDColors(), IDColors(0).run(space1.invert))
-        assertEquals(IDColors(), IDColors(0, 1).run(space1.invert))
-        assertEquals(IDColors(0), IDColors().run(space1.invert))
-        assertEquals(IDColors(0), IDColors(1).run(space1.invert))
-
-        assertEquals(IDColors(), IDColors(0,1,2,3,4,5).run(space2.invert))
-        assertEquals(IDColors(0, 3), IDColors(1,2,4,5).run(space2.invert))
-        assertEquals(IDColors(0,1,2,3,4,5), IDColors().run(space2.invert))
-        assertEquals(IDColors(1,2,4), IDColors(0,3,5,6).run(space2.invert))
-    }
-
-
 }
 
 class IDColorsTest {

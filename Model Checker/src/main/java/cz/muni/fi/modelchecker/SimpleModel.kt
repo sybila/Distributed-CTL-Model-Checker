@@ -21,21 +21,6 @@ public data class IDColors(private val set: Set<Long> = HashSet()) : Colors<IDCo
 
 }
 
-public class IDColorSpace(private val maxValue: Long) : ColorSpace<IDColors> {
-
-    init {
-        if (maxValue < 0) throw IllegalArgumentException("Color space has to contain at least one item. $maxValue given")
-    }
-
-    override val invert: IDColors.() -> IDColors = {
-        fullColors - this
-    }
-
-    override val fullColors: IDColors = IDColors((0..maxValue).toSet())
-    override val emptyColors: IDColors = IDColors()
-
-}
-
 public class ExplicitPartitionFunction<N: Node>(
         private val id: Int,
         directMapping: Map<N, Int> = mapOf(),
@@ -59,38 +44,57 @@ public class ExplicitPartitionFunction<N: Node>(
 }
 
 public class ExplicitKripkeFragment(
-        private val nodes: Set<IDNode>,
+        nodes: Map<IDNode, IDColors>,
         edges: Set<Edge<IDNode, IDColors>>,
-        private val validity: Map<Atom, Map<IDNode, IDColors>>
+        validity: Map<Atom, Map<IDNode, IDColors>>
 ) : KripkeFragment<IDNode, IDColors> {
 
-    private val succ = edges
+    private val emptyNodeSet = NodeSet(mapOf<IDNode, IDColors>(), IDColors())
+
+    private val successorMap = edges
             .groupBy { it.start }
             .mapValues { entry ->
-                entry.value.toMap({ it.end }, { it.colors })
-            }
+                entry.value.toMap({ it.end }, { it.colors }).toNodeSet(IDColors())
+            } withDefault { emptyNodeSet }
 
-    private val pred = edges
+    private val predecessorMap = edges
             .groupBy { it.end }
             .mapValues { entry ->
-                entry.value.toMap({ it.start }, { it.colors })
-            }
+                entry.value.toMap({ it.start }, { it.colors }).toNodeSet(IDColors())
+            } withDefault { emptyNodeSet }
+
+    private val nodes = nodes.toNodeSet(IDColors())
+
+    private val validity = validity
+            .mapValues { it.value.toNodeSet(IDColors()) }
+            .withDefault { emptyNodeSet }
+
+    override val successors: IDNode.() -> NodeSet<IDNode, IDColors> = { successorMap.getOrImplicitDefault(this) }
+
+    override val predecessors: IDNode.() -> NodeSet<IDNode, IDColors> = { predecessorMap.getOrImplicitDefault(this) }
 
     init {
-        val extraEdge = edges.firstOrNull { it.start !in nodes || it.end !in nodes }
-        if (extraEdge != null)
-            throw IllegalArgumentException("Unknown nodes at the edge $extraEdge")
-
-        if (validity.any { it.value.any { it.getKey() !in nodes } })
-            throw IllegalArgumentException("Validity contains unknown nodes")
+        for (valid in validity.values()) {  //Invariant 1.
+            for ((node, colors) in valid) {
+                if (this.nodes.getOrDefault(node) intersect colors != colors) {
+                    throw IllegalArgumentException("Suspicious atom color in $node for $colors")
+                }
+            }
+        }
+        for (node in this.nodes.keySet()) { //Invariant 2.
+            if (node.successors().isEmpty()) {
+                throw IllegalArgumentException("Missing successors for $node")
+            }
+        }
+        for ((from, to, colors) in edges) {
+            if (from !in allNodes() && to !in allNodes()) {
+                throw IllegalArgumentException("Invalid edge $from $to $colors")
+            }
+        }
     }
 
-    override val successors: IDNode.() -> Map<IDNode, IDColors> = { succ[this] ?: mapOf() }
+    override fun allNodes(): NodeSet<IDNode, IDColors> = nodes
 
-    override val predecessors: IDNode.() -> Map<IDNode, IDColors> = { pred[this] ?: mapOf() }
-
-    override fun allNodes(): Set<IDNode> = nodes
-
-    override fun validNodes(a: Atom): Map<IDNode, IDColors> = validity[a]!!
+    override fun validNodes(a: Atom): NodeSet<IDNode, IDColors> = validity.getOrImplicitDefault(a)
 
 }

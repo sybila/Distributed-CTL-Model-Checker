@@ -13,7 +13,7 @@ public class ModelChecker<N: Node, C: Colors<C>>(
         fragment: KripkeFragment<N, C>,
         private val partitionFunction: PartitionFunction<N>,
         private val terminators: Terminator.Factory,
-        private val messengers: Messenger.Factory<N, C>
+        private val messengers: Messenger.Factory
 ):
         KripkeFragment<N, C> by fragment,
         PartitionFunction<N> by partitionFunction
@@ -54,7 +54,9 @@ public class ModelChecker<N: Node, C: Colors<C>>(
         val jobQueue = SingleThreadJobQueue(
                 messengers, terminators, partitionFunction,
                 genericClass<Job.EX<N, C>>()
-        )
+        ) {
+            synchronized(result) { result.putOrUnion(it.node, it.colors) }
+        }
 
         //Push colors from all nodes where phi holds - targets are nodes where EX phi holds.
         for ((node, colors) in phi) {
@@ -62,11 +64,8 @@ public class ModelChecker<N: Node, C: Colors<C>>(
         }
 
         //Mark all targets as valid for EX phi
-        jobQueue.start { val (node, colors) = it
-            synchronized(result) { result.putOrUnion(node, colors) }
-        }
 
-        jobQueue.finish()
+        jobQueue.waitForTermination()
 
         return result
     }
@@ -80,23 +79,20 @@ public class ModelChecker<N: Node, C: Colors<C>>(
         val jobQueue = SingleThreadJobQueue(
                 messengers, terminators, partitionFunction,
                 genericClass<Job.EU<N, C>>()
-        )
-
-        fun pushBack(node: N, colors: C) = pushBack(node, colors, jobQueue) { s, t, c -> Job.EU(t, c) }
+        ) {
+            val intersection = it.colors intersect phi_1.getOrDefault(it.node)
+            val modified = synchronized(result) { result.putOrUnion(it.node, intersection) }
+            if (modified) pushBack(it.node, intersection, this) { s, t, c -> Job.EU(t, c) }
+        }
 
         //Mark all nodes where phi_2 holds as valid and push colors from them
         for ((node, colors) in phi_2) {
-            if (result.putOrUnion(node, colors)) pushBack(node, colors)
+            if (result.putOrUnion(node, colors)) pushBack(node, colors, jobQueue) { s, t, c -> Job.EU(t, c) }
         }
 
         //Mark all targets as valid for intersection with phi_1 and continue pushing colors if something changed
-        jobQueue.start { val (node, colors) = it
-            val intersection = colors intersect phi_1.getOrDefault(node)
-            val modified = synchronized(result) { result.putOrUnion(node, intersection) }
-            if (modified) pushBack(node, intersection)
-        }
 
-        jobQueue.finish()
+        jobQueue.waitForTermination()
 
         return result
     }
@@ -116,43 +112,45 @@ public class ModelChecker<N: Node, C: Colors<C>>(
         val jobQueue = SingleThreadJobQueue(
                 messengers, terminators, partitionFunction,
                 genericClass<Job.AU<N, C>>()
-        )
-
-        fun pushBack(node: N, colors: C) = pushBack(node, colors, jobQueue) { s, t, c -> Job.AU(s, t, c) }
-
-        //Push from all nodes where phi_2 holds, but do not mark anything
-        for ((node, colors) in phi_2) pushBack(node, colors)
-
-        //Update info about uncovered edges and if some colors become fully covered,
-        //mark the target and push them further
-        jobQueue.start { val (source, node, colors) = it
+        ) {
             synchronized(uncoveredEdges) {  //Lazy init map with successors
-                if (node !in uncoveredEdges) uncoveredEdges[node] = HashMap(node.successors())
+                if (it.targetNode !in uncoveredEdges) uncoveredEdges[it.targetNode] = HashMap(it.targetNode.successors())
             }
-            val uncoveredSuccessors = uncoveredEdges[node]!!
+            val uncoveredSuccessors = uncoveredEdges[it.targetNode]!!
             val validColors = synchronized(uncoveredSuccessors) {
                 //cover pushed edge
                 //Would this be reasonably faster if we removed empty sets from map completely?
-                uncoveredSuccessors[source] == uncoveredSuccessors[source]!! - colors
+                uncoveredSuccessors[it.sourceNode] == uncoveredSuccessors[it.sourceNode]!! - it.colors
                 //Compute what colors became covered by this change
                 //Or should we cache results of this reduction?
-                phi_1.getOrDefault(node) intersect (colors - uncoveredSuccessors.values().reduce { a, b -> a union b })
+                phi_1.getOrDefault(it.targetNode) intersect (it.colors - uncoveredSuccessors.values().reduce { a, b -> a union b })
             }
             if (validColors.isNotEmpty()) { //if some colors survived all of this, mark them and push further
-                val modified = synchronized(result) { result.putOrUnion(node, validColors) }
-                if (modified) pushBack(node, validColors)
+                val modified = synchronized(result) { result.putOrUnion(it.targetNode, validColors) }
+                if (modified) pushBack(it.targetNode, validColors, this) { s, t, c -> Job.AU(s, t, c) }
             }
         }
 
-        jobQueue.finish()
+
+        //Push from all nodes where phi_2 holds, but do not mark anything
+        for ((node, colors) in phi_2) pushBack(node, colors, jobQueue) { s, t, c -> Job.AU(s, t, c) }
+
+        //Update info about uncovered edges and if some colors become fully covered,
+        //mark the target and push them further
+
+        jobQueue.waitForTermination()
         return result
     }
 
-    private fun <J: Job<N, C>> pushBack(node: N, colors: C, jobQueue: JobQueue<N, C, J>, jobConstructor: (N, N, C) -> J) {
-        for ((predecessor, edgeColors) in node.predecessors()) {
-            val intersection = edgeColors intersect colors
-            if (intersection.isNotEmpty()) jobQueue.post(jobConstructor(node, predecessor, intersection))
-        }
+    private fun <J: Job<N, C>> pushBack(
+            node: N,
+            colors: C,
+            queue: JobQueue<N, C, J>,
+            constructor: (N, N, C) -> J) {
+            for ((predecessor, edgeColors) in node.predecessors()) {
+                val intersection = edgeColors intersect colors
+                if (intersection.isNotEmpty()) queue.post(constructor(node, predecessor, intersection))
+            }
     }
 
     private fun <T> globalBarrier(f: () -> T): T {

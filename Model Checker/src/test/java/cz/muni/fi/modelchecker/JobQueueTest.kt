@@ -10,28 +10,34 @@ import kotlin.test.assertEquals
 class SingleThreadJobQueueTest : JobQueueTest() {
 
     override val jobQueueConstructor:
-            ( Messenger.Factory<IDNode, IDColors>,
+            ( Messenger.Factory,
               Terminator.Factory,
               PartitionFunction<IDNode>,
-              Class<Job.EU<IDNode, IDColors>>
+              Class<Job.EU<IDNode, IDColors>>,
+              JobQueue<IDNode, IDColors, Job.EU<IDNode, IDColors>>.(Job.EU<IDNode, IDColors>) -> Unit
             ) -> JobQueue<IDNode, IDColors, Job.EU<IDNode, IDColors>>
-            = { messenger, terminator, partition, cls -> SingleThreadJobQueue(messenger, terminator, partition, cls) }
+            = { messenger, terminator, partition, cls, onTask -> SingleThreadJobQueue(messenger, terminator, partition, cls, onTask) }
 
 }
 
-abstract class JobQueueTest {
+/**
+ * And abstract set of tests for your job queue implementation.
+ * Just override queue constructor.
+ */
+public abstract class JobQueueTest {
 
     abstract val jobQueueConstructor:
-            ( Messenger.Factory<IDNode, IDColors>,
+            ( Messenger.Factory,
               Terminator.Factory,
               PartitionFunction<IDNode>,
-              Class<Job.EU<IDNode, IDColors>>
+              Class<Job.EU<IDNode, IDColors>>,
+              JobQueue<IDNode, IDColors, Job.EU<IDNode, IDColors>>.(Job.EU<IDNode, IDColors>) -> Unit
             ) -> JobQueue<IDNode, IDColors, Job.EU<IDNode, IDColors>>
 
-    private val undefinedMessengers = object : Messenger.Factory<IDNode, IDColors> {
-        override fun <J : Job<IDNode, IDColors>> createNew(jobClass: Class<J>, onTask: (J) -> Unit): Messenger<IDNode, IDColors> {
-            return object : Messenger<IDNode, IDColors> {
-                override fun sendTask(receiver: Int, task: Job<IDNode, IDColors>) = throw UnsupportedOperationException()
+    private val undefinedMessengers = object : Messenger.Factory {
+        override fun <M : Message> createNew(jobClass: Class<M>, onTask: (M) -> Unit): Messenger<M> {
+            return object : Messenger<M> {
+                override fun sendTask(receiver: Int, message: M) = throw UnsupportedOperationException()
                 override fun close() { /*ok*/ }
             }
         }
@@ -62,6 +68,10 @@ abstract class JobQueueTest {
         )
 
         val t1 = thread {
+
+            val processed = ArrayList<Job.EU<IDNode, IDColors>>()
+            var toSend = ArrayList(sent1)
+
             val queue1 = jobQueueConstructor(
                     jobMessengers[0],
                     Terminator.Factory(terminatorMessengers.messengers[0]),
@@ -69,25 +79,24 @@ abstract class JobQueueTest {
                             Pair(0, listOf(n[0], n[1], n[7])),
                             Pair(1, listOf(n[2], n[3], n[4], n[5], n[6])))),
                     genericClass<Job.EU<IDNode, IDColors>>()
-            )
-
-            val processed = ArrayList<Job.EU<IDNode, IDColors>>()
-            var toSend = ArrayList(sent1)
+            ) {
+                processed.add(it)
+                if (toSend.isNotEmpty()) this.post(toSend.remove(0))
+            }
 
             queue1.post(toSend.remove(0))
 
-            queue1.start {
-                processed.add(it)
-                if (toSend.isNotEmpty()) queue1.post(toSend.remove(0))
-            }
-
-            queue1.finish()
+            queue1.waitForTermination()
 
             //compare sets because order does not have ot be exact
             assertEquals(setOf(sent1[0], sent1[1], sent1[2], sent2[1], sent2[4], sent2[5]), processed.toSet())
         }
 
         val t2 = thread {
+
+            val processed = ArrayList<Job.EU<IDNode, IDColors>>()
+            val toSend = ArrayList(sent2)
+
             val queue2 = jobQueueConstructor(
                     jobMessengers[1],
                     Terminator.Factory(terminatorMessengers.messengers[1]),
@@ -95,21 +104,16 @@ abstract class JobQueueTest {
                             Pair(0, listOf(n[0], n[1], n[7])),
                             Pair(1, listOf(n[2], n[3], n[4], n[5], n[6])))),
                     genericClass<Job.EU<IDNode, IDColors>>()
-            )
-
-            val processed = ArrayList<Job.EU<IDNode, IDColors>>()
-            val toSend = ArrayList(sent2)
+            ) {
+                processed.add(it)
+                //worker2 has to produce more messages because he wants ot sent more of them
+                if (toSend.isNotEmpty()) { this.post(toSend.remove(0)) }
+                if (toSend.isNotEmpty()) { this.post(toSend.remove(0)) }
+            }
 
             queue2.post(toSend.remove(0))
 
-            queue2.start {
-                processed.add(it)
-                //worker2 has to produce more messages because he wants ot sent more of them
-                if (toSend.isNotEmpty()) { queue2.post(toSend.remove(0)) }
-                if (toSend.isNotEmpty()) { queue2.post(toSend.remove(0)) }
-            }
-
-            queue2.finish()
+            queue2.waitForTermination()
 
             assertEquals(setOf(sent1[3], sent2[0], sent2[2], sent2[3]), processed.toSet())
         }
@@ -141,49 +145,47 @@ abstract class JobQueueTest {
         )
 
         val t1 = thread {
+
+            val processed = ArrayList<Job.EU<IDNode, IDColors>>()
+            var toSend = ArrayList(sent1)
+
             val queue1 = jobQueueConstructor(
                     jobMessengers[0],
                     Terminator.Factory(terminatorMessengers.messengers[0]),
                     FunctionalPartitionFunction(0, { 1 }),
                     genericClass<Job.EU<IDNode, IDColors>>()
-            )
-
-            val processed = ArrayList<Job.EU<IDNode, IDColors>>()
-            var toSend = ArrayList(sent1)
+            ) {
+                processed.add(it)
+                if (toSend.isNotEmpty()) this.post(toSend.remove(0))
+            }
 
             queue1.post(toSend.remove(0))
 
-            queue1.start {
-                processed.add(it)
-                if (toSend.isNotEmpty()) queue1.post(toSend.remove(0))
-            }
-
-            queue1.finish()
+            queue1.waitForTermination()
 
             assertEquals(sent2, processed)
         }
 
         val t2 = thread {
+
+            val processed = ArrayList<Job.EU<IDNode, IDColors>>()
+            val toSend = ArrayList(sent2)
+
             val queue2 = jobQueueConstructor(
                     jobMessengers[1],
                     Terminator.Factory(terminatorMessengers.messengers[1]),
                     FunctionalPartitionFunction(1, { 0 }),
                     genericClass<Job.EU<IDNode, IDColors>>()
-            )
-
-            val processed = ArrayList<Job.EU<IDNode, IDColors>>()
-            val toSend = ArrayList(sent2)
+            ) {
+                processed.add(it)
+                //worker2 has to produce more messages because he wants ot sent more of them
+                if (toSend.isNotEmpty()) { this.post(toSend.remove(0)) }
+                if (toSend.isNotEmpty()) { this.post(toSend.remove(0)) }
+            }
 
             queue2.post(toSend.remove(0))
 
-            queue2.start {
-                processed.add(it)
-                //worker2 has to produce more messages because he wants ot sent more of them
-                if (toSend.isNotEmpty()) { queue2.post(toSend.remove(0)) }
-                if (toSend.isNotEmpty()) { queue2.post(toSend.remove(0)) }
-            }
-
-            queue2.finish()
+            queue2.waitForTermination()
 
             assertEquals(sent1, processed)
         }
@@ -199,12 +201,15 @@ abstract class JobQueueTest {
         val jobMessengers = createSharedMemoryMessengers<IDNode, IDColors>(2)
 
         val t1 = thread {
+
+            val processed = ArrayList<Job.EU<IDNode, IDColors>>()
+
             val queue1 = jobQueueConstructor(
                     jobMessengers[0],
                     Terminator.Factory(terminatorMessengers.messengers[0]),
                     FunctionalPartitionFunction(0, { 0 }),
                     genericClass<Job.EU<IDNode, IDColors>>()
-            )
+            ) { processed.add(it) }
 
             val sent = listOf(
                     Job.EU(IDNode(0), IDColors(0,1)),
@@ -213,26 +218,25 @@ abstract class JobQueueTest {
                     Job.EU(IDNode(3), IDColors(0,1,2))
             )
 
-            val processed = ArrayList<Job.EU<IDNode, IDColors>>()
-
             queue1.post(sent.first())
-
-            queue1.start { processed.add(it) }
 
             sent.drop(1).forEach { queue1.post(it) }
 
-            queue1.finish()
+            queue1.waitForTermination()
 
             assertEquals(sent, processed)
         }
 
         val t2 = thread {
+
+            val processed = ArrayList<Job.EU<IDNode, IDColors>>()
+
             val queue2 = jobQueueConstructor(
                     jobMessengers[1],
                     Terminator.Factory(terminatorMessengers.messengers[1]),
                     FunctionalPartitionFunction(1, { 1 }),
                     genericClass<Job.EU<IDNode, IDColors>>()
-            )
+            ) { processed.add(it) }
 
             val sent = listOf(
                     Job.EU(IDNode(1), IDColors(2,3)),
@@ -243,15 +247,11 @@ abstract class JobQueueTest {
                     Job.EU(IDNode(0), IDColors(3))
             )
 
-            val processed = ArrayList<Job.EU<IDNode, IDColors>>()
-
             queue2.post(sent.first())
-
-            queue2.start { processed.add(it) }
 
             sent.drop(1).forEach { queue2.post(it) }
 
-            queue2.finish()
+            queue2.waitForTermination()
 
             assertEquals(sent, processed)
         }
@@ -272,10 +272,9 @@ abstract class JobQueueTest {
                     Terminator.Factory(terminatorMessengers.messengers[0]),
                     FunctionalPartitionFunction(0, { 0 }),
                     genericClass<Job.EU<IDNode, IDColors>>()
-            )
+            ) { }
 
-            queue1.start { }
-            queue1.finish()
+            queue1.waitForTermination()
         }
 
         val t2 = thread {
@@ -284,10 +283,9 @@ abstract class JobQueueTest {
                     Terminator.Factory(terminatorMessengers.messengers[1]),
                     FunctionalPartitionFunction(1, { 1 }),
                     genericClass<Job.EU<IDNode, IDColors>>()
-            )
+            ) { }
 
-            queue2.start { }
-            queue2.finish()
+            queue2.waitForTermination()
         }
 
         t1.join()
@@ -299,14 +297,15 @@ abstract class JobQueueTest {
 
         val terminatorMessengers = SharedMemoryMessengers(1)
 
+        val executed = ArrayList<Job.EU<IDNode, IDColors>>()
+
         val queue = jobQueueConstructor(
                 undefinedMessengers,
                 Terminator.Factory(terminatorMessengers.messengers[0]),
                 FunctionalPartitionFunction(0, { 0 }),
                 genericClass<Job.EU<IDNode, IDColors>>()
-        )
+        ) { executed.add(it) }
 
-        val executed = ArrayList<Job.EU<IDNode, IDColors>>()
 
         val posted = listOf(
                 Job.EU(IDNode(1), IDColors(1,2)),
@@ -318,14 +317,12 @@ abstract class JobQueueTest {
 
         queue.post(posted[0])
 
-        queue.start { executed.add(it) }
-
         queue.post(posted[1])
         queue.post(posted[2])
         queue.post(posted[3])
         queue.post(posted[4])
 
-        queue.finish()
+        queue.waitForTermination()
 
         assertEquals(posted, executed)
     }
@@ -339,9 +336,8 @@ abstract class JobQueueTest {
                 Terminator.Factory(terminatorMessengers.messengers[0]),
                 ExplicitPartitionFunction<IDNode>(0, mapOf()),
                 genericClass<Job.EU<IDNode, IDColors>>()
-        )
+        ) { }
 
-        queue.start {  }
-        queue.finish()
+        queue.waitForTermination()
     }
 }

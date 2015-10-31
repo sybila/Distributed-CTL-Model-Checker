@@ -51,6 +51,11 @@ public class FunctionalPartitionFunction(
     override val myId: Int = id
 }
 
+public class UniformPartitionFunction<N: Node>() : PartitionFunction<N> {
+    override val ownerId: N.() -> Int = { 0 }
+    override val myId: Int = 0
+}
+
 public class ExplicitKripkeFragment(
         nodes: Map<IDNode, IDColors>,
         edges: Set<Edge<IDNode, IDColors>>,

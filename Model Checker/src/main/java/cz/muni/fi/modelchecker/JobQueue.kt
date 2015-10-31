@@ -71,14 +71,20 @@ public interface JobQueue<N: Node, C: Colors<C>, J: Job<N, C>> {
 
         /**
          * Create new job queue that will execute onTask callback whenever job is posted.
+         * This call should be a global barrier across all processes,
+         * meaning that either all processes create new queue,
+         * or no queue is created and the method blocks until
+         * all processes reach it.
+         * Also, this method returns only after all queues has been successfully initialized.
+         * Simply: When this method returns any process can post jobs and expect them to be delivered.
          */
-        fun createNew(onTask: (J) -> Unit): Messenger<J>
+        fun createNew(onTask: (J) -> Unit): JobQueue<N, C, J>
     }
 
 }
 
 public class SingleThreadJobQueue<N: Node, C: Colors<C>, J: Job<N, C>> (
-        messengers: Messenger.Factory,
+        messengers: Communicator,
         terminators: Terminator.Factory,
         partitionFunction: PartitionFunction<N>,
         jobClass: Class<J>,
@@ -94,7 +100,7 @@ public class SingleThreadJobQueue<N: Node, C: Colors<C>, J: Job<N, C>> (
 
     private val terminator = terminators.createNew()
 
-    private val messenger = messengers.createNew(jobClass) {
+    private val messenger = messengers.listenTo(jobClass) {
         synchronized(this) {
             localTaskQueue.put(Maybe.Just(it))
             terminator.messageReceived()

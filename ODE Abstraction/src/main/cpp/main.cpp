@@ -11,6 +11,8 @@ int main(int argc, char** argv) {
     string fileName(argv[1]);
     ifstream modelfile2 (fileName);
 
+    std::cout << "Input file name is " << fileName << std::endl;
+
     if (modelfile2.is_open()) {
 
         Parser parser(modelfile2);

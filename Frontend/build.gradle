@@ -14,6 +14,7 @@ dependencies {
     compile project(':ODE Abstraction')
     compile project(':Thomas Network Abstraction')
     compile files('../libs/mpj.jar')
+    compile files('../libs/javabdd-1.0b2.jar')
     compile 'com.google.code.gson:gson:2.3.1'
 }
 

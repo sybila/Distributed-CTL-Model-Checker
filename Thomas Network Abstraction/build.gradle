@@ -12,6 +12,7 @@ dependencies {
     compile project(':CTL Parser')
     compile project(':Model Checker')
     compile files('../libs/mpj.jar')
+    compile files('../libs/javabdd-1.0b2.jar')
     compile 'com.intellij:annotations:5.1'
     compile 'com.googlecode.javaewah:JavaEWAH:1.0.0'
 }

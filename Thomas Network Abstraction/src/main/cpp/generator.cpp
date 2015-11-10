@@ -108,7 +108,7 @@ JNIEXPORT void JNICALL Java_cz_muni_fi_thomas_NativeModel_loadNative(
 	}
 
 	factory.setParamSpaceWidth(total);
-
+/*
 	int dims = structure.getStateLevels(0).size();
 	jint * temp = new jint[dims];
 	jintArray levelsArray = jvm.getEnv()->NewIntArray(dims);		
@@ -127,7 +127,7 @@ JNIEXPORT void JNICALL Java_cz_muni_fi_thomas_NativeModel_loadNative(
 				offset += subspaceSizes[k];
 				step_size *= subspaceSizes[k];
 			}*/
-			auto colors = jvm.ColorSet.createFull(total);//= JVM::ColorSetClass::Instance(transition, offset, total, &(jvm.ColorSet));
+			/*auto colors = jvm.ColorSet.createFull(total);//= JVM::ColorSetClass::Instance(transition, offset, total, &(jvm.ColorSet));
 			for (long num = 0; num < total; num++) {
 			    if (!ColoringFunc::isOpen(num, transition)) {
 			        colors.unset(num);
@@ -141,6 +141,6 @@ JNIEXPORT void JNICALL Java_cz_muni_fi_thomas_NativeModel_loadNative(
 		//	std::cout << "Transition copied" << std::endl << std::flush;
 		}
 	}
-	delete temp;
+	delete temp;*/
 
 }

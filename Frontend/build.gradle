@@ -1,4 +1,5 @@
 apply plugin: 'java'
+apply plugin: 'kotlin'
 
 sourceCompatibility = 1.7
 version = '1.0'
@@ -16,6 +17,7 @@ dependencies {
     compile files('../libs/mpj.jar')
     compile files('../libs/javabdd-1.0b2.jar')
     compile 'com.google.code.gson:gson:2.3.1'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 
 //create a single Jar with all dependencies
@@ -63,4 +65,29 @@ task patternJar(type: Jar) {
     baseName = project.name + '-pattern'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
+}
+
+task bddJar(type: Jar) {
+    manifest {
+        attributes  'Implementation-Title': 'Biodivine CTL',
+                'Implementation-Version': version,
+                'Main-Class': 'cz.muni.fi.frontend.BDDPlaygroundKt'
+    }
+    baseName = project.name + '-bdd'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+}
+
+buildscript {
+    ext.kotlin_version = '1.0.0-beta-1103'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
 }

@@ -173,6 +173,8 @@ public:
 
 	void RunAbstraction(bool useFastApproximation = true);
 
+	bool checkParameterCombination(uint& violatingVariableIndex);
+
 private:
 	std::vector<std::size_t> FindSigmoids(std::size_t dim);
 	std::vector<std::size_t> FindHills(std::size_t dim);
@@ -201,6 +203,33 @@ private:
     std::vector<std::vector<typename Summember<value_type>::ramp> > generateNewRamps(std::vector<double> x, std::vector< std::vector<double> > y, std::size_t dim);
 };
 
+
+template <typename T>
+bool Model<T>::checkParameterCombination(uint& violatingVariableIndex) {
+    // Function checking for parameters combination in equations and
+    // making new parameters from these combinations
+
+    std::map<uint,std::vector<uint> > paramDependencyOnVariables;
+
+    for (uint i = 0; i < getVariables().size(); i++) {
+        std::vector<Summember> equation = getEquationForVariable(i);
+        std::vector<uint> paramDep;
+        for (Summember s : equation) {
+            if (s.hasParam()) {
+                paramDep.push_back(s.GetParam() - 1);
+            }
+        }
+        // Control for simple combination of max of two parameters
+        if(paramDep.size() > 2) {
+            violatingVariableIndex = i;
+            return false;
+        }
+        if(paramDep.size() == 2) {
+            //TODO: make new parameter and set its name as ratio of these two and value to <-INF,INF>
+        }
+    }
+    return true;
+}
 
 template <typename T>
 void Model<T>::AddBaLine(std::string ba) {
@@ -608,8 +637,7 @@ std::vector<std::size_t> Model<T>::FindSigmoids(std::size_t dim) {
 }
 
 template <typename T>
-void Model<T>::RunAbstraction(bool useFastApproximation)
-{
+void Model<T>::RunAbstraction(bool useFastApproximation) {
 
 	std::vector<std::vector<typename Summember<T>::ramp> > new_sigmoids_ramps;
 	std::vector<std::vector<typename Summember<T>::ramp> > new_hills_ramps;	

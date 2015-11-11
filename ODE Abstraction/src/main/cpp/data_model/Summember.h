@@ -96,59 +96,48 @@ public:
 
 	// Access methods
 	// GET
-	value_type GetConstant() const
-	{
+	value_type GetConstant() const {
 		return constant;
 	}
 
-	std::size_t GetParam() const
-	{
+	std::size_t GetParam() const {
 		return param;
 	}
 
-	std::vector<std::size_t> GetVars() const
-	{
+	std::vector<std::size_t> GetVars() const {
 		return vars;
 	}
 
-	std::vector<ramp> GetRamps() const
-	{
+	std::vector<ramp> GetRamps() const {
 		return ramps;
 	}
 
-	std::vector<std::size_t> GetSigmoids() const
-	{
+	std::vector<std::size_t> GetSigmoids() const {
 		return sigmoids;
 	}
 	
-	std::vector<step> GetSteps() const
-	{
+	std::vector<step> GetSteps() const {
 		return steps;
 	}
 	
-	std::vector<std::size_t> GetHills() const
-	{
+	std::vector<std::size_t> GetHills() const {
 		return hills;
 	}
 
 	// ADD
-	void AddConstant(value_type c)
-	{
+	void AddConstant(value_type c) {
 		constant = c;
 	}
 
-	void AddParam(std::size_t p)
-	{
+	void AddParam(std::size_t p) {
 		param = p;
 	}
 
-	void AddVar(std::size_t v)
-	{
+	void AddVar(std::size_t v) {
 		vars.push_back(v);
 	}
 
-	void AddRamp(std::size_t dim, value_type min, value_type max, value_type min_value, value_type max_value, bool negative = 0)
-	{
+	void AddRamp(std::size_t dim, value_type min, value_type max, value_type min_value, value_type max_value, bool negative = 0) {
 		ramp r;
 		r.dim = dim;
 		r.min = min;
@@ -159,13 +148,11 @@ public:
 		ramps.push_back(r);
 	}
 
-	void AddRamp(ramp & new_ramp)
-	{
+	void AddRamp(ramp & new_ramp) {
 		ramps.push_back(new_ramp);
 	}
 
-	void AddSigmoid(std::size_t s)
-	{
+	void AddSigmoid(std::size_t s) {
 		sigmoids.push_back(s);
 	}
 
@@ -187,8 +174,7 @@ public:
 		hills.push_back(i);
 	}
 
-	std::size_t hasParam() const
-	{
+	std::size_t hasParam() const {
 		return (param != 0 ? 1 : 0);
 
 	}

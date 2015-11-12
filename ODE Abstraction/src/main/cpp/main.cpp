@@ -20,17 +20,26 @@ int main(int argc, char** argv) {
 
         model = parser.returnStorage();
 
+        std::size_t checkResult = 0;
+        if(!model.checkParameterCombination(checkResult)) {
+            cout << "ERROR: equation for variable " << model.getVariable(checkResult) << " has too much of parameters\n";
+            return(1);
+        }
+        for(int i = 0; i < model.getDims(); i++) {
+            cout << "Equation for variable " << model.getVariable(i) << " has " << model.eqParamsCount(i) << " params\n";
+        }
+/*
         model.RunAbstraction();
 
 		StateSpaceGenerator * generator = new StateSpaceGenerator(model, true);
 	    std::string var = model.getVariable(0);
-	    /*
+
 	    std::vector<std::list<std::pair<double, double> > > paramSpace;
         for(int i = 0; i < model.getParamSize(); i++) {
             std::list<std::pair<double, double> > param;
             param.push_back(std::pair<double, double>(model.getParamRanges().at(i)));
             paramSpace.push_back(param);
-        }*/
+        }
         vector<pair<double,double> > paramSpace = model.getParamRanges();
 		vector<State> inits = generator->initAP(var,Operators::LS,5,paramSpace);
 
@@ -42,7 +51,7 @@ int main(int argc, char** argv) {
             }
             std::cout << std::endl;
         }
-/*
+
         std::cout << model.getParamRanges().at(0).first << " " << model.getParamRanges().at(0).second << std::endl;
 
 		std::vector<std::list<std::pair<double, double> > > paramSpace;
@@ -63,4 +72,5 @@ int main(int argc, char** argv) {
         
        
     }
+    return(0);
 }

@@ -5,6 +5,8 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <map>
+#include <set>
 #include <cmath>
 #include <time.h>
 #include <climits>
@@ -105,7 +107,7 @@ private:
 
 public:
 	void AddVariable(string var);
-	void AddParam(string param);
+	std::size_t AddParam(string param);
 	void AddParamRange(value_type a, value_type b);
 	void AddConstantName(string constant);
 	void AddConstantValue(value_type constant);
@@ -173,7 +175,10 @@ public:
 
 	void RunAbstraction(bool useFastApproximation = true);
 
-	bool checkParameterCombination(uint& violatingVariableIndex);
+	bool checkParameterCombination(std::size_t& violatingVariableIndex);
+	//varIndex is index of equation's main variable
+	bool hasEqMoreParams(std::size_t varIndex) const;
+	const std::size_t eqParamsCount(std::size_t varIndex) const;
 
 private:
 	std::vector<std::size_t> FindSigmoids(std::size_t dim);
@@ -192,7 +197,8 @@ private:
 	std::vector<std::size_t> inits;
 	std::vector<std::pair<value_type, value_type> > inits_values;
 	std::vector<std::string> ba_lines;
-
+    std::map<std::size_t,std::size_t> paramCombinationMap;
+    std::map<std::size_t,int> paramDependencyOnVariables;
 
     std::vector<double> computeThresholds(std::vector<std::size_t> s, std::vector<std::size_t> hfs, int numOfSegments, int numOfX = 0, bool fast = true);
     std::vector<std::vector<double> > generateSpace(std::vector<std::size_t> s, std::vector<std::size_t> hfs, std::vector<double> &x, int numOfX);
@@ -203,29 +209,57 @@ private:
     std::vector<std::vector<typename Summember<value_type>::ramp> > generateNewRamps(std::vector<double> x, std::vector< std::vector<double> > y, std::size_t dim);
 };
 
+template <typename T>
+bool Model<T>::hasEqMoreParams(std::size_t varIndex) const {
+    return(paramCombinationMap.at(varIndex) > 1 ? true : false);
+}
 
 template <typename T>
-bool Model<T>::checkParameterCombination(uint& violatingVariableIndex) {
+const std::size_t Model<T>::eqParamsCount(std::size_t varIndex) const {
+    return(paramCombinationMap.at(varIndex));
+}
+
+template <typename T>
+bool Model<T>::checkParameterCombination(std::size_t& violatingVariableIndex) {
     // Function checking for parameters combination in equations and
     // making new parameters from these combinations
 
-    std::map<uint,std::vector<uint> > paramDependencyOnVariables;
+    violatingVariableIndex = 0;
+    //std::map<std::size_t,std::vector<std::size_t> > paramDependencyOnVariables;
 
     for (uint i = 0; i < getVariables().size(); i++) {
-        std::vector<Summember> equation = getEquationForVariable(i);
-        std::vector<uint> paramDep;
-        for (Summember s : equation) {
+        std::vector<Summember<T>> equation = getEquationForVariable(i);
+        std::set<uint> paramDep;
+        for (Summember<T> s : equation) {
             if (s.hasParam()) {
-                paramDep.push_back(s.GetParam() - 1);
+                paramDep.insert(s.GetParam() - 1);
             }
         }
         // Control for simple combination of max of two parameters
-        if(paramDep.size() > 2) {
-            violatingVariableIndex = i;
-            return false;
-        }
-        if(paramDep.size() == 2) {
-            //TODO: make new parameter and set its name as ratio of these two and value to <-INF,INF>
+        switch(paramDep.size()) {
+            case 0:
+                paramCombinationMap[i] = paramDep.size();
+                paramDependencyOnVariables[i] = -1;
+                break;
+            case 1:
+                paramCombinationMap[i] = paramDep.size();
+                paramDependencyOnVariables[i] = *paramDep.begin();
+                break;
+            case 2:
+                // make new parameter and set its name as ratio of these two and value to <0,INF>
+                std::size_t pIndex;
+                //TODO: check if it's not already there
+                pIndex = AddParam(getParamName(*paramDep.begin())+":"+getParamName(*paramDep.rbegin()));
+                AddParamRange(0.0,std::numeric_limits<double>::infinity());
+
+                std::cout << getParamName(pIndex) << " = <" << getParamRange(pIndex).first << "," << getParamRange(pIndex).second << ">\n";
+
+                paramCombinationMap[i] = paramDep.size();
+                paramDependencyOnVariables[i] = pIndex;
+                break;
+            default:
+                violatingVariableIndex = i;
+                return false;
         }
     }
     return true;
@@ -360,20 +394,18 @@ void Model<T>::AddEquation(std::vector<Summember<T> > summs) {
 
 
 template <typename T>
-void Model<T>::AddVariable(string var)
-{
+void Model<T>::AddVariable(string var) {
 	var_names.push_back(var);
 }
 
 template <typename T>
-void Model<T>::AddParam(string param)
-{
+std::size_t Model<T>::AddParam(string param) {
 	param_names.push_back(param);
+	return(param_names.size()-1);
 }
 
 template <typename T>
-void Model<T>::AddParamRange(value_type a, value_type b)
-{
+void Model<T>::AddParamRange(value_type a, value_type b) {
 	std::pair<value_type, value_type> p;
 	
 	if(b < a) {
@@ -388,8 +420,7 @@ void Model<T>::AddParamRange(value_type a, value_type b)
 }
 
 template <typename T>
-void Model<T>::AddConstantName(string constant)
-{
+void Model<T>::AddConstantName(string constant) {
 	std::pair<std::string, value_type> p;
 	p.first = constant;
 	constants.push_back(p);

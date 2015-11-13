@@ -1,71 +1,34 @@
 package cz.muni.fi.modelchecker
 
-import com.github.daemontus.jafra.SharedMemoryMessengers
-import com.github.daemontus.jafra.Terminator
-import java.util.concurrent.BlockingQueue
+import java.util.*
 import java.util.concurrent.CyclicBarrier
 import java.util.concurrent.LinkedBlockingQueue
-import kotlin.concurrent.thread
 
 /**
  * NOTE: The strong/complicated semantics enforced in messenger-communicator relationship
- * is to prevent bugs that are result of two phases of model checking algorithm interleaving
+ * is to prevent bugs that are a result of two phases of model checking algorithm interleaving
  * due to faulty synchronization.
  * This way all such problems should be easily detected, since every phase creates it's own messenger.
  */
 
 /**
- * Classic maybe - Maybe move it to some utility file?
- * Note: We need this because queues don't accept null values.
- */
-public sealed class Maybe<T: Any> {
-
-    public class Just<T: Any>(public val value: T): Maybe<T>() {
-        override fun equals(other: Any?): Boolean = value.equals(other)
-        override fun hashCode(): Int = value.hashCode()
-    }
-
-    public class Nothing<T: Any>(): Maybe<T>()
-}
-
-/**
- * A simple interface that represents messages that can be sent through messenger (Independent from Jobs)
- */
-public interface Message;
-
-fun <T: Any> BlockingQueue<Maybe<T>>.threadUntilPoisoned(onItem: (T) -> Unit) = thread {
-    var job = this.take()
-    while (job is Maybe.Just) {
-        onItem(job.value)
-        job = this.take()
-    }   //got Nothing
-}
-
-/**
  * Messenger is responsible for sending messages of one type between processes.
- * Messenger should be active from the moment when it's created.
- * The creation of a messenger is a global synchronization event.
- * Only one messenger can be active at any time. (Closed messengers are fine though)
+ * Messenger should be active from the moment when it's returned from the factory.
+ * The creation and closing of a messenger is a global synchronization event.
+ * There can be more active messengers at one time, but they need to listen to different classes.
+ * (Not just subclasses, the class object of message and listener has to be equal)
  */
-public interface Messenger<M: Message> {
+public interface Messenger<M: Any> {
 
     /**
      * Send Job to process with specified ID.
      * Should not block.
      * Method should fail when sending message to itself.   (Bad design - use job queue for that)
      * Method should fail when message cannot be serialized.
+     * There is no delivery notification mechanism. If message delivery fails, whole application is allowed to terminate.
+     * (In other words: Channels should guarantee reliability)
      */
     fun sendTask(receiver: Int, message: M)
-
-    /**
-     * Mark this messenger as idle, meaning that no new messages will be sent unless a new message is received.
-     * When a message is received, the messenger goes automatically from idle to active and has to be set to idle
-     * again when message has been processed.
-     *
-     * After starting, messenger is always active and has to be set to
-     * idle at least once even if no messages have been received.
-     */
-    fun setIdle()
 
     /**
      * Use this method to cleanup all possible communications.
@@ -76,7 +39,9 @@ public interface Messenger<M: Message> {
      * or no messenger is closed and the method blocks until
      * all processes reach it.
      *
-     * All messengers must be idle and all remaining messages should be consumed before closing the messenger.
+     * If there are some unconsumed messages in message buffers after this operation, an exception will be thrown
+     * as soon as the first one is taken from buffer. (Therefore you have to ensure proper termination before
+     * closing the messengers)
      */
     fun close()
 
@@ -92,9 +57,11 @@ public interface Communicator {
      * WARNING: When message of unrecognized class is received, exception will be thrown.
      * When class is recognized, but there is no one to consume it,
      * it's also considered an error and exception will be also thrown.
-     * There can be only one messenger in the system.
+     * For every class, a process can have only one active messenger.
      * If you try to register a messenger but there is already an active one,
      * exception should be thrown.
+     *
+     * You also should not create/close two messengers at the same time.
      *
      * WARNING: messageClass looses info about generics at run time!
      *
@@ -103,7 +70,7 @@ public interface Communicator {
      * or no messenger is created and the method blocks until
      * all processes reach it. (Or all processes throw an exception in case one of the calls was invalid)
      */
-    fun <M: Message> listenTo(messageClass: Class<M>, onTask: Messenger<M>.(M) -> Unit): Messenger<M>
+    fun <M: Any> listenTo(messageClass: Class<M>, onTask: Messenger<M>.(M) -> Unit): Messenger<M>
 
     /**
      * Use this to clean up global environment - i.e. close MPI connections, join threads...
@@ -113,25 +80,16 @@ public interface Communicator {
     /**
      * Total number of participating processes
      */
-    fun size(): Int
+    val size: Int
 
     /**
      * My id.
      */
-    fun rank(): Int
+    val id: Int
 }
 
 /**
- * Messenger that received info about tasks from
- */
-private abstract class InMemoryMessenger<M: Message>(
-        val messageClass: Class<M>,
-        val onTask: Messenger<M>.(Message) -> Unit,
-        val terminator: Terminator
-): Messenger<M> { }
-
-/**
- * Factory method that creates a set of in memory messenger factories connected by BlockingQueues.
+ * Factory method that creates a set of in memory messenger communicators connected by BlockingQueues.
  * (Blocking queues are shared across created messengers, so that errors should appear
  * if you use multiple messengers from one process -> this should provide easy detection
  * of problems with global synchronization in main algorithm)
@@ -139,102 +97,88 @@ private abstract class InMemoryMessenger<M: Message>(
  * Suitable for in-memory computing, but note that it's optimized for readability/testing and not speed.
  */
 public fun createSharedMemoryCommunicators(
-        processCount: Int,
-        queueFactory: () -> BlockingQueue<Maybe<Message>> = { LinkedBlockingQueue<Maybe<Message>>() }
+        processCount: Int
 ): List<Communicator> {
 
-    val processRange = 0..(processCount-1)
-    val queues = processRange.map { queueFactory() }
-    val terminatorFactories = SharedMemoryMessengers(processCount).messengers.map { Terminator.Factory(it) }
-
+    //Global environment -> queues, barrier
+    val queues = (1..processCount).map { LinkedBlockingQueue<Maybe<Any>>() }
     val barrier = CyclicBarrier(processCount)
 
-    return processRange.map { id ->
-        object : Communicator {
+    return (0..(processCount - 1)).map { id -> object : Communicator {
 
-            fun barrier() {
+        //Lock that guards all state variables of this communicator and underlying messengers
+        private val commLock = Object()
+
+        private val messengers = HashMap<Class<*>, (Any) -> Unit>()
+
+        val messageListener = queues[id].threadUntilPoisoned { message ->
+            synchronized(commLock) {
+                val receiver = messengers[message.javaClass]
+                if (receiver != null) {
+                    receiver(message)
+                } else {
+                    throw IllegalStateException("Received message of class ${message.javaClass} but no listener was " +
+                            "found. Active listeners: ${messengers.keys}")
+                }
+            }
+        }
+
+        override fun <M : Any> listenTo(messageClass: Class<M>, onTask: Messenger<M>.(M) -> Unit): Messenger<M> {
+            synchronized(commLock) {
+                if (messengers.containsKey(messageClass)) {
+                    throw IllegalStateException("Messenger for $messageClass already exist in $id, close it first")
+                }
+
+                //Access to barrier is guarded by commLock, so that one communicator can't count "twice" in the same barrier round
                 barrier.await()
-            }
 
-            //Lock that guards all state variables of this communicator
-            private val lock = Object()
+                val messenger = object : Messenger<M> {
 
-            override fun size(): Int = processCount
-            override fun rank(): Int = id
-
-            var messenger: InMemoryMessenger<*>? = null
-
-            val worker = queues[id].threadUntilPoisoned {
-                synchronized(lock) {
-                    if (messenger != null && it.javaClass.equals(messenger!!.messageClass)) {
-                        messenger!!.terminator.messageReceived()
-                        val onTask = messenger!!.onTask
-                        messenger!!.onTask(it)
-                    } else {
-                        throw IllegalStateException("Received message of class ${it.javaClass} but no listener was " +
-                                "found. Active listeners: ${messenger?.messageClass}")
+                    override fun sendTask(receiver: Int, message: M) {
+                        if (receiver == id) throw IllegalArgumentException("Sending message to yourself!")
+                        queues[receiver].put(Maybe.Just(message))
                     }
-                }
-            }
 
-            override fun <M : Message> listenTo(messageClass: Class<M>, onTask: Messenger<M>.(M) -> Unit): Messenger<M> {
-                synchronized(lock) {
-                    if (messenger != null)
-                        throw IllegalStateException("Messenger for $messageClass already exist in $id, close it first")
-                    else {
-
-                        barrier()
-
-                        val messenger = object : InMemoryMessenger<M>(
-                                messageClass,
-                                @Suppress("UNCHECKED_CAST") //Ok, because it's checked with messageClass
-                                (onTask as (Messenger<M>.(Message) -> Unit)),
-                                terminatorFactories[id].createNew()
-                        ) {
-
-                            override fun sendTask(receiver: Int, message: M) {
-                                if (receiver == id) throw IllegalArgumentException("Sending message to yourself!")
-                                terminator.messageSent()
-                                queues[receiver].put(Maybe.Just(message))
-                            }
-
-                            override fun close() {
-                                terminator.waitForTermination()
-                                synchronized(lock) {
-                                    barrier()
-                                    messenger = null
-                                }
-                            }
-
-                            override fun setIdle(): Unit {
-                                synchronized(lock) {
-                                    if (terminator.working) terminator.setDone()
-                                }
-                            }
-
+                    override fun close() {
+                        synchronized(commLock) {
+                            barrier.await()
+                            messengers.remove(messageClass)
+                            barrier.await()
                         }
-                        this.messenger = messenger
-
-                        barrier()
-                        //We need two barriers, because all messengers have to be already constructed
-                        //when returned to the outside world
-
-                        return messenger
                     }
+
+                }
+
+                messengers[messageClass] = {
+                    @Suppress("UNCHECKED_CAST")
+                    messenger.onTask(it as M)
+                }
+
+                //We need two barriers, because all messengers have to be already constructed
+                //when returned to the outside world
+                barrier.await()
+
+                return messenger
+            }
+        }
+
+
+        override fun finalize() {
+            synchronized(commLock) {
+                if (messengers.isNotEmpty()) {
+                    throw IllegalStateException("Finalizing with unclosed messengers for ${messengers.keys}}")
                 }
             }
-
-
-            override fun finalize() {
-                synchronized(lock) {
-                    if (messenger != null) {
-                        throw IllegalStateException("Finalizing with unclosed messengers for ${messenger!!.messageClass}}")
-                    }
-                }
-                queues[id].put(Maybe.Nothing())
-                worker.join()
+            if (queues[id].isNotEmpty()) {
+                throw IllegalStateException("Finalizing with unconsumed messages ${queues[id]}")
             }
+            queues[id].put(Maybe.Nothing())
+            messageListener.join()
+        }
 
-        } }
+        override val size: Int = processCount
+        override val id: Int = id
+
+    } }
 
 }

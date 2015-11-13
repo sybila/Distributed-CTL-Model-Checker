@@ -1,24 +1,49 @@
 package cz.muni.fi.modelchecker
 
-import com.github.daemontus.jafra.SharedMemoryMessengers
-import com.github.daemontus.jafra.Terminator
 import org.junit.Test
 import java.util.*
+import java.util.concurrent.FutureTask
 import kotlin.concurrent.thread
 import kotlin.test.assertEquals
-/*
-class SingleThreadJobQueueTest : JobQueueTest() {
 
-    override val jobQueueConstructor:
-            ( Communicator,
-              Terminator.Factory,
-              PartitionFunction<IDNode>,
-              Class<Job.EU<IDNode, IDColors>>,
-              JobQueue<IDNode, IDColors, Job.EU<IDNode, IDColors>>.(Job.EU<IDNode, IDColors>) -> Unit
-            ) -> JobQueue<IDNode, IDColors, Job.EU<IDNode, IDColors>>
-            = { messenger, terminator, partition, cls, onTask -> SingleThreadJobQueue(messenger, terminator, partition, cls, onTask) }
 
-}*/
+class BigSingleThreadJobQueueTest : SingleThreadJobQueueTest() {
+    override val processCount: Int = 24
+
+}
+
+class SmallSingleThreadJobQueueTest : SingleThreadJobQueueTest() {
+    override val processCount: Int = 2
+}
+
+class OneSingleThreadJobQueueTest : SingleThreadJobQueueTest() {
+    override val processCount: Int = 1
+}
+
+abstract class SingleThreadJobQueueTest: JobQueueTest() {
+
+    override fun createJobQueues(
+            processCount: Int,
+            partitioning: List<PartitionFunction<IDNode>>
+    ): List<JobQueue.Factory<IDNode, IDColors, Job.EU<IDNode, IDColors>>>
+            = createSharedMemoryJobQueue(
+                processCount = processCount,
+                jobClass = genericClass<Job.EU<IDNode, IDColors>>(),
+                partitioning = partitioning
+            )
+
+}
+
+val jobComparator = object : Comparator<Job.EU<IDNode, IDColors>> {
+
+    override fun compare(o1: Job.EU<IDNode, IDColors>, o2: Job.EU<IDNode, IDColors>): Int {
+        if (o1.colors == o2.colors) return o1.node.id.compareTo(o2.node.id)
+        else {
+            return o1.colors.toString().compareTo(o2.colors.toString())
+        }
+    }
+
+}
 
 /**
  * And abstract set of tests for your job queue implementation.
@@ -26,322 +51,98 @@ class SingleThreadJobQueueTest : JobQueueTest() {
  */
 public abstract class JobQueueTest {
 
-    abstract val jobQueueConstructor:
-            ( Communicator,
-              Terminator.Factory,
-              PartitionFunction<IDNode>,
-              Class<Job.EU<IDNode, IDColors>>,
-              JobQueue<IDNode, IDColors, Job.EU<IDNode, IDColors>>.(Job.EU<IDNode, IDColors>) -> Unit
-            ) -> JobQueue<IDNode, IDColors, Job.EU<IDNode, IDColors>>
+    abstract val processCount: Int
 
-    private val undefinedMessengers = object : Communicator {
-        override fun size(): Int = 1
-        override fun rank(): Int = 0
-        override fun <M : Message> listenTo(messageClass: Class<M>, onTask: Messenger<M>.(M) -> Unit): Messenger<M> {
-            return object : Messenger<M> {
-                override fun setIdle(): Unit = throw UnsupportedOperationException()
-                override fun sendTask(receiver: Int, message: M) = throw UnsupportedOperationException()
-                override fun close() { /* ok */ }
-            }
-        }
-        override fun finalize() { /* ok */ }
+    abstract fun createJobQueues(
+            processCount: Int,
+            partitioning: List<PartitionFunction<IDNode>> = (1..processCount).map { UniformPartitionFunction<IDNode>(it-1) }
+    ): List<JobQueue.Factory<IDNode, IDColors, Job.EU<IDNode, IDColors>>>
+
+    private val allColors = (1..5).toSet()
+
+    private fun randomEuJob(): Job.EU<IDNode, IDColors> = Job.EU(
+            IDNode((Math.random() * 10).toInt()),
+            IDColors(allColors.randomSubset())
+    )
+
+
+    @Test(timeout = 1000)
+    fun noMessages() {
+        createJobQueues(processCount).map { f -> thread {
+            val q = f.createNew {  }
+            q.waitForTermination()
+        } }.map { it.join() }
     }
 
     @Test(timeout = 1000)
-    fun multipleWithMixedMessages() {
+    fun onlyInitialTest() {
+        createJobQueues(processCount).map { f -> thread {
 
-        val terminatorMessengers = SharedMemoryMessengers(2)
-        val jobMessengers = createSharedMemoryCommunicators(2)
+            val executed = ArrayList<Job.EU<IDNode, IDColors>>()
+            val jobs = (1..10).map { randomEuJob() }
 
-        val n = (0..7).map { IDNode(it.toLong()) }
+            val q = f.createNew(jobs) { synchronized(executed) {
+                executed.add(it)
+            } }
 
-        val sent1 = listOf(
-                Job.EU(n[0], IDColors(0,1)),
-                Job.EU(n[1], IDColors(1,2)),
-                Job.EU(n[0], IDColors(2)),
-                Job.EU(n[3], IDColors(0,1,2))
-        )
+            q.waitForTermination()
 
-        val sent2 = listOf(
-                Job.EU(n[3], IDColors(2,2)),
-                Job.EU(n[1], IDColors(2,3)),
-                Job.EU(n[5], IDColors(4,5)),
-                Job.EU(n[3], IDColors(0,1)),
-                Job.EU(n[7], IDColors(1,2,3)),
-                Job.EU(n[0], IDColors(3))
-        )
+            assertEquals<List<Job.EU<IDNode, IDColors>>>(
+                    jobs.sortedWith(jobComparator),
+                    executed.sortedWith(jobComparator)
+            )   //bug
+        } }.map { it.join() }
+    }
 
-        val t1 = thread {
+    @Test(timeout = 5000)
+    fun complexTest() {
 
-            val processed = ArrayList<Job.EU<IDNode, IDColors>>()
-            var toSend = ArrayList(sent1)
+        //As in messenger tests, create a flood of jobs that will jump across state space
 
-            val queue1 = jobQueueConstructor(
-                    jobMessengers[0],
-                    Terminator.Factory(terminatorMessengers.messengers[0]),
-                    ExplicitPartitionFunction(0, inverseMapping = mapOf(
-                            Pair(0, listOf(n[0], n[1], n[7])),
-                            Pair(1, listOf(n[2], n[3], n[4], n[5], n[6])))),
-                    genericClass<Job.EU<IDNode, IDColors>>()
-            ) {
-                processed.add(it)
-                if (toSend.isNotEmpty()) this.post(toSend.remove(0))
-            }
+        val allJobs = createJobQueues(
+                processCount,
+                (1..processCount).map { i -> FunctionalPartitionFunction(i-1) { it.id.toInt() % (i-1) } }
+        ).map { f -> FutureTask {
 
-            queue1.post(toSend.remove(0))
+            val executed = ArrayList<Job.EU<IDNode, IDColors>>()
+            val posted = HashMap((1..processCount).toMap({it - 1}, { ArrayList<Job.EU<IDNode, IDColors>>() }))
 
-            queue1.waitForTermination()
+            val initial = (1..(processCount * 10)).map { randomEuJob() }.filter { it.node.id % processCount == processCount }
+            initial.forEach { job -> synchronized(posted) {
+                    posted[job.node.id % processCount]!!.add(job)
+            } }
 
-            //compare sets because order does not have ot be exact
-            assertEquals(setOf(sent1[0], sent1[1], sent1[2], sent2[1], sent2[4], sent2[5]), processed.toSet())
-        }
-
-        val t2 = thread {
-
-            val processed = ArrayList<Job.EU<IDNode, IDColors>>()
-            val toSend = ArrayList(sent2)
-
-            val queue2 = jobQueueConstructor(
-                    jobMessengers[1],
-                    Terminator.Factory(terminatorMessengers.messengers[1]),
-                    ExplicitPartitionFunction(1, inverseMapping = mapOf(
-                            Pair(0, listOf(n[0], n[1], n[7])),
-                            Pair(1, listOf(n[2], n[3], n[4], n[5], n[6])))),
-                    genericClass<Job.EU<IDNode, IDColors>>()
-            ) {
-                processed.add(it)
-                //worker2 has to produce more messages because he wants ot sent more of them
-                if (toSend.isNotEmpty()) { this.post(toSend.remove(0)) }
-                if (toSend.isNotEmpty()) { this.post(toSend.remove(0)) }
+            val queue = f.createNew(initial) {
+                synchronized(executed) { executed.add(it) }
+                if (it.node.id != 0) {
+                    val newNodeId = it.node.id - 1
+                    val newJob = Job.EU(IDNode(newNodeId), it.colors)
+                    synchronized(posted) {
+                        posted[newNodeId % processCount]!!.add(newJob)
+                    }
+                    this.post(newJob)
+                }
             }
 
-            queue2.post(toSend.remove(0))
+            queue.waitForTermination()
 
-            queue2.waitForTermination()
+            Pair(posted, executed)
+        } }.map { thread { it.run() }; it }.map { it.get() }
 
-            assertEquals(setOf(sent1[3], sent2[0], sent2[2], sent2[3]), processed.toSet())
-        }
-
-        t1.join()
-        t2.join()
-    }
-
-    @Test(timeout = 1000)
-    fun multipleWithCrossMessages() {
-
-        val terminatorMessengers = SharedMemoryMessengers(2)
-        val jobMessengers = createSharedMemoryCommunicators(2)
-
-        val sent1 = listOf(
-                Job.EU(IDNode(0), IDColors(0,1)),
-                Job.EU(IDNode(1), IDColors(1,2)),
-                Job.EU(IDNode(0), IDColors(2)),
-                Job.EU(IDNode(3), IDColors(0,1,2))
-        )
-
-        val sent2 = listOf(
-                Job.EU(IDNode(1), IDColors(2,3)),
-                Job.EU(IDNode(3), IDColors(2,2)),
-                Job.EU(IDNode(5), IDColors(4,5)),
-                Job.EU(IDNode(3), IDColors(0,1)),
-                Job.EU(IDNode(7), IDColors(1,2,3)),
-                Job.EU(IDNode(0), IDColors(3))
-        )
-
-        val t1 = thread {
-
-            val processed = ArrayList<Job.EU<IDNode, IDColors>>()
-            var toSend = ArrayList(sent1)
-
-            val queue1 = jobQueueConstructor(
-                    jobMessengers[0],
-                    Terminator.Factory(terminatorMessengers.messengers[0]),
-                    FunctionalPartitionFunction(0, { 1 }),
-                    genericClass<Job.EU<IDNode, IDColors>>()
-            ) {
-                processed.add(it)
-                if (toSend.isNotEmpty()) this.post(toSend.remove(0))
+        //Merge sent messages by their destinations into something that has same type as received list
+        val sent = allJobs.map { it.first }.foldRight(
+                HashMap((0..(processCount - 1)).map { Pair(it, listOf<Job.EU<IDNode, IDColors>>()) }.toMap())
+        ) { value, accumulator ->
+            for ((key, list) in value) {
+                accumulator[key] = list + accumulator[key]!!
             }
-
-            queue1.post(toSend.remove(0))
-
-            queue1.waitForTermination()
-
-            assertEquals(sent2, processed)
+            accumulator
+        }.mapValues {
+            it.value.sortedWith(jobComparator)
         }
+        val received = allJobs.map { it.second }.mapIndexed { i, list -> Pair(i, list.sortedWith(jobComparator)) }.toMap()
 
-        val t2 = thread {
-
-            val processed = ArrayList<Job.EU<IDNode, IDColors>>()
-            val toSend = ArrayList(sent2)
-
-            val queue2 = jobQueueConstructor(
-                    jobMessengers[1],
-                    Terminator.Factory(terminatorMessengers.messengers[1]),
-                    FunctionalPartitionFunction(1, { 0 }),
-                    genericClass<Job.EU<IDNode, IDColors>>()
-            ) {
-                processed.add(it)
-                //worker2 has to produce more messages because he wants ot sent more of them
-                if (toSend.isNotEmpty()) { this.post(toSend.remove(0)) }
-                if (toSend.isNotEmpty()) { this.post(toSend.remove(0)) }
-            }
-
-            queue2.post(toSend.remove(0))
-
-            queue2.waitForTermination()
-
-            assertEquals(sent1, processed)
-        }
-
-        t1.join()
-        t2.join()
+        assertEquals(received, sent)
     }
 
-    @Test(timeout = 1000)
-    fun multipleWithInternalMessages() {
-
-        val terminatorMessengers = SharedMemoryMessengers(2)
-        val jobMessengers = createSharedMemoryCommunicators(2)
-
-        val t1 = thread {
-
-            val processed = ArrayList<Job.EU<IDNode, IDColors>>()
-
-            val queue1 = jobQueueConstructor(
-                    jobMessengers[0],
-                    Terminator.Factory(terminatorMessengers.messengers[0]),
-                    FunctionalPartitionFunction(0, { 0 }),
-                    genericClass<Job.EU<IDNode, IDColors>>()
-            ) { processed.add(it) }
-
-            val sent = listOf(
-                    Job.EU(IDNode(0), IDColors(0,1)),
-                    Job.EU(IDNode(1), IDColors(1,2)),
-                    Job.EU(IDNode(0), IDColors(2)),
-                    Job.EU(IDNode(3), IDColors(0,1,2))
-            )
-
-            queue1.post(sent.first())
-
-            sent.drop(1).forEach { queue1.post(it) }
-
-            queue1.waitForTermination()
-
-            assertEquals(sent, processed)
-        }
-
-        val t2 = thread {
-
-            val processed = ArrayList<Job.EU<IDNode, IDColors>>()
-
-            val queue2 = jobQueueConstructor(
-                    jobMessengers[1],
-                    Terminator.Factory(terminatorMessengers.messengers[1]),
-                    FunctionalPartitionFunction(1, { 1 }),
-                    genericClass<Job.EU<IDNode, IDColors>>()
-            ) { processed.add(it) }
-
-            val sent = listOf(
-                    Job.EU(IDNode(1), IDColors(2,3)),
-                    Job.EU(IDNode(3), IDColors(2,2)),
-                    Job.EU(IDNode(5), IDColors(4,5)),
-                    Job.EU(IDNode(3), IDColors(0,1)),
-                    Job.EU(IDNode(7), IDColors(1,2,3)),
-                    Job.EU(IDNode(0), IDColors(3))
-            )
-
-            queue2.post(sent.first())
-
-            sent.drop(1).forEach { queue2.post(it) }
-
-            queue2.waitForTermination()
-
-            assertEquals(sent, processed)
-        }
-
-        t1.join()
-        t2.join()
-    }
-
-    @Test(timeout = 1000)
-    fun multipleNoMessages() {
-
-        val terminatorMessengers = SharedMemoryMessengers(2)
-        val jobMessengers = createSharedMemoryCommunicators(2)
-
-        val t1 = thread {
-            val queue1 = jobQueueConstructor(
-                    jobMessengers[0],
-                    Terminator.Factory(terminatorMessengers.messengers[0]),
-                    FunctionalPartitionFunction(0, { 0 }),
-                    genericClass<Job.EU<IDNode, IDColors>>()
-            ) { }
-
-            queue1.waitForTermination()
-        }
-
-        val t2 = thread {
-            val queue2 = jobQueueConstructor(
-                    jobMessengers[1],
-                    Terminator.Factory(terminatorMessengers.messengers[1]),
-                    FunctionalPartitionFunction(1, { 1 }),
-                    genericClass<Job.EU<IDNode, IDColors>>()
-            ) { }
-
-            queue2.waitForTermination()
-        }
-
-        t1.join()
-        t2.join()
-    }
-
-    @Test(timeout = 1000)
-    fun singleWithInternalMessagesTest() {
-
-        val terminatorMessengers = SharedMemoryMessengers(1)
-
-        val executed = ArrayList<Job.EU<IDNode, IDColors>>()
-
-        val queue = jobQueueConstructor(
-                undefinedMessengers,
-                Terminator.Factory(terminatorMessengers.messengers[0]),
-                FunctionalPartitionFunction(0, { 0 }),
-                genericClass<Job.EU<IDNode, IDColors>>()
-        ) { executed.add(it) }
-
-
-        val posted = listOf(
-                Job.EU(IDNode(1), IDColors(1,2)),
-                Job.EU(IDNode(2), IDColors(2,3)),
-                Job.EU(IDNode(1), IDColors(3)),
-                Job.EU(IDNode(3), IDColors(0,1)),
-                Job.EU(IDNode(2), IDColors(0,1))
-        )
-
-        queue.post(posted[0])
-
-        queue.post(posted[1])
-        queue.post(posted[2])
-        queue.post(posted[3])
-        queue.post(posted[4])
-
-        queue.waitForTermination()
-
-        assertEquals(posted, executed)
-    }
-
-    @Test(timeout = 1000)
-    fun singleNoMessages() {
-        val terminatorMessengers = SharedMemoryMessengers(1)
-
-        val queue = jobQueueConstructor(
-                undefinedMessengers,
-                Terminator.Factory(terminatorMessengers.messengers[0]),
-                ExplicitPartitionFunction<IDNode>(0, mapOf()),
-                genericClass<Job.EU<IDNode, IDColors>>()
-        ) { }
-
-        queue.waitForTermination()
-    }
 }

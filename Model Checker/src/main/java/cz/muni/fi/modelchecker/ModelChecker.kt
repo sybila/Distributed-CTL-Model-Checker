@@ -1,19 +1,18 @@
 package cz.muni.fi.modelchecker
 
 import com.github.daemontus.jafra.Terminator
+import com.github.daemontus.jafra.createSharedMemoryTerminators
 import cz.muni.fi.ctl.Atom
 import cz.muni.fi.ctl.Formula
 import cz.muni.fi.ctl.Op
 import mpjbuf.IllegalArgumentException
 import java.util.*
 
-public inline fun <reified T: Any> genericClass(): Class<T> = T::class.java
-
 public class ModelChecker<N: Node, C: Colors<C>>(
         fragment: KripkeFragment<N, C>,
-        private val partitionFunction: PartitionFunction<N>,
-        private val terminators: Terminator.Factory,
-        private val messengers: Messenger.Factory
+        private val partitionFunction: PartitionFunction<N> = UniformPartitionFunction<N>(),
+        private val terminators: Terminator.Factory = createSharedMemoryTerminators(1).first(),
+        private val messengers: Communicator = createSharedMemoryCommunicators(1).first()
 ):
         KripkeFragment<N, C> by fragment,
         PartitionFunction<N> by partitionFunction
@@ -51,8 +50,8 @@ public class ModelChecker<N: Node, C: Colors<C>>(
 
         val result = HashMap<N, C>().toMutableNodeSet(phi.default)
 
-        val jobQueue = SingleThreadJobQueue(
-                messengers, terminators, partitionFunction,
+       /* val jobQueue = SingleThreadJobQueue(
+                messengers, partitionFunction,
                 genericClass<Job.EX<N, C>>()
         ) {
             synchronized(result) { result.putOrUnion(it.node, it.colors) }
@@ -65,7 +64,7 @@ public class ModelChecker<N: Node, C: Colors<C>>(
 
         //Mark all targets as valid for EX phi
 
-        jobQueue.waitForTermination()
+        jobQueue.waitForTermination()*/
 
         return result
     }
@@ -76,8 +75,8 @@ public class ModelChecker<N: Node, C: Colors<C>>(
         val phi_2 = verify(f[1])
         val result = HashMap<N, C>().toMutableNodeSet(phi_1.default)
 
-        val jobQueue = SingleThreadJobQueue(
-                messengers, terminators, partitionFunction,
+       /* val jobQueue = SingleThreadJobQueue(
+                messengers, partitionFunction,
                 genericClass<Job.EU<N, C>>()
         ) {
             val intersection = it.colors intersect phi_1.getOrDefault(it.node)
@@ -92,7 +91,7 @@ public class ModelChecker<N: Node, C: Colors<C>>(
 
         //Mark all targets as valid for intersection with phi_1 and continue pushing colors if something changed
 
-        jobQueue.waitForTermination()
+        jobQueue.waitForTermination()*/
 
         return result
     }
@@ -107,10 +106,10 @@ public class ModelChecker<N: Node, C: Colors<C>>(
         //Algorithm modifies the contents to satisfy following invariant:
         //uncoveredEdges(x,y) = { c such that there is an edge into y and !(phi_2 or (phi_1 AU phi_2)) holds in y }
         //Note: Maybe we could avoid this if we also allowed results for border states in results map.
-        val uncoveredEdges = HashMap<N, MutableMap<N, C>>()
+        /*val uncoveredEdges = HashMap<N, MutableMap<N, C>>()
 
         val jobQueue = SingleThreadJobQueue(
-                messengers, terminators, partitionFunction,
+                messengers, partitionFunction,
                 genericClass<Job.AU<N, C>>()
         ) {
             synchronized(uncoveredEdges) {  //Lazy init map with successors
@@ -138,7 +137,7 @@ public class ModelChecker<N: Node, C: Colors<C>>(
         //Update info about uncovered edges and if some colors become fully covered,
         //mark the target and push them further
 
-        jobQueue.waitForTermination()
+        jobQueue.waitForTermination()*/
         return result
     }
 

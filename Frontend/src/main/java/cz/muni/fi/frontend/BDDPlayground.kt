@@ -97,7 +97,7 @@ fun main(args: Array<String>) {
 
     val newTargetMapping: List<Pair<String, Map<String, BDD>>> = model.specieContextTargetMapping.map { species ->
         Pair(species.key, species.value.map {
-            Pair(it.key, toBDD(domMap[species.key]!!, it.value))
+            Pair(it.key, toBDD(domMap[species.key]!!, it.value, bdd.zero()))
         }.toMap())
     }
 
@@ -171,7 +171,7 @@ fun main(args: Array<String>) {
                 if (formula is Tautology) {
                     val results = HashMap<LevelNode, BDDColorSet>()
                     for (node in nodeCache.values) {
-                        results.put(node, one)
+                        results.put(node, BDDColorSet(one))
                     }
                     return results
                 }
@@ -185,7 +185,7 @@ fun main(args: Array<String>) {
                 for (n in nodeCache.values) {
                     val validColors = validFormulas[n]!![formula]
                     if (validColors != null && !validColors.isEmpty) {
-                        results.put(n, validColors)
+                        results.put(n, BDDColorSet(validColors))
                     }
                 }
                 return results
@@ -195,7 +195,7 @@ fun main(args: Array<String>) {
         override fun invertNodeSet(nodes: MutableMap<LevelNode, BDDColorSet>): MutableMap<LevelNode, BDDColorSet> {
             val results = HashMap<LevelNode, BDDColorSet>()
             for (n in nodeCache.values) {
-                val full = one
+                val full = BDDColorSet(one)
                 val anti = nodes.get(n)
                 if (anti != null) {
                     full.subtract(anti)
@@ -209,25 +209,27 @@ fun main(args: Array<String>) {
 
         override fun addFormula(node: LevelNode, formula: Formula, parameters: BDDColorSet): Boolean {
             synchronized(lock) {
-               // println("Add formula: $node $parameters")
                 val previous = (validFormulas[node]!![formula] ?: BDDColorSet(bdd.zero()))
                 val union = BDDColorSet(previous)
                 val changed = union.union(parameters)
                 (validFormulas[node]!!)[formula] = union
-               // println("Changed: $changed $union ${validFormulas[node]!![formula]}")
                 return changed
             }
         }
 
         override fun validColorsFor(node: LevelNode, formula: Formula): BDDColorSet {
             synchronized(lock) {
-                if (formula is Tautology) return one
+                if (formula is Tautology) return BDDColorSet(one)
                 if (formula is Contradiction) return BDDColorSet(bdd.zero())
                 if (formula is FloatProposition && !revealedPropositions.contains(formula)) {
                     revealProposition(formula)
                 }
                 val colorSet = validFormulas[node]!![formula]
-                return colorSet ?: BDDColorSet(bdd.zero())
+                if (colorSet == null) {
+                    return BDDColorSet(bdd.zero())
+                } else {
+                    return BDDColorSet(colorSet)
+                }
             }
         }
 
@@ -238,7 +240,7 @@ fun main(args: Array<String>) {
         private fun revealProposition(proposition: FloatProposition) {
             for (entry in nodeCache.values) {
                 if (proposition.evaluate(entry.getLevel(species.indexOf(proposition.variable)).toDouble())) {
-                    (validFormulas[entry]!!)[proposition] = one
+                    (validFormulas[entry]!!)[proposition] = BDDColorSet(one)
                 }
             }
             revealedPropositions.add(proposition)
@@ -256,7 +258,7 @@ fun main(args: Array<String>) {
 
     fun enumSpecies(i:Int, levels: IntArray) {
         if (i < 0) {
-            println("Get node $levels")
+           // println("Get node ${Arrays.toString(levels)}")
             bddFactory.getNode(levels)
         } else {
             levels[i] = 0
@@ -267,6 +269,7 @@ fun main(args: Array<String>) {
     }
 
     enumSpecies(species.size - 1, (1..species.size).map { 0 }.toIntArray())
+    println("Node count: ${bddFactory.nodeCache.size}")
 
     val modelChecker = ModelChecker<LevelNode, BDDColorSet>(bddFactory, partitioner, taskMessenger, terminators)
     modelChecker.verify(formula)
@@ -281,8 +284,8 @@ fun main(args: Array<String>) {
         for (node in bddFactory.nodeCache.values) {
             val colorSet = bddFactory.validColorsFor(node, formula)
             if (!colorSet.isEmpty) {
-                //println(Arrays.toString(node.levels) + " " + colorSet)
-                bdd.save(Arrays.toString(node.levels), colorSet.bdd)
+                println(Arrays.toString(node.levels) + " " + colorSet)
+                //bdd.save(Arrays.toString(node.levels), colorSet.bdd)
             }
         }
     }
@@ -297,13 +300,17 @@ fun LevelNode.toContext(species: List<String>): String {
     return this.levels.zip(species).map { "${it.second}:${it.first}" }.joinToString(separator = ",")
 }
 
-fun toBDD(dom: BDDDomain, values: List<Byte>): BDD {
+fun toBDD(dom: BDDDomain, values: List<Byte>, zero: BDD): BDD {
 
     val bdds = values.mapIndexed { i, byte ->
         if (byte.toInt() != 0) {
             dom.ithVar(i.toLong())
         } else null
     }.filterNotNull()
+
+    if (bdds.isEmpty()) {
+        return zero
+    }
 
     val b = bdds.fold(bdds.first()) { a, b ->
         a.or(b)

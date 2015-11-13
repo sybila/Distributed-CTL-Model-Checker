@@ -32,8 +32,10 @@ public class BDDColorSet implements ColorSet {
 
     @Override
     public boolean union(ColorSet set) {
-        //System.out.println("Union: "+this+" "+set);
         BDDColorSet s = (BDDColorSet) set;
+        if (this.isEmpty() && set.isEmpty()) {
+            return false;
+        }
         if (this.isEmpty()) {
             this.bdd = s.bdd.or(s.bdd);
             return true;
@@ -42,6 +44,9 @@ public class BDDColorSet implements ColorSet {
             return false;
         }
         BDD newBdd = bdd.or(s.bdd);
+        if (newBdd.satCount() == bdd.satCount() && !newBdd.equals(bdd)) {
+            throw new IllegalStateException("Wat?!");
+        }
         if (newBdd.equals(this.bdd)) {
             return false;
         } else {
@@ -52,7 +57,7 @@ public class BDDColorSet implements ColorSet {
 
     @Override
     public boolean isEmpty() {
-        return this.bdd.isZero();
+        return this.bdd.satCount() == 0;
     }
 
     @Override
@@ -73,6 +78,6 @@ public class BDDColorSet implements ColorSet {
 
     @Override
     public String toString() {
-        return "{"+bdd.toStringWithDomains()+/*Arrays.deepToString(bdd.allsat().toArray())+" "+*/bdd.satCount()+"}";
+        return "{"/*+bdd.toStringWithDomains()*/+Arrays.deepToString(bdd.allsat().toArray())+" "+bdd.satCount()+"}";
     }
 }

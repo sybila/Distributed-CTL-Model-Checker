@@ -13,7 +13,7 @@ public interface Node { }
  */
 public interface Colors<C> {
 
-    fun intersect(other: C): C
+    infix fun intersect(other: C): C
 
     operator fun minus(other: C): C
 
@@ -23,9 +23,9 @@ public interface Colors<C> {
 
     fun isNotEmpty(): Boolean = !isEmpty()
 
-    fun union(other: C): C = this + other
+    infix fun union(other: C): C = this + other
 
-    fun subtract(other: C): C = this - other
+    infix fun subtract(other: C): C = this - other
 
 }
 

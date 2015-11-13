@@ -4,12 +4,12 @@ import cz.muni.fi.ctl.Atom
 import java.util.*
 
 public data class IDNode(
-        public val id: Long
+        public val id: Int
 ) : Node
 
-public data class IDColors(private val set: Set<Long> = HashSet()) : Colors<IDColors> {
+public data class IDColors(private val set: Set<Int> = HashSet()) : Colors<IDColors> {
 
-    constructor(vararg items: Long): this(items.toSet())
+    constructor(vararg items: Int): this(items.toSet())
 
     override fun minus(other: IDColors): IDColors = IDColors(set - other.set)
 
@@ -17,7 +17,7 @@ public data class IDColors(private val set: Set<Long> = HashSet()) : Colors<IDCo
 
     override fun isEmpty(): Boolean = set.isEmpty()
 
-    override fun intersect(other: IDColors): IDColors = IDColors(set intersect other.set)
+    override fun intersect(other: IDColors): IDColors = IDColors(set.intersect(other.set))
 
 }
 
@@ -34,7 +34,7 @@ public class ExplicitPartitionFunction<N: Node>(
 
     init {
         //check if we preserved size of input - i.e. the input is a valid function
-        if (mapping.size() != directMapping.size() + inverseMapping.map { it.value.size() }.sum()) {
+        if (mapping.size != directMapping.size + inverseMapping.map { it.value.size }.sum()) {
             throw IllegalArgumentException("Provided mapping is not a function! $directMapping  $inverseMapping")
         }
     }
@@ -51,9 +51,9 @@ public class FunctionalPartitionFunction(
     override val myId: Int = id
 }
 
-public class UniformPartitionFunction<N: Node>() : PartitionFunction<N> {
-    override val ownerId: N.() -> Int = { 0 }
-    override val myId: Int = 0
+public class UniformPartitionFunction<N: Node>(private val id: Int = 0) : PartitionFunction<N> {
+    override val ownerId: N.() -> Int = { id }
+    override val myId: Int = id
 }
 
 public class ExplicitKripkeFragment(
@@ -68,13 +68,13 @@ public class ExplicitKripkeFragment(
             .groupBy { it.start }
             .mapValues { entry ->
                 entry.value.toMap({ it.end }, { it.colors }).toNodeSet(IDColors())
-            } withDefault { emptyNodeSet }
+            }.withDefault { emptyNodeSet }
 
     private val predecessorMap = edges
             .groupBy { it.end }
             .mapValues { entry ->
                 entry.value.toMap({ it.start }, { it.colors }).toNodeSet(IDColors())
-            } withDefault { emptyNodeSet }
+            }.withDefault { emptyNodeSet }
 
     private val nodes = nodes.toNodeSet(IDColors())
 
@@ -87,14 +87,14 @@ public class ExplicitKripkeFragment(
     override val predecessors: IDNode.() -> NodeSet<IDNode, IDColors> = { predecessorMap.getOrImplicitDefault(this) }
 
     init {
-        for (valid in validity.values()) {  //Invariant 1.
+        for (valid in validity.values) {  //Invariant 1.
             for ((node, colors) in valid) {
                 if (this.nodes.getOrDefault(node) intersect colors != colors) {
                     throw IllegalArgumentException("Suspicious atom color in $node for $colors")
                 }
             }
         }
-        for (node in this.nodes.keySet()) { //Invariant 2.
+        for (node in this.nodes.keys) { //Invariant 2.
             if (node.successors().isEmpty()) {
                 throw IllegalArgumentException("Missing successors for $node")
             }

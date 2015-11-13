@@ -1,7 +1,5 @@
 package cz.muni.fi.modelchecker
 
-import java.util.*
-
 /**
  * Although kotlin provides a map with default value, this explicit data
  * structure enables us to check for it's presence at compile time and
@@ -52,7 +50,7 @@ public fun <N: Node, C: Colors<C>> Map<N, C>.toNodeSet(value: C): NodeSet<N, C> 
 public fun <N: Node, C: Colors<C>> MutableNodeSet<N, C>.toNodeSet(value: C): NodeSet<N, C> = NodeSet(this, value)
 public fun <N: Node, C: Colors<C>> MutableMap<N, C>.toMutableNodeSet(value: C): MutableNodeSet<N, C> = MutableNodeSet(this, value)
 
-public fun <N: Node, C: Colors<C>> NodeSet<N, C>.union(map: NodeSet<N, C>): NodeSet<N, C> {
+public infix fun <N: Node, C: Colors<C>> NodeSet<N, C>.union(map: NodeSet<N, C>): NodeSet<N, C> {
     val newMap = this.toLinkedMap()
     for ((key, value) in map) {
         newMap[key] = getOrDefault(key) union value
@@ -60,7 +58,7 @@ public fun <N: Node, C: Colors<C>> NodeSet<N, C>.union(map: NodeSet<N, C>): Node
     return newMap.toNodeSet(default)
 }
 
-public fun <N: Node, C: Colors<C>> NodeSet<N, C>.subtract(map: NodeSet<N, C>): NodeSet<N, C> {
+public infix fun <N: Node, C: Colors<C>> NodeSet<N, C>.subtract(map: NodeSet<N, C>): NodeSet<N, C> {
     val newMap = this.toLinkedMap()
     for ((key, value) in map) {
         newMap[key] = getOrDefault(key) subtract value
@@ -68,7 +66,7 @@ public fun <N: Node, C: Colors<C>> NodeSet<N, C>.subtract(map: NodeSet<N, C>): N
     return newMap.filterValues { it.isNotEmpty() }.toNodeSet(default)
 }
 
-public fun <N: Node, C: Colors<C>> NodeSet<N, C>.intersect(map: NodeSet<N, C>): NodeSet<N, C> {
+public infix fun <N: Node, C: Colors<C>> NodeSet<N, C>.intersect(map: NodeSet<N, C>): NodeSet<N, C> {
     val newMap = this.toLinkedMap()
     for ((key, value) in map) {
         newMap[key] = getOrDefault(key) intersect value

@@ -26,7 +26,9 @@ int main(int argc, char** argv) {
             return(1);
         }
         for(int i = 0; i < model.getDims(); i++) {
-            cout << "Equation for variable " << model.getVariable(i) << " has " << model.eqParamsCount(i) << " params\n";
+            cout << "Equation for variable " << model.getVariable(i) << " has " << model.eqParamsCount(i) << " real params,\n";
+			
+			cout << "but using " << model.getParamName(model.getParamIndexForVariable(i)) << " with index " << model.getParamIndexForVariable(i) << endl;
         }
 /*
         model.RunAbstraction();

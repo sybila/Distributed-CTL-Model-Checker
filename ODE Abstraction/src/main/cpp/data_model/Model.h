@@ -139,6 +139,7 @@ public:
 
     const std::vector<std::string> 		getVariables() const;
 	const std::string 					getVariable(int index) const;
+	// return index of variable name in field, otherwise UINT_MAX
 	const size_t 						getVariableIndex(std::string var) const;
 	const size_t 						getDims() const { return var_names.size(); }
 
@@ -147,6 +148,9 @@ public:
 	const std::vector<std::pair<value_type, value_type> > 	getParamRanges() const;
 	const std::pair<value_type, value_type> 				getParamRange(int index) const;
 	const size_t 											getParamSize() const;
+	// return index of parameter name in field, otherwise UINT_MAX
+	const size_t                                            getParamIndex(std::string name) const;
+	const int											getParamIndexForVariable(size_t varIndex) const;
 
 	const std::vector<std::pair<std::string, value_type> > 		getConstants() const;
 	const std::pair<std::string, value_type> 					getConstant(int index) const;
@@ -210,6 +214,11 @@ private:
 };
 
 template <typename T>
+const int Model<T>::getParamIndexForVariable(size_t varIndex) const {
+	return(paramDependencyOnVariables.at(varIndex));
+}
+
+template <typename T>
 bool Model<T>::hasEqMoreParams(std::size_t varIndex) const {
     return(paramCombinationMap.at(varIndex) > 1 ? true : false);
 }
@@ -247,12 +256,19 @@ bool Model<T>::checkParameterCombination(std::size_t& violatingVariableIndex) {
                 break;
             case 2:
                 // make new parameter and set its name as ratio of these two and value to <0,INF>
-                std::size_t pIndex;
-                //TODO: check if it's not already there
-                pIndex = AddParam(getParamName(*paramDep.begin())+":"+getParamName(*paramDep.rbegin()));
-                AddParamRange(0.0,std::numeric_limits<double>::infinity());
-
-                std::cout << getParamName(pIndex) << " = <" << getParamRange(pIndex).first << "," << getParamRange(pIndex).second << ">\n";
+                uint p1;
+                p1 = *paramDep.begin();
+                uint p2;
+                p2 = *paramDep.rbegin();
+                uint pIndex;
+                if((pIndex = getParamIndex(getParamName(p1)+":"+getParamName(p2))) == UINT_MAX) {
+                    if((pIndex = getParamIndex(getParamName(p2)+":"+getParamName(p1))) == UINT_MAX) {
+                        pIndex = AddParam(getParamName(p1)+":"+getParamName(p2));
+                        AddParamRange(0.0,std::numeric_limits<double>::infinity());
+                    }
+                }
+                std::cout << getParamName(pIndex) << " with index " << pIndex << " = <"
+                          << getParamRange(pIndex).first << "," << getParamRange(pIndex).second << ">\n";
 
                 paramCombinationMap[i] = paramDep.size();
                 paramDependencyOnVariables[i] = pIndex;
@@ -510,6 +526,15 @@ const std::vector<std::string> Model<T>::getParamNames() const {
 template <typename T>
 const std::string Model<T>::getParamName(int index) const {
     return param_names.at(index);
+}
+
+template <typename T>
+const size_t Model<T>::getParamIndex(std::string name) const {
+	for(size_t i = 0; i < param_names.size(); i++) {
+		if(param_names.at(i).compare(name) == 0)
+			return i;
+	}
+	return UINT_MAX;
 }
 
 template <typename T>

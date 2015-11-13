@@ -1,4 +1,5 @@
 apply plugin: 'java'
+apply plugin: 'kotlin'
 
 sourceCompatibility = 1.7
 version = '1.0'
@@ -15,6 +16,7 @@ dependencies {
     compile files('../libs/javabdd-1.0b2.jar')
     compile 'com.intellij:annotations:5.1'
     compile 'com.googlecode.javaewah:JavaEWAH:1.0.0'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 }
 
 
@@ -116,4 +118,17 @@ task fullJar(type: Jar) {
     baseName = project.name + '-full'
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
+}
+buildscript {
+    ext.kotlin_version = '1.0.0-beta-2417'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+sourceSets {
+    main.java.srcDirs += 'src/main/kotlin'
 }

@@ -242,6 +242,9 @@ bool Model<T>::checkParameterCombination(std::size_t& violatingVariableIndex) {
         for (Summember<T> s : equation) {
             if (s.hasParam()) {
                 paramDep.insert(s.GetParam() - 1);
+				
+	//TODO: in case of more parameters ratio here must be more sofisticated control
+	//...................
             }
         }
         // Control for simple combination of max of two parameters

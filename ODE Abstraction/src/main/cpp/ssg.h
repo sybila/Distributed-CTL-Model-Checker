@@ -995,7 +995,20 @@ double StateSpaceGenerator::value(const vector<size_t>& vertex, size_t dim, int&
 	double sum = 0;
 	
 	paramIndex = -1;
+	int realParamOneIndex = -1;
+	//in case of more parameters ratio it must be a vector
+	int realParamTwoIndex = -1;
 	
+	if(dataModel.hasEqMoreParams(dim)) {
+		
+		//background in case of parameters combination
+		paramIndex = dataModel.getParamIndexForVariable(dim);
+		std::string combinedParam = dataModel.getParamName(paramIndex);
+		std::size_t delim = combinedParam.find(':');
+		realParamOneIndex = dataModel.getParamIndex(combinedParam.substr(0,delim));
+		realParamTwoIndex = dataModel.getParamIndex(combinedParam.substr(delim+1));
+	}
+		
 	for(size_t s = 0; s < dataModel.getEquationForVariable(dim).size(); s++) {
 	
 		//adding value of constant in actual summember 's' of equation for variable 'dim'
@@ -1013,7 +1026,7 @@ double StateSpaceGenerator::value(const vector<size_t>& vertex, size_t dim, int&
 			
 			underSum *= thres;
 		}
-		//cerr << "start of evalueting of ramps\n";
+		
 		//adding enumerated ramps for actual summember 's' of equation for variable 'dim'
 		for(size_t r = 0; r < dataModel.getSumForVarByIndex(dim, s).GetRamps().size(); r++) {
 			//cerr << "ramp: " << dataModel.getSumForVarByIndex(dim, s).GetRamps().at(r) << endl;
@@ -1033,42 +1046,40 @@ double StateSpaceGenerator::value(const vector<size_t>& vertex, size_t dim, int&
 			
 			underSum *= dataModel.getSumForVarByIndex(dim, s).GetSteps().at(r).value(thres);
 		}
-		
-		/*
-		//adding enumerated hill functions for actual summember 's' of equation for variable 'dim'
-		for(size_t r = 0; r < dataModel.getSumForVarByIndex(dim, s).GetHills().size(); r++) {
-		
-			size_t hillVarIndex = dataModel.getSumForVarByIndex(dim, s).GetHills().at(r).dim -1;
-			double thres = dataModel.getThresholdForVarByIndex( hillVarIndex, vertex.at(hillVarIndex) );
-			
-			underSum *= dataModel.getSumForVarByIndex(dim, s).GetHills().at(r).value(thres);
-		}
-		*/
 
 		//adding average value of actual summember's parameter, if any exists
 		if(dataModel.getSumForVarByIndex(dim,s).hasParam()) {
 		
 			if(!parametrized) {
+				//model is not parametrised therefore we take average value of parameter
 				std::pair<double,double> param = dataModel.getParamRange(dataModel.getSumForVarByIndex(dim,s).GetParam() - 1);
-			
 				underSum *= (param.second + param.first) * 0.5;
 				
 				//adding enumerated summember 's' to sum
 				sum += underSum;
-				
 			} else {
-		
-				paramIndex = dataModel.getSumForVarByIndex(dim,s).GetParam() - 1;
-				denom += underSum;
+				//equation has parameter and model is parametrised
+				if(dataModel.hasEqMoreParams(dim)) {
+					//case with at least two uncertain parameters
+					int currentParamIndex = dataModel.getSumForVarByIndex(dim,s).GetParam() - 1;
+					
+					// equation:		p1*A + p2*B == 0 
+					// is modified to:	p1/p2 == B/A
+					if(currentParamIndex == realParamOneIndex)
+						denom += underSum;
+					if(currentParamIndex == realParamTwoIndex)
+						sum += underSum;
+				} else {
+					//case with only one uncertain parameter
+					paramIndex = dataModel.getSumForVarByIndex(dim,s).GetParam() - 1;
+					denom += underSum;
+				}
 			}
 			
 		} else {
-		
 			//adding enumerated summember 's' to sum
 			sum += underSum;
 		}
-		
-
 	}
 	
 	if ( dbg ) std::cerr << "final value = " << sum << std::endl;

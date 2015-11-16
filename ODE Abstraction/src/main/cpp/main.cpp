@@ -1,4 +1,5 @@
 #include <iostream>
+#include <set>
 #include "data_model/Model.h"
 #include "parser/parse.cc"
 #include "scanner/lex.cc"
@@ -25,35 +26,45 @@ int main(int argc, char** argv) {
             cout << "ERROR: equation for variable " << model.getVariable(checkResult) << " has too much of parameters\n";
             return(1);
         }
+/*
         for(int i = 0; i < model.getDims(); i++) {
             cout << "Equation for variable " << model.getVariable(i) << " has " << model.eqParamsCount(i) << " real params,\n";
 			
 			cout << "but using " << model.getParamName(model.getParamIndexForVariable(i)) << " with index " << model.getParamIndexForVariable(i) << endl;
         }
-/*
+*/
         model.RunAbstraction();
 
 		StateSpaceGenerator * generator = new StateSpaceGenerator(model, true);
 	    std::string var = model.getVariable(0);
-
+/*
 	    std::vector<std::list<std::pair<double, double> > > paramSpace;
         for(int i = 0; i < model.getParamSize(); i++) {
             std::list<std::pair<double, double> > param;
             param.push_back(std::pair<double, double>(model.getParamRanges().at(i)));
             paramSpace.push_back(param);
         }
+*/
         vector<pair<double,double> > paramSpace = model.getParamRanges();
-		vector<State> inits = generator->initAP(var,Operators::LS,5,paramSpace);
+		vector<State> inits = generator->initAP(var,Operators::LS,2,paramSpace);
+		int counter = 100;
 
-        for(State s : inits) {
-            vector<State> data = generator->getSucc(s);
-            std::cout << "Succ for: " << s << std::endl;
-            for (int j = 0; j < data.size(); ++j){
-                std::cout << data.at(j) << std::endl;
+		for(State s : inits) cout << s << endl;
+
+        for(int i = 0; i < inits.size(); i++) {
+            State s = inits.at(i);
+            if(counter == 0) break;
+            //State s = states.at(i);
+            vector<State> succs = generator->getSucc(s);
+            cout << "Succ for: " << s << endl;
+            for(State a : succs){
+                cout << a << endl;
+                inits.push_back(a);
             }
             std::cout << std::endl;
+            counter--;
         }
-
+/*
         std::cout << model.getParamRanges().at(0).first << " " << model.getParamRanges().at(0).second << std::endl;
 
 		std::vector<std::list<std::pair<double, double> > > paramSpace;
@@ -71,7 +82,7 @@ int main(int argc, char** argv) {
         	}
         }
 */
-        
+        delete generator;
        
     }
     return(0);

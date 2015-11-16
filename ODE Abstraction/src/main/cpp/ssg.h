@@ -435,8 +435,8 @@ vector<State> StateSpaceGenerator::getSucc(const State& s, bool biggestConvexHul
 
 vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, bool biggestConvexHullOfParamSubspace) {
 
-	vector<State> returnedStates;
-	
+	bool dbg = false;
+	vector<State> returnedStates;	
 	bool hasSelfloop = true;
 
 	// cycle through all variables (species / molecules)
@@ -473,7 +473,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 					if(abs(denom) != 0) {
 					
 						paramValues.push_back((-derivationValue/denom) == -0 ? 0 : (-derivationValue/denom));
-						cerr << dataModel.getParamName(paramIndex) << " = " << -derivationValue << "/" << denom << " = " << paramValues.back() << endl;
+						if(dbg) cerr << dataModel.getParamName(paramIndex) << " = " << -derivationValue << "/" << denom << " = " << paramValues.back() << endl;
 						
 						if(s.getColors().getParamSpace().at(paramIndex).empty())
 							cerr << "Error: no interval for parameter " << dataModel.getParamName(paramIndex) << endl;
@@ -584,7 +584,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 						} */
 						
 					} else {	// abs(denom) == 0 (ERGO: it might be at border of state space)
-						cerr << "derivation = " << derivationValue << " --> parameter unknown" << endl;
+						if(dbg) cerr << "derivation = " << derivationValue << " --> parameter unknown" << endl;
 						
 						if(isSucc) {
 							if(derivationValue < 0) {
@@ -618,7 +618,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 */						
 					}
 				} else {	// paramIndex == -1 (ERGO: no unknown parameter in equation)
-					cerr << "derivation = " << derivationValue << endl;					
+					if(dbg) cerr << "derivation = " << derivationValue << endl;					
 					if(derivationValue < 0) {
 						lowerNegativeDirection = true;
 					} else {	// zistit ci tu nema byt if(derivationValue > 0)
@@ -627,8 +627,8 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 				}
 			}
 			
-			cerr << "most left  param value on lower facet: " << mostLeftOneValue << endl;
-			cerr << "most right param value on lower facet: " << mostRightOneValue << endl;
+			if(dbg) cerr << "most left  param value on lower facet: " << mostLeftOneValue << endl;
+			if(dbg) cerr << "most right param value on lower facet: " << mostRightOneValue << endl;
 		
 			if(s.getCoors().at(v) != 0)	{
 				if(!isSucc) {
@@ -705,7 +705,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 				
 					if(abs(denom) != 0) {
 						paramValues.push_back((-derivationValue/denom) == -0 ? 0 : -derivationValue/denom);
-						cerr << dataModel.getParamName(paramIndex) << " = " << -derivationValue << "/" << denom << " = " << paramValues.back() << endl;
+						if(dbg) cerr << dataModel.getParamName(paramIndex) << " = " << -derivationValue << "/" << denom << " = " << paramValues.back() << endl;
 						
 						if(s.getColors().getParamSpace().at(paramIndex).empty())
 							cerr << "Error: no interval for parameter " << dataModel.getParamName(paramIndex) << endl;
@@ -816,7 +816,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 						} */
 						
 					} else {	// abs(denom) == 0 (ERGO: it might be at border of state space)
-						cerr << "derivation = " << derivationValue << " --> parameter unknown" << endl;					
+						if(dbg) cerr << "derivation = " << derivationValue << " --> parameter unknown" << endl;					
 						
 						if(!isSucc) {
 							if(derivationValue < 0) {
@@ -851,7 +851,7 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 					}
 					
 				} else {	// paramIndex == -1 (ERGO: no unknown parameter in equation)
-					cerr << "derivation = " << derivationValue << endl;					
+					if(dbg) cerr << "derivation = " << derivationValue << endl;					
 					if(derivationValue < 0) {
 						upperNegativeDirection = true;
 					} else {
@@ -860,8 +860,8 @@ vector<State> StateSpaceGenerator::getPredOrSucc(const State&  s, bool isSucc, b
 				}
 			}
 			
-			cerr << "most left  param value on upper facet: " << mostLeftOneValue << endl;
-			cerr << "most right param value on upper facet: " << mostRightOneValue << endl;
+			if(dbg) cerr << "most left  param value on upper facet: " << mostLeftOneValue << endl;
+			if(dbg) cerr << "most right param value on upper facet: " << mostRightOneValue << endl;
 		
 			if(s.getCoors().at(v) != dataModel.getThresholdsForVariable(v).size() -2) {		
 				if(!isSucc) {
@@ -957,7 +957,7 @@ vector<State> StateSpaceGenerator::initAP(string var, Operators op, double thres
 			break;
 		}
 	}
-	cerr << "Threshold found\n";
+	//cerr << "Threshold found\n";
 	
 	vector<State> result;
 	

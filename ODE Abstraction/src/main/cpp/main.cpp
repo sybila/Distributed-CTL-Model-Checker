@@ -36,17 +36,21 @@ int main(int argc, char** argv) {
         model.RunAbstraction();
 
 		StateSpaceGenerator * generator = new StateSpaceGenerator(model, true);
-	    std::string var = model.getVariable(0);
-/*
-	    std::vector<std::list<std::pair<double, double> > > paramSpace;
-        for(int i = 0; i < model.getParamSize(); i++) {
-            std::list<std::pair<double, double> > param;
-            param.push_back(std::pair<double, double>(model.getParamRanges().at(i)));
-            paramSpace.push_back(param);
+		int varIndex = 0;
+	    std::string varName = model.getVariable(varIndex);
+
+	    std::vector<std::pair<double, double> > subSpace;
+        for(int i = 0; i < model.getDims(); i++) {
+			if(i == varIndex) {
+				std::pair<double, double> space(0,model.getThresholdsForVariable(i).size()-1);
+				subSpace.push_back(space);
+			} else {
+				std::pair<double, double> space(0,1);
+				subSpace.push_back(space);
+			}
         }
-*/
-        vector<pair<double,double> > paramSpace = model.getParamRanges();
-		vector<State> inits = generator->initAP(var,Operators::LS,2,paramSpace);
+
+		vector<State> inits = generator->initAP(varName,Operators::LS,2,subSpace);
 		int counter = 100;
 
 		for(State s : inits) cout << s << endl;

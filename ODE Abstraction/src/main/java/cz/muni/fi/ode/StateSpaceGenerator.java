@@ -360,6 +360,20 @@ public class StateSpaceGenerator {
         denominator = 0;
         parameterIndex = -1;
 
+        int realParamOneIndex = -1;
+        //in case of more parameters ratio it must be a vector
+        int realParamTwoIndex = -1;
+
+        if(model.hasEqMoreParams(dim)) {
+
+            //background in case of parameters combination
+            parameterIndex = model.getParamIndexForVariable(dim);
+            String combinedParam = model.getParamName(parameterIndex);
+
+            realParamOneIndex = model.getParamIndex(combinedParam.split(":")[0]);
+            realParamTwoIndex = model.getParamIndex(combinedParam.split(":")[1]);
+        }
+
         for (@NotNull SumMember sumMember : model.getEquationForVariable(dim)) {
             //init partial sum to constant part of the equation member
             double partialSum = sumMember.getConstant();
@@ -386,9 +400,22 @@ public class StateSpaceGenerator {
             }
 
             if (sumMember.hasParam()) {
-                //we set values for following parameter splitting computation
-                parameterIndex = sumMember.getParam() - 1;
-                denominator += partialSum;
+                //equation has parameter and model is parametrised
+                if(model.hasEqMoreParams(dim)) {
+                    //case with at least two uncertain parameters
+                    int currentParamIndex = sumMember.getParam() - 1;
+
+                    // equation:		p1*A + p2*B == 0
+                    // is modified to:	p1/p2 == B/A
+                    if(currentParamIndex == realParamOneIndex)
+                        denominator += partialSum;
+                    if(currentParamIndex == realParamTwoIndex)
+                        derivationValue += partialSum;
+                } else {
+                    //we set values for following parameter splitting computation
+                    parameterIndex = sumMember.getParam() - 1;
+                    denominator += partialSum;
+                }
             } else {
                 //if sum member does not have a parameter, just add all of this to the final sum
                 derivationValue += partialSum;

@@ -16,6 +16,8 @@ int main(int argc, char** argv) {
 
     if (modelfile2.is_open()) {
 
+        srand(time(0));
+
         Parser parser(modelfile2);
         parser.parse();
 
@@ -36,7 +38,7 @@ int main(int argc, char** argv) {
         model.RunAbstraction();
 
 		StateSpaceGenerator * generator = new StateSpaceGenerator(model, true);
-		int varIndex = 0;
+		int varIndex = 3;
 	    std::string varName = model.getVariable(varIndex);
 
 	    std::vector<std::pair<double, double> > subSpace;
@@ -51,7 +53,7 @@ int main(int argc, char** argv) {
         }
 
 		vector<State> inits = generator->initAP(varName,Operators::LS,2,subSpace);
-		int counter = 100;
+		int counter = 10000;
 
 		for(State s : inits) cout << s << endl;
 
@@ -63,9 +65,10 @@ int main(int argc, char** argv) {
             cout << "Succ for: " << s << endl;
             for(State a : succs){
                 cout << a << endl;
-                inits.push_back(a);
+                //inits.push_back(a);
             }
             std::cout << std::endl;
+            inits.push_back(succs.at(rand()%succs.size()));
             counter--;
         }
 /*

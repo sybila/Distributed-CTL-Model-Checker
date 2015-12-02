@@ -1,0 +1,26 @@
+###############################################################################
+# Mutant form of TCP biodegradation model (using of DhaA31)                   #
+# parametrised over DhaA						      #
+###############################################################################
+
+VARS: TCP, R_DCP, ECH, CPD, GDL, GLY
+
+CONSTS: k_cat{TCP}{R_DCP},0.58; k_cat{R_DCP},1.81; k_cat{ECH},14.37; k_cat{CPD},2.38; k_cat{GDL},3.96; K_m{TCP},1.79; K_m{R_DCP},2.49; K_m{ECH},0.09; K_m{CPD},0.86; K_m{GDL},3.54
+
+PARAMS: DhaA,0,1; EchA,0,1; HheC,0,1
+
+EQ: TCP = -k_cat{TCP}{R_DCP}*DhaA*hillp(TCP,K_m{TCP},1,0,1)
+EQ: R_DCP = k_cat{TCP}{R_DCP}*DhaA*hillp(TCP,K_m{TCP},1,0,1) - k_cat{R_DCP}*HheC*hillp(R_DCP,K_m{R_DCP},1,0,1)
+EQ: ECH = k_cat{R_DCP}*HheC*hillp(R_DCP,K_m{R_DCP},1,0,1) - k_cat{ECH}*EchA*hillp(ECH,K_m{ECH},1,0,1)
+EQ: CPD = k_cat{ECH}*EchA*hillp(ECH,K_m{ECH},1,0,1) - k_cat{CPD}*HheC*hillp(CPD,K_m{CPD},1,0,1)
+EQ: GDL = k_cat{CPD}*HheC*hillp(CPD,K_m{CPD},1,0,1) - k_cat{GDL}*EchA*hillp(GDL,K_m{GDL},1,0,1)
+EQ: GLY = k_cat{GDL}*EchA*hillp(GDL,K_m{GDL},1,0,1)
+
+VAR_POINTS: TCP:500,10; R_DCP:500,10; ECH:500,10; CPD:500,10; GDL:500,10
+
+THRES: TCP:   0, 10
+THRES: R_DCP: 0, 10
+THRES: ECH:   0, 10
+THRES: CPD:   0, 10
+THRES: GDL:   0, 10
+THRES: GLY:   0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20

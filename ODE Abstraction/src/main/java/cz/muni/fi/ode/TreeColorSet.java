@@ -71,11 +71,11 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
 
     public TreeColorSet() {
     }
-
+/*
     public TreeColorSet(@NotNull Collection<? extends RangeSet<Double>> c) {
         super(c);
     }
-
+*/
     @Override
     public boolean union(@NotNull ColorSet set1) {
         @NotNull TreeColorSet set = (TreeColorSet) set1;

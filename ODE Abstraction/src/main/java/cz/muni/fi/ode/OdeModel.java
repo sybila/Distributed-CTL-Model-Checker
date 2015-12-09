@@ -1,6 +1,9 @@
 package cz.muni.fi.ode;
 
 import com.google.common.collect.Range;
+import com.microsoft.z3.Context;
+import com.microsoft.z3.RealExpr;
+import cz.muni.fi.modelchecker.graph.ColorSet;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -33,6 +36,9 @@ public class OdeModel {
     private long[] dimensionMultipliers;
     private long stateCount;
 
+    private Context defaultContext = new Context();
+    private RealExpr[] contextParameters;
+
     public OdeModel(String filename) {
         this.filename = filename;
     }
@@ -53,6 +59,13 @@ public class OdeModel {
             stateCount *= range.upperEndpoint() - range.lowerEndpoint() + 1;
         }
         System.err.println("Multipliers: "+ Arrays.toString(dimensionMultipliers));
+
+        if(parameterCount() > 0) {
+            contextParameters = new RealExpr[parameterCount()];
+            for(int i = 0; i < parameterCount(); i++) {
+                contextParameters[i] = defaultContext.mkRealConst("p" + i);
+            }
+        } else contextParameters = null;
     }
 
     public long nodeHash(@NotNull int[] nodeCoordinates) {
@@ -101,11 +114,37 @@ public class OdeModel {
 
     @NotNull
     public TreeColorSet getFullColorSet() {
+        //will be changed to create new ColorFormulae with defaultContext as initial parameter and initial constrains
+
         @NotNull TreeColorSet set = TreeColorSet.createEmpty(parameterRange.size());
         for (int i = 0; i < set.size(); i++) {
             set.get(i).add(parameterRange.get(i));
         }
         return set;
+    }
+
+    @NotNull
+    public TreeColorSet getEmptyColorSet() {
+
+        // will be changed to ColorFormulae instance with initial defaultContext parameter without constrains
+        @NotNull TreeColorSet set = new TreeColorSet();
+        //here will be added false assertion to the set
+        return set;
+    }
+
+    @NotNull
+    public Context getDefaultContext() {
+        return this.defaultContext;
+    }
+
+    @NotNull
+    public RealExpr[] getContextParameters() {
+        return this.contextParameters;
+    }
+
+    @NotNull
+    public RealExpr getContextParameter(int index) {
+        return this.contextParameters[index];
     }
 
     public int getVariableIndexByName(String var) {

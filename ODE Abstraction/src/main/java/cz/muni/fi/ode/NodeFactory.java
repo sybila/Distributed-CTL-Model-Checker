@@ -142,7 +142,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
     @Override
     public synchronized TreeColorSet validColorsFor(@NotNull CoordinateNode node, @NotNull Formula formula) {
         if (formula instanceof Tautology) return model.getFullColorSet();
-        if (formula instanceof Contradiction) return TreeColorSet.createEmpty(model.parameterCount());
+        if (formula instanceof Contradiction) return model.getEmptyColorSet();
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {
             @NotNull FloatProposition proposition = (FloatProposition) formula;
             revealedPropositions.add(proposition);
@@ -151,7 +151,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
             }
         }
         TreeColorSet colorSet = node.getValidColors(formula);
-        if (colorSet == null) return TreeColorSet.createEmpty(model.parameterCount());
+        if (colorSet == null) return model.getEmptyColorSet();
         return TreeColorSet.createCopy(colorSet);
     }
 

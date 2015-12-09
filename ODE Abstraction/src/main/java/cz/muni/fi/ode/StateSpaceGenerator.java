@@ -2,7 +2,9 @@ package cz.muni.fi.ode;
 
 import com.google.common.collect.Range;
 import com.google.common.math.IntMath;
+import com.microsoft.z3.*;
 import cz.muni.fi.ctl.formula.proposition.FloatProposition;
+import cz.muni.fi.modelchecker.graph.ColorSet;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -35,9 +37,8 @@ public class StateSpaceGenerator {
 
     //global data used by calculateValue function
     //global variables are ugly, but we need this to be really fast
-    private int parameterIndex = -1;
-    private double derivationValue = 0;
-    private double denominator = 0;
+    //(more info in constructor)
+    private Double[] equationConsts;
 
     /**
      * @param model ODE model with proper abstraction used as a source of data.
@@ -56,6 +57,19 @@ public class StateSpaceGenerator {
         coordinateBuffer = new int[model.getVariableCount()];
         needsMoreWork = new boolean[model.getVariableCount()];
 
+        // equation constants are evaluated constants each for one parameter (regardless of being part of particular
+        // equation - in that case the constant will be zero) and one (the last one) without parameter
+        this.equationConsts = new Double[model.parameterCount()+1];
+        for(int i = 0 ; i < model.parameterCount()+1; i++) {
+            this.equationConsts[i] = 0.0;
+        }
+/*
+        // aliases for all parameters in model will be used in Z3 SMT-solver as variables ( ctx.mkRealConst(paramNames[i]) )
+        this.paramNames = new String[model.parameterCount()];
+        for(int i = 0; i < model.parameterCount(); i++) {
+            this.paramNames[i] = "p"+i;
+        }
+*/
     }
 
     /**
@@ -137,205 +151,165 @@ public class StateSpaceGenerator {
     @NotNull
     private Map<CoordinateNode, TreeColorSet> getDirectedEdges(@NotNull CoordinateNode from, @NotNull TreeColorSet border, boolean successors) {
 
-        @NotNull Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
+        // temporary - finally it will be replaced by input parameter called border of type ColorFormulae
+        ColorFormulae color = new ColorFormulae(model.getDefaultContext());
+
+        //TODO: remove after renaming
+        @NotNull Map<CoordinateNode, TreeColorSet> results2 = new HashMap<>();
+        @NotNull Map<CoordinateNode, ColorSet> results = new HashMap<>();
 
         boolean hasSelfLoop = true;
 
         //go through all dimension of model and compute results for each of them separately
         for (int dimension = 0; dimension < model.getVariableCount(); dimension++) {
 
-            boolean lowerPositiveDirection = false;
-            boolean lowerNegativeDirection = false;
-            boolean upperPositiveDirection = false;
-            boolean upperNegativeDirection = false;
+            boolean lowerOutgoingDirection = false;
+            boolean lowerIncomingDirection = false;
+            boolean upperOutgoingDirection = false;
+            boolean upperIncomingDirection = false;
 
             @NotNull int[][] vertices = computeBorderVerticesForState(from, dimension, true);
 
-            double upperParameterSplit = Double.POSITIVE_INFINITY;
-            double lowerParameterSplit = Double.NEGATIVE_INFINITY;
+            //ColorFormulae outgoingDirectionExpressions = new ColorFormulae(color.getContext());
+            //ColorFormulae incomingDirectionExpressions = new ColorFormulae(color.getContext());
+            Expr outgoingDirectionExpression = color.getContext().mkFalse();
+            Expr incomingDirectionExpression = color.getContext().mkFalse();
 
             // cycle for every vertices in lower (n-1)-dimensional facet of this state
             for (int[] vertex : vertices) {
 
                 calculateValue(vertex, dimension);
 
-                if (parameterIndex != -1) {
-
-                    // lowest and highest values of parameter space for chosen variable
-                    Range<Double> paramBounds = border.get(parameterIndex).span();
-
-                    if (Math.abs(denominator) != 0) {
-
-                        double parameterSplitValue = (-derivationValue/denominator) == -0 ? 0 : -derivationValue/denominator;
-
-                        if(successors) {
-                            if(denominator < 0 && paramBounds.upperEndpoint() >= parameterSplitValue) {
-                                lowerNegativeDirection = true;
-
-                                if(lowerParameterSplit == Double.NEGATIVE_INFINITY || (lowerParameterSplit > parameterSplitValue))
-                                lowerParameterSplit = parameterSplitValue;
-                            }
-                            if(derivationValue < 0 && denominator > 0 && paramBounds.lowerEndpoint() <= parameterSplitValue) {
-                                lowerNegativeDirection = true;
-
-                                if(upperParameterSplit == Double.POSITIVE_INFINITY || (upperParameterSplit < parameterSplitValue)) {
-                                    upperParameterSplit = parameterSplitValue;
-                                }
-                            }
-                        } else {	// !successors
-                            if(denominator > 0 && paramBounds.upperEndpoint() >= parameterSplitValue) {
-                                lowerPositiveDirection = true;
-
-                                if(lowerParameterSplit == Double.NEGATIVE_INFINITY || (lowerParameterSplit > parameterSplitValue)) {
-                                    lowerParameterSplit = parameterSplitValue;
-                                }
-                            }
-                            if(derivationValue > 0 && denominator < 0 && paramBounds.lowerEndpoint() <= parameterSplitValue) {
-                                lowerPositiveDirection = true;
-
-                                if(upperParameterSplit == Double.POSITIVE_INFINITY || (upperParameterSplit < parameterSplitValue)) {
-                                    upperParameterSplit = parameterSplitValue;
-                                }
-                            }
-                        }
-                    } else {    // abs(denominator) == 0 (ERGO: it might be at border of state space)
-                        if(successors) {
-                            if(derivationValue < 0) {
-                                lowerNegativeDirection = true;
-                                lowerParameterSplit = paramBounds.lowerEndpoint(); //Double.NEGATIVE_INFINITY;
-                                upperParameterSplit = paramBounds.upperEndpoint(); //Double.POSITIVE_INFINITY;
-                            }
-                        } else {	// !successors
-                            if(derivationValue > 0) {
-                                lowerPositiveDirection = true;
-                                lowerParameterSplit = paramBounds.lowerEndpoint(); //Double.NEGATIVE_INFINITY;
-                                upperParameterSplit = paramBounds.upperEndpoint(); //Double.POSITIVE_INFINITY;
-                            }
-                        }
+                if(model.parameterCount() > 0) {
+                    // In this case model equations
+                    Context ctx = model.getDefaultContext(); //OR color.getContext();
+                    RealExpr zero = ctx.mkReal("0");
+                    RealExpr[] consts = new RealExpr[model.parameterCount()+1];
+                    int i = 0;
+                    for( ; i < model.parameterCount(); i++) {
+                        consts[i] = ctx.mkReal(equationConsts[i].toString());
                     }
-                } else {    // paramIndex == -1 (ERGO: no unknown parameter in equation)
-                    if (derivationValue < 0) {
-                        lowerNegativeDirection = true;
-                    } else {
-                        lowerPositiveDirection = true;
+                    consts[i] = ctx.mkReal(equationConsts[i].toString());
+
+                    Expr expr = ctx.mkMul(model.getContextParameter(0),consts[0]).simplify();
+                    for(i = 1; i < model.parameterCount(); i++) {
+                        expr = ctx.mkAdd((ArithExpr) expr,(ArithExpr) ctx.mkMul(model.getContextParameter(i),consts[i]).simplify()).simplify();
                     }
+                    expr = ctx.mkAdd((ArithExpr) expr, consts[i]).simplify();
+
+                    // on lower facet outgoing direction means equation's value is less or equal to zero and incoming means value is greater or equal to zero
+                    outgoingDirectionExpression = ctx.mkOr((BoolExpr) outgoingDirectionExpression, (BoolExpr) ctx.mkGe(zero, (ArithExpr) expr).simplify()).simplify();
+                    incomingDirectionExpression = ctx.mkOr((BoolExpr) incomingDirectionExpression, (BoolExpr) ctx.mkLe(zero, (ArithExpr) expr).simplify()).simplify();
+                    //outgoingDirectionExpressions.addAssertion(ctx.mkGe(zero, (ArithExpr) expr).simplify());
+                    //incomingDirectionExpressions.addAssertion(ctx.mkLe(zero, (ArithExpr) expr).simplify());
+
+                } else {
+                    // The case when model doesn't contain any parameter - whole equation becomes form f(x): 0 = c
+                    Context ctx = model.getDefaultContext(); //OR color.getContext();
+                    RealExpr zero = ctx.mkReal("0");
+                    RealExpr consts = ctx.mkReal(equationConsts[0].toString());
+
+                    // on lower facet outgoing direction means equation's value is less or equal to zero and incoming means value is greater or equal to zero
+                    outgoingDirectionExpression = ctx.mkOr((BoolExpr) outgoingDirectionExpression, (BoolExpr) ctx.mkGe(zero, consts).simplify()).simplify();
+                    incomingDirectionExpression = ctx.mkOr((BoolExpr) incomingDirectionExpression, (BoolExpr) ctx.mkLe(zero, consts).simplify()).simplify();
+                    //outgoingDirectionExpressions.addAssertion(ctx.mkGe(zero, consts).simplify());
+                    //incomingDirectionExpressions.addAssertion(ctx.mkLe(zero, consts).simplify());
                 }
-
             }
 
+            // Checking part - using of SMT-solver
+            ColorFormulae outgoingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
+            outgoingDirectionSolver.addAssertion(outgoingDirectionExpression);
+            lowerOutgoingDirection = outgoingDirectionSolver.check().equals(ColorFormulae.SAT);
+
+            ColorFormulae incomingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
+            incomingDirectionSolver.addAssertion(incomingDirectionExpression);
+            lowerIncomingDirection = incomingDirectionSolver.check().equals(ColorFormulae.SAT);
+
             if(from.coordinates[dimension] != 0)	{
-                if((successors && lowerNegativeDirection) || (!successors && lowerPositiveDirection)) {
+
+                if((successors && lowerOutgoingDirection) || (!successors && lowerIncomingDirection)) {
 
                     @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
                     newStateCoors[dimension] = newStateCoors[dimension] - 1;
 
-                    TreeColorSet newPS;
-                    if(parameterIndex != -1) {
-                        newPS = TreeColorSet.derivedColorSet(border, parameterIndex, lowerParameterSplit, upperParameterSplit);
-                    } else {
-                        newPS = TreeColorSet.createCopy(border);
-                    }
-
-                    results.put(factory.getNode(newStateCoors), newPS);
+                    if(successors)
+                        results.put(factory.getNode(newStateCoors), outgoingDirectionSolver);
+                    else
+                        results.put(factory.getNode(newStateCoors), incomingDirectionSolver);
                 }
+
             }
 
             vertices = computeBorderVerticesForState(from, dimension, false);
-            parameterIndex = -1;
-            upperParameterSplit = Double.POSITIVE_INFINITY;
-            lowerParameterSplit = Double.NEGATIVE_INFINITY;
+            outgoingDirectionExpression = color.getContext().mkFalse();
+            incomingDirectionExpression = color.getContext().mkFalse();
 
             // cycle for every vertices in higher (n-1)-dimensional facet of this state
             for (int[] vertex : vertices) {
 
                 calculateValue(vertex, dimension);
 
-                if (parameterIndex != -1) {
-
-                    // lowest and highest values of parameter space for chosen variable
-                    Range<Double> paramBounds = border.get(parameterIndex).span();
-
-                    if (Math.abs(denominator) != 0) {
-
-                        double parameterSplit = (-derivationValue/denominator) == -0 ? 0 : -derivationValue/denominator;
-
-                        if(!successors) {
-                            if(denominator < 0 && paramBounds.upperEndpoint() >= parameterSplit) {
-                                upperNegativeDirection = true;
-
-                                if(lowerParameterSplit == Double.NEGATIVE_INFINITY || (lowerParameterSplit > parameterSplit)) {
-                                    lowerParameterSplit = parameterSplit;
-                                }
-                            }
-                            if(derivationValue < 0 && denominator > 0 && paramBounds.lowerEndpoint() <= parameterSplit) {
-                                upperNegativeDirection = true;
-
-                                if(upperParameterSplit == Double.POSITIVE_INFINITY || (upperParameterSplit < parameterSplit)) {
-                                    upperParameterSplit = parameterSplit;
-                                }
-                            }
-                        } else {	// successors
-                            if(denominator > 0 && paramBounds.upperEndpoint() >= parameterSplit) {
-                                upperPositiveDirection = true;
-
-                                if(lowerParameterSplit == Double.NEGATIVE_INFINITY || (lowerParameterSplit > parameterSplit)) {
-                                    lowerParameterSplit = parameterSplit;
-                                }
-                            }
-                            if(derivationValue > 0 && denominator < 0 && paramBounds.lowerEndpoint() <= parameterSplit) {
-                                upperPositiveDirection = true;
-
-                                if(upperParameterSplit == Double.POSITIVE_INFINITY || (upperParameterSplit < parameterSplit)) {
-                                    upperParameterSplit = parameterSplit;
-                                }
-                            }
-                        }
-                    } else {    // abs(denominator) == 0 (ERGO: it might be at border of state space)
-
-                        if(!successors) {
-                            if(derivationValue < 0) {
-                                upperNegativeDirection = true;
-                                lowerParameterSplit = paramBounds.lowerEndpoint(); //Double.NEGATIVE_INFINITY;
-                                upperParameterSplit = paramBounds.upperEndpoint(); //Double.POSITIVE_INFINITY;
-                            }
-                        } else {	// successors
-                            if(derivationValue > 0) {
-                                upperPositiveDirection = true;
-                                lowerParameterSplit = paramBounds.lowerEndpoint(); //Double.NEGATIVE_INFINITY;
-                                upperParameterSplit = paramBounds.upperEndpoint(); //Double.POSITIVE_INFINITY;
-                            }
-                        }
+                if(model.parameterCount() > 0) {
+                    // In this case model equations
+                    Context ctx = model.getDefaultContext(); //OR color.getContext();
+                    RealExpr zero = ctx.mkReal("0");
+                    RealExpr[] consts = new RealExpr[model.parameterCount()+1];
+                    int i = 0;
+                    for( ; i < model.parameterCount(); i++) {
+                        consts[i] = ctx.mkReal(equationConsts[i].toString());
                     }
+                    consts[i] = ctx.mkReal(equationConsts[i].toString());
 
-                } else {    // paramIndex == -1 (ERGO: no unknown parameter in equation)
-                    if (derivationValue < 0) {
-                        upperNegativeDirection = true;
-                    } else {
-                        upperPositiveDirection = true;
+                    Expr expr = ctx.mkMul(model.getContextParameter(0),consts[0]).simplify();
+                    for(i = 1; i < model.parameterCount(); i++) {
+                        expr = ctx.mkAdd((ArithExpr) expr,(ArithExpr) ctx.mkMul(model.getContextParameter(i),consts[i]).simplify()).simplify();
                     }
+                    expr = ctx.mkAdd((ArithExpr) expr, consts[i]).simplify();
+
+                    // on upper facet outgoing direction means equation's value is greater or equal to zero and incoming means value is less or equal to zero
+                    outgoingDirectionExpression = ctx.mkOr((BoolExpr) outgoingDirectionExpression, (BoolExpr) ctx.mkLe(zero, (ArithExpr) expr).simplify()).simplify();
+                    incomingDirectionExpression = ctx.mkOr((BoolExpr) incomingDirectionExpression, (BoolExpr) ctx.mkGe(zero, (ArithExpr) expr).simplify()).simplify();
+
+                } else {
+                    // The case when model doesn't contain any parameter - whole equation becomes form f(x): 0 = c
+                    Context ctx = model.getDefaultContext(); //OR color.getContext();
+                    RealExpr zero = ctx.mkReal("0");
+                    RealExpr consts = ctx.mkReal(equationConsts[0].toString());
+
+                    // on upper facet outgoing direction means equation's value is greater or equal to zero and incoming means value is less or equal to zero
+                    outgoingDirectionExpression = ctx.mkOr((BoolExpr) outgoingDirectionExpression, (BoolExpr) ctx.mkLe(zero, consts).simplify()).simplify();
+                    incomingDirectionExpression = ctx.mkOr((BoolExpr) incomingDirectionExpression, (BoolExpr) ctx.mkGe(zero, consts).simplify()).simplify();
                 }
             }
 
+            // Checking part - using of SMT-solver
+            outgoingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
+            outgoingDirectionSolver.addAssertion(outgoingDirectionExpression);
+            upperOutgoingDirection = outgoingDirectionSolver.check().equals(ColorFormulae.SAT);
+
+            incomingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
+            incomingDirectionSolver.addAssertion(incomingDirectionExpression);
+            upperIncomingDirection = incomingDirectionSolver.check().equals(ColorFormulae.SAT);
+
             if(from.coordinates[dimension] != model.getThresholdRanges().get(dimension).upperEndpoint() - 1) {
-                if((successors && upperPositiveDirection) || (!successors && upperNegativeDirection)) {
+
+                if((successors && upperOutgoingDirection) || (!successors && upperIncomingDirection)) {
 
                     @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
                     newStateCoors[dimension] = newStateCoors[dimension] + 1;
 
-                    TreeColorSet newPS;
-                    if(parameterIndex != -1) {
-                        newPS = TreeColorSet.derivedColorSet(border, parameterIndex, lowerParameterSplit, upperParameterSplit);
-                    } else {
-                        newPS = TreeColorSet.createCopy(border);
-                    }
-
-                    results.put(factory.getNode(newStateCoors), newPS);
+                    if(successors)
+                        results.put(factory.getNode(newStateCoors), outgoingDirectionSolver);
+                    else
+                        results.put(factory.getNode(newStateCoors), incomingDirectionSolver);
                 }
+
             }
 
             if(hasSelfLoop) {
-                if(lowerPositiveDirection && upperPositiveDirection && !lowerNegativeDirection && !upperNegativeDirection ||
-                        !lowerPositiveDirection && !upperPositiveDirection && lowerNegativeDirection && upperNegativeDirection) {
+                if(lowerOutgoingDirection && upperOutgoingDirection && !lowerIncomingDirection && !upperIncomingDirection ||
+                        !lowerOutgoingDirection && !upperOutgoingDirection && lowerIncomingDirection && upperIncomingDirection) {
 
                     hasSelfLoop = false;
                 }
@@ -346,7 +320,7 @@ public class StateSpaceGenerator {
             results.put(from, border);
         }
 
-        return results;
+        return results2;
     }
 
     /**
@@ -356,9 +330,12 @@ public class StateSpaceGenerator {
      * @param dim Index of variable whose function should be evaluated.
      */
     private void calculateValue(int[] vertex, int dim) {
-        derivationValue = 0;
-        denominator = 0;
-        parameterIndex = -1;
+        //derivationValue = 0;
+        //denominator = 0;
+        //parameterIndex = -1;
+        for(int i = 0; i < model.parameterCount()+1; i++) {
+            equationConsts[i] = 0.0;
+        }
 
         for (@NotNull SumMember sumMember : model.getEquationForVariable(dim)) {
             //init partial sum to constant part of the equation member
@@ -386,15 +363,24 @@ public class StateSpaceGenerator {
             }
 
             if (sumMember.hasParam()) {
+                //OLD WAY
                 //we set values for following parameter splitting computation
-                parameterIndex = sumMember.getParam() - 1;
-                denominator += partialSum;
-            } else {
-                //if sum member does not have a parameter, just add all of this to the final sum
-                derivationValue += partialSum;
-            }
+                //parameterIndex = sumMember.getParam() - 1;
+                //denominator += partialSum;
 
+                //NEW WAY - summember value is added into global array of equation constants for particular parameter
+                // given by right index, if summember doesn't contain particular param its constant stays zero
+                equationConsts[sumMember.getParam() - 1] += partialSum;
+            } else {
+                //OLD WAY
+                //if sum member does not have a parameter, just add all of this to the final sum
+                //derivationValue += partialSum;
+
+                //NEW WAY - the case when summember has no parameter therefore the value is added to lonely constant
+                equationConsts[model.parameterCount()+1] += partialSum;
+            }
         }
+
     }
 
     /**

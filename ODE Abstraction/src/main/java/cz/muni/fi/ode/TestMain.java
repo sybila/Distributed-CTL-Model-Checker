@@ -8,27 +8,88 @@ import com.microsoft.z3.*;
 public class TestMain {
 
     public static void main(String[] args) {
+        System.out.println("TestMain for ColorFormulae class");
+
+        int paramCount = 3;
+        Context ctx = new Context();
+        RealExpr zero = ctx.mkReal("0");
+        RealExpr x = ctx.mkRealConst("x");
+        RealExpr y = ctx.mkRealConst("y");
+        RealExpr z = ctx.mkRealConst("z");
+
+        Expr ex = ctx.mkAdd(x,y,z);
+        Expr expr = ctx.mkLt(zero, (ArithExpr) ex).simplify();
+
+        ColorFormulae cf = new ColorFormulae(ctx);
+        cf.addAssertion(expr.simplify());
+        System.out.println(cf);
+        System.out.println(cf.check());
+/*
+        Context ctx2 = new Context();
+        RealExpr zero2 = ctx2.mkReal("0");
+        RealExpr x2 = ctx2.mkRealConst("x");
+        RealExpr y2 = ctx2.mkRealConst("y");
+        RealExpr z2 = ctx2.mkRealConst("z");
+
+        Expr ex2 = ctx2.mkAdd(x2,y2,z2);
+        Expr expr2 = ctx2.mkLt(zero2, (ArithExpr) ex2).simplify();
+*/
+        ColorFormulae cf2 = new ColorFormulae(cf.getContext());
+        cf2.addAssertion(ctx.mkNot((BoolExpr) expr).simplify());
+        System.out.println(cf2);
+        System.out.println(cf2.check());
+
+        ColorFormulae cfempty = new ColorFormulae(ctx);
+        cfempty.addAssertion(ctx.mkFalse());
+
+        cf.intersect(cf2);
+        System.out.println(cf);
+        System.out.println(cf.check());
+
+        cf.union(cf2);
+        System.out.println(cf);
+        System.out.println(cf.check());
+
+        cf.subtract(cf2);
+        System.out.println(cf);
+        System.out.println(cf.check());
+
+        System.out.println(cfempty);
+        System.out.println(cfempty.check());
+
+        System.out.println(cf2);
+        System.out.println(cf2.check());
+
+        cf2.intersect(cfempty);
+        System.out.println(cf2);
+        System.out.println(cf2.check());
+    }
+
+    public static void main3(String[] args) {
         System.out.println("TestMain for Z3");
 
         int paramCount = 3;
         String[] paramNames = new String[] {"p1","p2","p3"};
-        Double[] paramConsts = new Double[] {1.5, -0.02, 0.0};
+        Double[] paramConsts = new Double[] {1.5, -0.02, 0.0, -4.3};
 
         Context ctx = new Context();
 
         final RealExpr zero = ctx.mkReal("0");
         RealExpr[] params = new RealExpr[paramCount];
-        RealExpr[] consts = new RealExpr[paramCount];
-        for(int i = 0; i < paramCount; i++) {
+        RealExpr[] consts = new RealExpr[paramCount+1];
+        int i = 0;
+        for( ; i < paramCount; i++) {
             params[i] = ctx.mkRealConst(paramNames[i]);
             consts[i] = ctx.mkReal(paramConsts[i].toString());
         }
+        consts[i] = ctx.mkReal(paramConsts[i].toString());
 
-        Expr expr = ctx.mkMul(params[0],consts[0]);
-        for(int i = 1; i < paramCount; i++) {
-            expr = ctx.mkAdd((ArithExpr) expr, ctx.mkMul(params[i],consts[i]));
+        Expr expr = ctx.mkMul(params[0],consts[0]).simplify();
+        for(i = 1; i < paramCount; i++) {
+            expr = ctx.mkAdd((ArithExpr) expr,(ArithExpr) ctx.mkMul(params[i],consts[i]).simplify()).simplify();
         }
-        expr = ctx.mkLt(zero, (ArithExpr) expr);
+        expr = ctx.mkAdd((ArithExpr) expr, consts[i]).simplify();
+        expr = ctx.mkLt(zero, (ArithExpr) expr).simplify();
 
 //        RealExpr x = ctx.mkRealConst("x");
 //        RealExpr y = ctx.mkRealConst("y");
@@ -39,27 +100,37 @@ public class TestMain {
 //        BoolExpr expr = ctx.parseSMTLIB2String("x > y + 3");
 //        Expr expr = ctx.mkLt(x, ctx.mkSub(a, ctx.mkAdd(x, y))); // x < a - (x + y)
 
-        System.out.println(expr);
-        System.out.println(expr.simplify());
+//        System.out.println(expr);
 
+        ColorFormulae cf = new ColorFormulae(ctx);
+        cf.addAssertion(expr);
+        System.out.println(cf);
+        System.out.println(cf.check());
 
-        Solver s = ctx.mkSolver();
-
-        s.add(ctx.mkLt(params[0],params[1]));
-        s.add((BoolExpr)expr);
-        //s.add(ctx.mkAnd((BoolExpr) expr,ctx.mkLt(params[0],params[1])));
-
-        if(s.check() == Status.SATISFIABLE) {
-            System.out.println("Sat");
-            System.out.println(s.getModel());
-        } else
-            System.out.println("Unsat");
-/*
-        System.out.println("Arguments:");
-        for(Expr ex : s.getAssertions()) {
-            for (Expr e : ex.getArgs()) System.out.println(e);
-            System.out.println("---");
+        Double[] paramConsts2 = new Double[] {0.0, 0.02, -2.0, 0.0};
+        RealExpr[] consts2 = new RealExpr[paramCount+1];
+        i = 0;
+        for( ; i < paramCount; i++) {
+//            params[i] = ctx.mkRealConst(paramNames[i]);
+            consts2[i] = ctx.mkReal(paramConsts2[i].toString());
         }
-*/
+        consts2[i] = ctx.mkReal(paramConsts2[i].toString());
+
+        expr = ctx.mkMul(params[0],consts2[0]).simplify();
+        for(i = 1; i < paramCount; i++) {
+            expr = ctx.mkAdd((ArithExpr) expr,(ArithExpr) ctx.mkMul(params[i],consts2[i]).simplify()).simplify();
+        }
+        expr = ctx.mkAdd((ArithExpr) expr, consts2[i]).simplify();
+        expr = ctx.mkLt(zero, (ArithExpr) expr).simplify();
+
+        ColorFormulae cf2 = new ColorFormulae(ctx);
+        cf2.addAssertion(expr);
+        System.out.println(cf2);
+        System.out.println(cf2.check());
+
+        cf.intersect(cf2);
+        System.out.println(cf);
+        System.out.println(cf.check());
+
     }
 }

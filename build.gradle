@@ -20,7 +20,7 @@ allprojects {
         compiler = "C:\\mingw-w64\\x86_64-5.2.0-win32-seh-rt_v4-rev0\\mingw64\\bin\\g++.exe"
         //path to your jdk home folder
 //        jdk = "/Library/Java/JavaVirtualMachines/jdk1.7.0_71.jdk/Contents/Home"
-        jdk = "C:\\Program Files (x86)\\Java\\jdk1.8.0_65\\bin"
+        jdk = "C:\\Program Files (x86)\\Java\\jdk1.8.0_65"
         //allowed values: linux/darwin (windows is not supported for now)
         os = "darwin"
     }

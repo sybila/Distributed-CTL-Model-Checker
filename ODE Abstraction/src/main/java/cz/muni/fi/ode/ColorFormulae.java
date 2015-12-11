@@ -1,13 +1,9 @@
 package cz.muni.fi.ode;
 
-import com.google.common.collect.Range;
-import com.google.common.collect.RangeSet;
-import com.google.common.collect.TreeRangeSet;
 import com.microsoft.z3.*;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Set;
 
 /**
  * Created by User on 7.12.15.

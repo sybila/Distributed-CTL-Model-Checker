@@ -44,9 +44,9 @@ public class TransitionMain {
             }
             exported.variables.add(variable);
         }
-
-        for (Map.Entry<CoordinateNode, TreeColorSet> entry : factory.initialNodes(Tautology.INSTANCE).entrySet()) {
-            for (Map.Entry<CoordinateNode, TreeColorSet> succ : factory.successorsFor(entry.getKey(), null).entrySet()) {
+/*      //TODO: temporary - not necessary for run
+        for (Map.Entry<CoordinateNode, ColorFormulae> entry : factory.initialNodes(Tautology.INSTANCE).entrySet()) {
+            for (Map.Entry<CoordinateNode, ColorFormulae> succ : factory.successorsFor(entry.getKey(), null).entrySet()) {
                 Transition transition = new Transition();
                 transition.source = convertNode(entry.getKey());
                 transition.destination = convertNode(succ.getKey());
@@ -63,7 +63,7 @@ public class TransitionMain {
                 exported.transitions.add(transition);
             }
         }
-
+*/
         System.out.println(gson.toJson(exported));
 
     }

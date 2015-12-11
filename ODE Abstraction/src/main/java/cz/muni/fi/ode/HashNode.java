@@ -27,8 +27,8 @@ public class HashNode implements Node {
     public final short owner;
 
     //these are package private so we can use other classes to print them
-    final Map<Formula, TreeColorSet> formulae = new HashMap<>();
-    Map<HashNode, TreeColorSet> predecessors;
+    final Map<Formula, ColorFormulae> formulae = new HashMap<>();
+    Map<HashNode, ColorFormulae> predecessors;
 
     /**
      * @param hash Hash ID of the node.
@@ -49,7 +49,7 @@ public class HashNode implements Node {
     /**
      * @param predecessors Predecessors that should be saved in this node.
      */
-    public synchronized void savePredecessors(@NotNull Map<HashNode, TreeColorSet> predecessors) {
+    public synchronized void savePredecessors(@NotNull Map<HashNode, ColorFormulae> predecessors) {
         if (this.predecessors != null) {
             throw new IllegalStateException("Adding predecessors to state which already has them: "+toString());
         }
@@ -62,13 +62,13 @@ public class HashNode implements Node {
      * @param borders Parametric set that constrains the relevant edges.
      * @return Predecessors of this node that satisfy given constrain.
      */
-    @NotNull public synchronized Map<HashNode, TreeColorSet> getPredecessors(@NotNull TreeColorSet borders) {
+    @NotNull public synchronized Map<HashNode, ColorFormulae> getPredecessors(@NotNull ColorFormulae borders) {
         if (predecessors == null) {
             throw new IllegalStateException("Reading predecessors of state which does not have them: "+toString());
         }
-        @NotNull Map<HashNode, TreeColorSet> results = new HashMap<>();
-        for (@NotNull Map.Entry<HashNode, TreeColorSet> entry : predecessors.entrySet()) {
-            @NotNull TreeColorSet colorSet = TreeColorSet.createCopy(entry.getValue());
+        @NotNull Map<HashNode, ColorFormulae> results = new HashMap<>();
+        for (@NotNull Map.Entry<HashNode, ColorFormulae> entry : predecessors.entrySet()) {
+            @NotNull ColorFormulae colorSet = (ColorFormulae) ColorFormulae.createCopy(entry.getValue());
             colorSet.intersect(borders);
             if (!colorSet.isEmpty()) {
                 results.put(entry.getKey(), colorSet);
@@ -88,7 +88,7 @@ public class HashNode implements Node {
      * Return colors for which given formula holds in this node.
      * @return Null if formula does not hold in this node.
      */
-    @Nullable public synchronized TreeColorSet getValidColors(@NotNull Formula formula) {
+    @Nullable public synchronized ColorFormulae getValidColors(@NotNull Formula formula) {
         return formulae.get(formula);
     }
 
@@ -99,11 +99,11 @@ public class HashNode implements Node {
      * @param colors Color set for which formula holds.
      * @return True if any new information has been obtained, false otherwise.
      */
-    public synchronized boolean addFormula(Formula formula, @NotNull TreeColorSet colors) {
+    public synchronized boolean addFormula(Formula formula, @NotNull ColorFormulae colors) {
         if (colors.isEmpty()) return false;
-        TreeColorSet colorSet = formulae.get(formula);
+        ColorFormulae colorSet = formulae.get(formula);
         if (colorSet == null) {
-            formulae.put(formula, TreeColorSet.createCopy(colors));
+            formulae.put(formula, (ColorFormulae) ColorFormulae.createCopy(colors));
             return true;
         } else {
             if (colorSet.encloses(colors)) {

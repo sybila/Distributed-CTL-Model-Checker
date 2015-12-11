@@ -1,6 +1,12 @@
 package cz.muni.fi.ode;
 
 import com.microsoft.z3.*;
+import cz.muni.fi.ctl.formula.proposition.Tautology;
+import cz.muni.fi.ode.*;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * Created by User on 6.12.15.
@@ -8,6 +14,26 @@ import com.microsoft.z3.*;
 public class TestMain {
 
     public static void main(String[] args) {
+        String filen = "C:\\Users\\User\\skola\\pracovny\\Java\\biodivineCTL-git\\biodivineCTL\\ODE Abstraction\\src\\main\\java\\cz\\muni\\fi\\ode\\model.bio";
+        //System.out.println(args[args.length - 1]);
+        //read and prepare model
+        @NotNull OdeModel model = new OdeModel(filen);
+        model.load();
+
+        @NotNull HashPartitioner partitioner = new HashPartitioner(model, 1, 0);
+        @NotNull NodeFactory factory = new NodeFactory(model, partitioner);
+        @NotNull StateSpaceGenerator generator = new StateSpaceGenerator(model, factory, partitioner.getMyLimit());
+        factory.setGenerator(generator);
+
+        Map<CoordinateNode, ColorFormulae> initial = factory.initialNodes(Tautology.INSTANCE);
+        for(Map.Entry<CoordinateNode,ColorFormulae> entry : initial.entrySet()) {
+            System.out.println("Node:\n"+entry.getKey().toString());
+            System.out.println("ColorSet:\n"+entry.getValue().toString());
+            System.out.println("---------------------------------------");
+        }
+    }
+
+    public static void main2(String[] args) {
         System.out.println("TestMain for ColorFormulae class");
 
         int paramCount = 3;

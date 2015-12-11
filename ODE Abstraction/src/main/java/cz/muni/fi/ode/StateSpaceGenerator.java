@@ -79,7 +79,7 @@ public class StateSpaceGenerator {
      * @return A set of transitions in form of a map with "predecessor->transition borders" pairs.
      */
     @NotNull
-    public Map<CoordinateNode, TreeColorSet> getPredecessors(@NotNull CoordinateNode from, @NotNull TreeColorSet borders) {
+    public Map<CoordinateNode, ColorFormulae> getPredecessors(@NotNull CoordinateNode from, @NotNull ColorFormulae borders) {
         return getDirectedEdges(from, borders, false);
     }
 
@@ -90,7 +90,7 @@ public class StateSpaceGenerator {
      * @return A set of transitions in form of a map with "successor->transition borders" pairs.
      */
     @NotNull
-    public Map<CoordinateNode, TreeColorSet> getSuccessors(@NotNull CoordinateNode from, @NotNull TreeColorSet borders) {
+    public Map<CoordinateNode, ColorFormulae> getSuccessors(@NotNull CoordinateNode from, @NotNull ColorFormulae borders) {
         return getDirectedEdges(from, borders, true);
     }
 
@@ -149,13 +149,13 @@ public class StateSpaceGenerator {
     }
 
     @NotNull
-    private Map<CoordinateNode, TreeColorSet> getDirectedEdges(@NotNull CoordinateNode from, @NotNull TreeColorSet border, boolean successors) {
+    private Map<CoordinateNode, ColorFormulae> getDirectedEdges(@NotNull CoordinateNode from, @NotNull ColorFormulae border, boolean successors) {
 
         // temporary - finally it will be replaced by input parameter called border of type ColorFormulae
         ColorFormulae color = new ColorFormulae(model.getDefaultContext());
 
         //TODO: remove after renaming
-        @NotNull Map<CoordinateNode, TreeColorSet> results2 = new HashMap<>();
+        @NotNull Map<CoordinateNode, ColorFormulae> results2 = new HashMap<>();
         @NotNull Map<CoordinateNode, ColorSet> results = new HashMap<>();
 
         boolean hasSelfLoop = true;

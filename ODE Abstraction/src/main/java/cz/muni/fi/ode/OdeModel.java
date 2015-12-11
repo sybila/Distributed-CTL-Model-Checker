@@ -2,6 +2,7 @@ package cz.muni.fi.ode;
 
 import com.google.common.collect.Range;
 import com.microsoft.z3.Context;
+import com.microsoft.z3.Expr;
 import com.microsoft.z3.RealExpr;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import org.jetbrains.annotations.NotNull;
@@ -66,6 +67,7 @@ public class OdeModel {
                 contextParameters[i] = defaultContext.mkRealConst("p" + i);
             }
         } else contextParameters = null;
+
     }
 
     public long nodeHash(@NotNull int[] nodeCoordinates) {
@@ -113,22 +115,29 @@ public class OdeModel {
     }
 
     @NotNull
-    public TreeColorSet getFullColorSet() {
-        //will be changed to create new ColorFormulae with defaultContext as initial parameter and initial constrains
+    public ColorFormulae getFullColorSet() {
 
-        @NotNull TreeColorSet set = TreeColorSet.createEmpty(parameterRange.size());
-        for (int i = 0; i < set.size(); i++) {
-            set.get(i).add(parameterRange.get(i));
+        // creation of new ColorFormulae with defaultContext as initial parameter and initial constrains
+        @NotNull ColorFormulae set = new ColorFormulae(getDefaultContext());
+        Expr[] exprs = new Expr[parameterCount()];
+        for(int i = 0; i < parameterCount(); i++) {
+            Range<Double> range = getParameterRange().get(i);
+            RealExpr lower = set.getContext().mkReal(range.lowerEndpoint().toString());
+            RealExpr upper = set.getContext().mkReal(range.upperEndpoint().toString());
+
+            // setting bounds on parameter space as intervals
+            exprs[i] = set.getContext().mkAnd(set.getContext().mkGe(getContextParameter(i),lower),set.getContext().mkLe(getContextParameter(i),upper));
         }
+        set.addAssertions(exprs);
         return set;
     }
 
     @NotNull
-    public TreeColorSet getEmptyColorSet() {
+    public ColorFormulae getEmptyColorSet() {
 
-        // will be changed to ColorFormulae instance with initial defaultContext parameter without constrains
-        @NotNull TreeColorSet set = new TreeColorSet();
-        //here will be added false assertion to the set
+        // creation of new ColorFormulae instance with initial defaultContext parameter with unsatisfiable constrain
+        @NotNull ColorFormulae set = new ColorFormulae(getDefaultContext());
+        set.addAssertion(set.getContext().mkFalse());
         return set;
     }
 

@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
+public class NodeFactory implements ModelAdapter<CoordinateNode, ColorFormulae> {
 
 
     @NotNull
@@ -55,12 +55,12 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
 
     @NotNull
     @Override
-    public synchronized Map<CoordinateNode, TreeColorSet> predecessorsFor(@NotNull CoordinateNode to, @org.jetbrains.annotations.Nullable @Nullable TreeColorSet borders) {
+    public synchronized Map<CoordinateNode, ColorFormulae> predecessorsFor(@NotNull CoordinateNode to, @org.jetbrains.annotations.Nullable @Nullable ColorFormulae borders) {
         if (borders == null) {
             borders = model.getFullColorSet();
         }
         if (!to.hasPredecessorsFor()) {
-            Map<CoordinateNode, TreeColorSet> results = generator.getPredecessors(to, model.getFullColorSet());//getNativePredecessors(to.coordinates, model.getFullColorSet(), new HashMap<CoordinateNode, TreeColorSet>());
+            Map<CoordinateNode, ColorFormulae> results = generator.getPredecessors(to, model.getFullColorSet());//getNativePredecessors(to.coordinates, model.getFullColorSet(), new HashMap<CoordinateNode, ColorFormulae>());
             to.savePredecessors(results);
         }
         return to.getPredecessors(borders);
@@ -68,22 +68,22 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
 
     @NotNull
     @Override
-    public synchronized Map<CoordinateNode, TreeColorSet> successorsFor(@NotNull CoordinateNode from, @org.jetbrains.annotations.Nullable @Nullable TreeColorSet borders) {
+    public synchronized Map<CoordinateNode, ColorFormulae> successorsFor(@NotNull CoordinateNode from, @org.jetbrains.annotations.Nullable @Nullable ColorFormulae borders) {
         if (borders == null) {
             borders = model.getFullColorSet();
         }
-        return generator.getSuccessors(from, borders); //getNativeSuccessors(from.coordinates, borders, new HashMap<CoordinateNode, TreeColorSet>());
+        return generator.getSuccessors(from, borders); //getNativeSuccessors(from.coordinates, borders, new HashMap<CoordinateNode, ColorFormulae>());
     }
 
     @NotNull
     @Override
-    public synchronized Map<CoordinateNode, TreeColorSet> initialNodes(@NotNull Formula formula) {
+    public synchronized Map<CoordinateNode, ColorFormulae> initialNodes(@NotNull Formula formula) {
         if (formula instanceof Tautology) {
             if (!hasAllNodes) {
                 generator.cacheAllNodes();
                 hasAllNodes = true;
             }
-            @NotNull Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
+            @NotNull Map<CoordinateNode, ColorFormulae> results = new HashMap<>();
             for (CoordinateNode node : nodeCache.values()) {
                 results.put(node, model.getFullColorSet());
             }
@@ -102,11 +102,11 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
             //values are not exclusively our inner nodes, so we can't return them directly.
             //return values;
         }
-        @NotNull Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
+        @NotNull Map<CoordinateNode, ColorFormulae> results = new HashMap<>();
         for (CoordinateNode node : nodeCache.values()) {
-            TreeColorSet validColors = node.getValidColors(formula);
+            ColorFormulae validColors = node.getValidColors(formula);
             if (validColors != null && !validColors.isEmpty()) {
-                results.put(node, TreeColorSet.createCopy(validColors));
+                results.put(node, (ColorFormulae) ColorFormulae.createCopy(validColors));
             }
         }
         return results;
@@ -114,15 +114,15 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
 
     @NotNull
     @Override
-    public synchronized Map<CoordinateNode, TreeColorSet> invertNodeSet(@NotNull Map<CoordinateNode, TreeColorSet> nodes) {
+    public synchronized Map<CoordinateNode, ColorFormulae> invertNodeSet(@NotNull Map<CoordinateNode, ColorFormulae> nodes) {
         if (!hasAllNodes) {
             generator.cacheAllNodes();
             hasAllNodes = true;
         }
-        @NotNull Map<CoordinateNode, TreeColorSet> results = new HashMap<>();
+        @NotNull Map<CoordinateNode, ColorFormulae> results = new HashMap<>();
         for (CoordinateNode n : nodeCache.values()) {
-            @NotNull TreeColorSet full = model.getFullColorSet();
-            TreeColorSet anti = nodes.get(n);
+            @NotNull ColorFormulae full = model.getFullColorSet();
+            ColorFormulae anti = nodes.get(n);
             if (anti != null) {
                 full.subtract(anti);
             }
@@ -134,13 +134,13 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
     }
 
     @Override
-    public synchronized boolean addFormula(@NotNull CoordinateNode node, @NotNull Formula formula, @NotNull TreeColorSet parameters) {
+    public synchronized boolean addFormula(@NotNull CoordinateNode node, @NotNull Formula formula, @NotNull ColorFormulae parameters) {
         return node.addFormula(formula, parameters);
     }
 
     @NotNull
     @Override
-    public synchronized TreeColorSet validColorsFor(@NotNull CoordinateNode node, @NotNull Formula formula) {
+    public synchronized ColorFormulae validColorsFor(@NotNull CoordinateNode node, @NotNull Formula formula) {
         if (formula instanceof Tautology) return model.getFullColorSet();
         if (formula instanceof Contradiction) return model.getEmptyColorSet();
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {
@@ -150,9 +150,9 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, TreeColorSet> {
                 n.addFormula(proposition, model.getFullColorSet());
             }
         }
-        TreeColorSet colorSet = node.getValidColors(formula);
+        ColorFormulae colorSet = node.getValidColors(formula);
         if (colorSet == null) return model.getEmptyColorSet();
-        return TreeColorSet.createCopy(colorSet);
+        return (ColorFormulae) ColorFormulae.createCopy(colorSet);
     }
 
     @Override

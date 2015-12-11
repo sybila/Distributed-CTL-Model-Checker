@@ -29,30 +29,30 @@ public class PatternMain {
         @NotNull StateSpaceGenerator generator = new StateSpaceGenerator(model, factory, partitioner.getMyLimit());
         factory.setGenerator(generator);
 
-        Map<CoordinateNode, TreeColorSet> sinks = new HashMap<>();
-        Map<CoordinateNode, TreeColorSet> sources = new HashMap<>();
+        Map<CoordinateNode, ColorFormulae> sinks = new HashMap<>();
+        Map<CoordinateNode, ColorFormulae> sources = new HashMap<>();
 
-        Map<CoordinateNode, TreeColorSet> initial = factory.initialNodes(Tautology.INSTANCE);
-        for (Map.Entry<CoordinateNode, TreeColorSet> entry : initial.entrySet()) {
+        Map<CoordinateNode, ColorFormulae> initial = factory.initialNodes(Tautology.INSTANCE);
+        for (Map.Entry<CoordinateNode, ColorFormulae> entry : initial.entrySet()) {
 
 
             CoordinateNode node = entry.getKey();
 
-            Map<CoordinateNode, TreeColorSet> successors = factory.successorsFor(node, null);
-            Map<CoordinateNode, TreeColorSet> predecessors = factory.predecessorsFor(node, null);
+            Map<CoordinateNode, ColorFormulae> successors = factory.successorsFor(node, null);
+            Map<CoordinateNode, ColorFormulae> predecessors = factory.predecessorsFor(node, null);
 
             //if we have enough edges
             if (args.length > 1 || predecessors.size() >= 2*model.getVariableCount()) {
-                TreeColorSet sinkColours = model.getFullColorSet();
+                ColorFormulae sinkColours = model.getFullColorSet();
 
-                for (Map.Entry<CoordinateNode, TreeColorSet> predecessor : predecessors.entrySet()) {
+                for (Map.Entry<CoordinateNode, ColorFormulae> predecessor : predecessors.entrySet()) {
                     if (predecessor.getKey().equals(node)) continue;    //skip self loops
                     sinkColours.intersect(predecessor.getValue());
                     if (sinkColours.isEmpty()) break;
                 }
 
                 if (!sinkColours.isEmpty()) {
-                    for (Map.Entry<CoordinateNode, TreeColorSet> successor : successors.entrySet()) {
+                    for (Map.Entry<CoordinateNode, ColorFormulae> successor : successors.entrySet()) {
                         if (successor.getKey().equals(node)) continue;    //skip self loops
                         sinkColours.subtract(successor.getValue());
                         if (sinkColours.isEmpty()) break;
@@ -67,9 +67,9 @@ public class PatternMain {
             }
 
             if (args.length > 1 || successors.size() >= 2*model.getVariableCount()) {
-                TreeColorSet sourceColours = model.getFullColorSet();
+                ColorFormulae sourceColours = model.getFullColorSet();
 
-                for (Map.Entry<CoordinateNode, TreeColorSet> successor : successors.entrySet()) {
+                for (Map.Entry<CoordinateNode, ColorFormulae> successor : successors.entrySet()) {
                     if (successor.getKey().equals(node)) continue;    //skip self loops
                     sourceColours.intersect(successor.getValue());
                     if (sourceColours.isEmpty()) break;
@@ -77,7 +77,7 @@ public class PatternMain {
 
                 if (!sourceColours.isEmpty()) {
 
-                    for (Map.Entry<CoordinateNode, TreeColorSet> predecessor : predecessors.entrySet()) {
+                    for (Map.Entry<CoordinateNode, ColorFormulae> predecessor : predecessors.entrySet()) {
                         if (predecessor.getKey().equals(node)) continue;    //skip self loops
                         sourceColours.subtract(predecessor.getValue());
                         if (sourceColours.isEmpty()) break;
@@ -96,20 +96,20 @@ public class PatternMain {
         }
 
         System.out.println(" Sink nodes: ");
-        for (Map.Entry<CoordinateNode, TreeColorSet> sink : sinks.entrySet()) {
+        for (Map.Entry<CoordinateNode, ColorFormulae> sink : sinks.entrySet()) {
             System.out.println(model.coordinateString(sink.getKey().coordinates)+" "+sink.getValue());
         }
 
         System.out.println(" Source nodes: ");
-        for (Map.Entry<CoordinateNode, TreeColorSet> source : sources.entrySet()) {
+        for (Map.Entry<CoordinateNode, ColorFormulae> source : sources.entrySet()) {
             System.out.println(model.coordinateString(source.getKey().coordinates)+" "+source.getValue());
         }
 
         System.out.println(" Multi-sinks: ");
-        List<Map.Entry<CoordinateNode, TreeColorSet>> nodes = new ArrayList<>(sinks.entrySet());
+        List<Map.Entry<CoordinateNode, ColorFormulae>> nodes = new ArrayList<>(sinks.entrySet());
         for (int i=0; i<nodes.size(); i++) {
             for (int j=i+1; j<nodes.size(); j++) {
-                TreeColorSet common = TreeColorSet.createCopy(nodes.get(i).getValue());
+                ColorFormulae common = (ColorFormulae) ColorFormulae.createCopy(nodes.get(i).getValue());
                 common.intersect(nodes.get(j).getValue());
                 if (!common.isEmpty()) {
                     System.out.println(

@@ -1,8 +1,13 @@
 package cz.muni.fi.ode;
 
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
+import com.google.common.collect.TreeRangeSet;
 import com.microsoft.z3.*;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Set;
 
 /**
  * Created by User on 7.12.15.
@@ -150,7 +155,15 @@ public class ColorFormulae implements ColorSet {
     public static ColorSet createFromBuffer(@NotNull int[] lengths, double[] data) {
         return new ColorFormulae();
     }
-
+/*
+    @NotNull
+    @SuppressWarnings("UnusedDeclaration")
+    public Range<Double>[] asArrayForParam(int i) {
+        RangeSet<Double> set = new Range
+        Set<Range<Double>> data = set.asRanges();
+        return data.toArray(new Range[data.size()]);
+    }
+*/
     // It would not be needed after changes in StateSpaceGenerator class
     public static ColorSet derivedColorSet(@NotNull ColorSet ps, int pIndex, double lpValue, double rpValue) {
         return new ColorFormulae();

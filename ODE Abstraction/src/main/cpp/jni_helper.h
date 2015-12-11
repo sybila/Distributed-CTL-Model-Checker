@@ -367,10 +367,10 @@ public:
 				return result;
 			}
 		};
-		ColorSetClass(JVM * jvm) : AnyClass(jvm, "cz/muni/fi/ode/TreeColorSet") {
+		ColorSetClass(JVM * jvm) : AnyClass(jvm, "cz/muni/fi/ode/ColorFormulae") {
 			_get = _env->GetMethodID(_class, "get", "(I)Ljava/lang/Object;");
 			_size = _env->GetMethodID(_class, "size", "()I");
-			_createEmpty = _env->GetStaticMethodID(_class, "createEmpty", "(I)Lcz/muni/fi/ode/TreeColorSet;");
+			_createEmpty = _env->GetStaticMethodID(_class, "createEmpty", "(I)Lcz/muni/fi/ode/ColorFormulae;");
 			_asArrayForParam = _env->GetMethodID(_class, "asArrayForParam", "(I)[Lcom/google/common/collect/Range;");
 		}
 

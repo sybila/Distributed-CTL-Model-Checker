@@ -28,18 +28,39 @@ ext {
 //----------- CPP GENERATOR BUILD TASKS -----------
 
 //create directories for native files build
-task createDirs(type: Exec) {
-    args "-p", binDir, objDir
+task createObjDirs(type: Exec) {
+    if (os.equals('win32')) {
+        args objDir
+    } else {
+        args "-p", objDir
+    }
+    executable "mkdir"
+}
+
+task createBinDirs(dependsOn: 'createObjDirs',type: Exec) {
+    if (os.equals('win32')) {
+        args binDir
+    } else {
+        args "-p", binDir
+    }
     executable "mkdir"
 }
 
 //compile the native state space generator
-task compileGenerator(dependsOn: 'createDirs', type:Exec) {
+task compileGenerator(dependsOn: 'createBinDirs', type:Exec) {
     if (os.equals('darwin')) {
         args    "-std=c++11",
                 "-O3",
                 "-I", jdk+"/include/",
                 "-I", jdk+"/include/darwin/",
+                "-c",
+                "-o", objDir+"generator.o",
+                srcDir+"generator.cpp"
+    } else if(os.equals('win32')) {
+        args    "-std=c++11",
+                "-O3",
+                "-I", jdk+"/include/",
+                "-I", jdk+"/include/win32/",
                 "-c",
                 "-o", objDir+"generator.o",
                 srcDir+"generator.cpp"
@@ -61,6 +82,10 @@ task buildGenerator(dependsOn: 'compileGenerator', type:Exec) {
     if (os.equals('darwin')) {
         args    "-dynamiclib",
                 "-o", binDir+"lib"+nativeName+".jnilib",
+                objDir+"generator.o"
+    } else if (os.equals('win32')) {
+        args    "-shared",
+                "-o", binDir+"lib"+nativeName+".dll",
                 objDir+"generator.o"
     } else {
         args    "-shared",

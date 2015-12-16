@@ -152,10 +152,8 @@ public class StateSpaceGenerator {
     private Map<CoordinateNode, ColorFormulae> getDirectedEdges(@NotNull CoordinateNode from, @NotNull ColorFormulae border, boolean successors) {
 
         // temporary - finally it will be replaced by input parameter called border of type ColorFormulae
-        ColorFormulae color = new ColorFormulae(model.getDefaultContext());
+        ColorFormulae color = border;
 
-        //TODO: remove after renaming
-        @NotNull Map<CoordinateNode, ColorFormulae> results2 = new HashMap<>();
         @NotNull Map<CoordinateNode, ColorFormulae> results = new HashMap<>();
 
         boolean hasSelfLoop = true;
@@ -336,9 +334,7 @@ public class StateSpaceGenerator {
      * @param dim Index of variable whose function should be evaluated.
      */
     private void calculateValue(int[] vertex, int dim) {
-        //derivationValue = 0;
-        //denominator = 0;
-        //parameterIndex = -1;
+
         for(int i = 0; i < model.parameterCount()+1; i++) {
             equationConsts[i] = 0.0;
         }

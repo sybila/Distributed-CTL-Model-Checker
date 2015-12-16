@@ -35,6 +35,10 @@ public class ColorFormulae implements ColorSet {
         //formulae.add(ctx.mkTrue());
     }
 
+    protected void finalize() {
+        this.formulae.reset();
+    }
+
 //    public ColorFormulae(@NotNull Collection<? extends RangeSet<Double>> c) {}
 
     public BoolExpr[] getAssertions() {
@@ -107,7 +111,7 @@ public class ColorFormulae implements ColorSet {
 
     @Override
     public void subtract(@NotNull ColorSet set) {
-
+/*
         ColorFormulae cf = (ColorFormulae) set;
         Context con = cf.getContext();
         BoolExpr[] expr2 = cf.getAssertions();
@@ -116,8 +120,8 @@ public class ColorFormulae implements ColorSet {
             ex2 = con.mkAnd((BoolExpr) e2.simplify(),(BoolExpr) ex2).simplify();
         }
         ex2 = con.mkNot((BoolExpr) ex2).simplify();
-
-//        Expr ex2 = this.ctx.mkNot((BoolExpr) mkConjunction((ColorFormulae) set)).simplify();
+*/
+        Expr ex2 = this.ctx.mkNot((BoolExpr) mkConjunction((ColorFormulae) set)).simplify();
         this.formulae.add((BoolExpr) ex2);
     }
 
@@ -164,14 +168,7 @@ public class ColorFormulae implements ColorSet {
     public static ColorSet derivedColorSet(@NotNull ColorSet ps, int pIndex, double lpValue, double rpValue) {
         return new ColorFormulae();
     }
-/*
-    // should be replaced by  new function in OdeModel class caled getEmptyColorSet() because the same context is needed
-    public static ColorSet createEmpty(int dimensions) {
-        ColorFormulae newSet = new ColorFormulae();
 
-        return newSet;
-    }
-*/
     public static ColorSet createCopy(@NotNull ColorSet set) {
         ColorFormulae newSet = new ColorFormulae(((ColorFormulae) set).getContext());
         newSet.addAssertions(((ColorFormulae) set).getAssertions());

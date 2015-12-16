@@ -49,7 +49,7 @@ task createBinDirs(dependsOn: 'createObjDirs',type: Exec) {
 }
 
 //compile the native state space generator
-task compileGenerator(dependsOn: 'createBinDirs', type:Exec) {
+task compileGenerator(type:Exec) {
     if (os.equals('darwin')) {
         args    "-std=c++11",
                 "-O3",
@@ -86,8 +86,8 @@ task buildGenerator(dependsOn: 'compileGenerator', type:Exec) {
                 "-o", binDir+"lib"+nativeName+".jnilib",
                 objDir+"generator.o"
     } else if (os.equals('win32')) {
-        args    "-shared",
-                "-o", binDir+"lib"+nativeName+".dll",
+        args    "-shared","-Wl,--add-stdcall-alias",
+                "-o", jdk+"\\bin\\"+nativeName+".dll",
                 objDir+"generator.o"
     } else {
         args    "-shared",

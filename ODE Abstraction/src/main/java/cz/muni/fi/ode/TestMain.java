@@ -14,7 +14,11 @@ import java.util.Map;
 public class TestMain {
 
     public static void main(String[] args) {
-        String filen = "C:\\Users\\User\\skola\\pracovny\\Java\\biodivineCTL-git\\biodivineCTL\\ODE Abstraction\\src\\main\\java\\cz\\muni\\fi\\ode\\model.bio";
+
+        System.out.println(System.getProperty("java.library.path"));
+        System.loadLibrary("ODE");
+
+        String filen = "/Users/daemontus/Workspace/Sybila/Model Checker/ODE Abstraction/src/main/java/cz/muni/fi/ode/model.bio";
         //System.out.println(args[args.length - 1]);
         //read and prepare model
         @NotNull OdeModel model = new OdeModel(filen);
@@ -29,6 +33,12 @@ public class TestMain {
         for(Map.Entry<CoordinateNode,ColorFormulae> entry : initial.entrySet()) {
             System.out.println("Node:\n"+entry.getKey().toString());
             System.out.println("ColorSet:\n"+entry.getValue().toString());
+            Map<CoordinateNode, ColorFormulae> succ = factory.successorsFor(entry.getKey(), model.getFullColorSet());
+            for(Map.Entry<CoordinateNode,ColorFormulae> entry2 : succ.entrySet()) {
+                System.out.println("SNode:\n"+entry2.getKey().toString());
+                System.out.println("ColorSet:\n"+entry2.getValue().toString());
+                System.out.println("+++++++++++++++++++++++++++++++++++++");
+            }
             System.out.println("---------------------------------------");
         }
     }

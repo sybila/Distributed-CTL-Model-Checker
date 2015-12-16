@@ -156,7 +156,7 @@ public class StateSpaceGenerator {
 
         //TODO: remove after renaming
         @NotNull Map<CoordinateNode, ColorFormulae> results2 = new HashMap<>();
-        @NotNull Map<CoordinateNode, ColorSet> results = new HashMap<>();
+        @NotNull Map<CoordinateNode, ColorFormulae> results = new HashMap<>();
 
         boolean hasSelfLoop = true;
 
@@ -226,6 +226,8 @@ public class StateSpaceGenerator {
             incomingDirectionSolver.addAssertion(incomingDirectionExpression);
             lowerIncomingDirection = incomingDirectionSolver.check().equals(ColorFormulae.SAT);
 
+            System.out.println("Directions: "+lowerOutgoingDirection+" "+lowerIncomingDirection);
+
             if(from.coordinates[dimension] != 0)	{
 
                 if((successors && lowerOutgoingDirection) || (!successors && lowerIncomingDirection)) {
@@ -233,6 +235,7 @@ public class StateSpaceGenerator {
                     @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
                     newStateCoors[dimension] = newStateCoors[dimension] - 1;
 
+                    System.out.println("Adding");
                     if(successors)
                         results.put(factory.getNode(newStateCoors), outgoingDirectionSolver);
                     else
@@ -292,6 +295,8 @@ public class StateSpaceGenerator {
             incomingDirectionSolver.addAssertion(incomingDirectionExpression);
             upperIncomingDirection = incomingDirectionSolver.check().equals(ColorFormulae.SAT);
 
+            System.out.println("Directions: "+upperOutgoingDirection+" "+upperIncomingDirection);
+
             if(from.coordinates[dimension] != model.getThresholdRanges().get(dimension).upperEndpoint() - 1) {
 
                 if((successors && upperOutgoingDirection) || (!successors && upperIncomingDirection)) {
@@ -299,6 +304,7 @@ public class StateSpaceGenerator {
                     @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
                     newStateCoors[dimension] = newStateCoors[dimension] + 1;
 
+                    System.out.println("Adding");
                     if(successors)
                         results.put(factory.getNode(newStateCoors), outgoingDirectionSolver);
                     else
@@ -320,7 +326,7 @@ public class StateSpaceGenerator {
             results.put(from, border);
         }
 
-        return results2;
+        return results;
     }
 
     /**
@@ -377,7 +383,7 @@ public class StateSpaceGenerator {
                 //derivationValue += partialSum;
 
                 //NEW WAY - the case when summember has no parameter therefore the value is added to lonely constant
-                equationConsts[model.parameterCount()+1] += partialSum;
+                equationConsts[model.parameterCount()] += partialSum;
             }
         }
 

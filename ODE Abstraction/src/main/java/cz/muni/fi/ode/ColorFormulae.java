@@ -49,8 +49,8 @@ public class ColorFormulae implements ColorSet {
         this.formulae.add((BoolExpr) ex.simplify());
     }
 
-    public void addAssertions(Expr[] ex) {
-        this.formulae.add((BoolExpr[]) ex);
+    public void addAssertions(BoolExpr[] ex) {
+        this.formulae.add(ex);
     }
 
     @Override

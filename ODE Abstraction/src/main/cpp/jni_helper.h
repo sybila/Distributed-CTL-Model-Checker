@@ -322,7 +322,7 @@ public:
 			_add = _env->GetMethodID(_class, "add", "(Lcom/google/common/collect/Range;)V");
 		}
 	};
-
+/*
 	class ColorSetClass : public AnyClass {
 		jmethodID _size;
 		jmethodID _get;
@@ -377,7 +377,7 @@ public:
 		jobject createEmpty(jint size) {
 			return _env->CallStaticObjectMethod(_class, _createEmpty, size);
 		}
-	};
+	};*/
 
 	//numerals
 	DoubleClass Double;
@@ -390,7 +390,7 @@ public:
 	NodeFactoryClass NodeFactory;
 	ModelClass Model;
 	RangeSetClass RangeSet;
-	ColorSetClass ColorSet;
+	//ColorSetClass ColorSet;
 	SumMemberClass SumMember;
 	RampClass Ramp;
 	StepClass Step;
@@ -405,7 +405,7 @@ public:
 		Node(this),
 		NodeFactory(this),
 		RangeSet(this),
-		ColorSet(this),
+		//ColorSet(this),
 		SumMember(this),
 		Ramp(this),
 		Step(this)

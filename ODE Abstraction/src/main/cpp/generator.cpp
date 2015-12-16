@@ -11,7 +11,7 @@
 StateSpaceGenerator * generator;
 Model<double> odeModel;
 
-
+/*
 void saveStatesToMap(vector<State>& data, JVM::MapClass::Instance map, JVM::NodeFactoryClass::Instance factory, JVM jvm) {
 	if (data.size() != 0) {
 		//create int java array and it's c++ mapping
@@ -35,7 +35,7 @@ void saveStatesToMap(vector<State>& data, JVM::MapClass::Instance map, JVM::Node
 		}	
 		delete array;
 	}
-}
+}*/
 
 /*
  * Class:     cz_muni_fi_ode_OdeModel
@@ -77,6 +77,7 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
                 }*/
 
         //read parameter ranges and add them to java model object
+        std::cout << "Copying parameter ranges" << std::endl;
         std::vector<std::pair<double, double> > paramRanges = odeModel.getParamRanges();
         for (int i = 0; i < paramRanges.size(); ++i)
         {
@@ -85,19 +86,23 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
 	        model.paramList.add(newRange.object());
         }
         //read threashold ranges and add them to java model object
+        std::cout << "Copying threshold ranges" << std::endl;
         for (int i = 0; i < odeModel.getDims(); ++i)
         {
         	//write threshold range
         	std::vector<double> thresholds = odeModel.getThresholdsForVariable(i);
 	        auto newRange = jvm.Range.closedInt(0, thresholds.size() - 1);
 	        model.varList.add(newRange.object());
+	        std::cout << "Threshold range written" << std::endl;
 	        //init name->index function
 	        model.variableOrder.add(env->NewStringUTF(odeModel.getVariable(i).c_str()));
+	        std::cout << "Variable order written" << std::endl;
 	        //copy thresholds
         	auto tList = jvm.List.create();
         	for (int j = 0; j < thresholds.size(); j++) {
         		//std::cout << "T "<< i <<j << " " << thresholds[j] <<std::endl;
         		tList.add(jvm.Double.valueOf(thresholds[j]).object());
+        		std::cout << "Threshold written" << std::endl;
         	}
         	model.thresholds.add(tList.object());
         	//copy equation
@@ -106,8 +111,10 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
         	for (int j = 0; j < sumMembers.size(); j++) {
 				//std::cout << "S "<<i<<j<<" "<<sumMembers[j]<<std::endl;
         		sList.add(jvm.SumMember.create(sumMembers[j]).object());
+        		std::cout << "Summember written" << std::endl;
         	}
         	model.equations.add(sList.object());
+        	std::cout << "Equation written" << std::endl;
 		}
 
 	/*	std::vector<std::pair<double, double> > borders;
@@ -128,9 +135,10 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
 		}
 		std::cout << "Native s: " << s << " " << data.size() << std::endl;*/
     }
+    std::cout << "Returning" << std::endl;
 	return;
 }
-
+/*
 jobject computeNodes(
 	JNIEnv * env, jobject jFactory, jintArray jNode, jobject jColorSet, jobject retMap, bool succ) {
 	JVM jvm(env);
@@ -154,35 +162,35 @@ jobject computeNodes(
 		saveStatesToMap(data, results, factory, jvm);
 	}
 	return results.object();
-} 
+} */
 /*
  * Class:     cz_muni_fi_ode_NodeFactory
  * Method:    getNativePredecessors
  * Signature: ([ILcz/muni/fi/modelchecker/graph/ColorSet;Ljava/util/Map;)Ljava/util/Map;
  */
-JNIEXPORT jobject JNICALL Java_cz_muni_fi_ode_NodeFactory_getNativePredecessors(
+/*JNIEXPORT jobject JNICALL Java_cz_muni_fi_ode_NodeFactory_getNativePredecessors(
 	JNIEnv * env, jobject jFactory, jintArray jNode, jobject jColorSet, jobject retMap)
 {
 	return computeNodes(env, jFactory, jNode, jColorSet, retMap, false);
-}
+}*/
 
 /*
  * Class:     cz_muni_fi_ode_NodeFactory
  * Method:    getNativeSuccessors
  * Signature: ([ILcz/muni/fi/modelchecker/graph/ColorSet;Ljava/util/Map;)Ljava/util/Map;
  */
-JNIEXPORT jobject JNICALL Java_cz_muni_fi_ode_NodeFactory_getNativeSuccessors(
+/*JNIEXPORT jobject JNICALL Java_cz_muni_fi_ode_NodeFactory_getNativeSuccessors(
 	JNIEnv * env, jobject jFactory, jintArray jNode, jobject jColorSet, jobject retMap)
 {
 	return computeNodes(env, jFactory, jNode, jColorSet, retMap, true);
-}
+}*/
 
 /*
  * Class:     cz_muni_fi_ode_NodeFactory
  * Method:    getNativeInit
  * Signature: (Ljava/lang/String;IDLjava/util/List;Ljava/util/Map;)Ljava/util/Map;
  */
-JNIEXPORT jobject JNICALL Java_cz_muni_fi_ode_NodeFactory_getNativeInit(
+/*JNIEXPORT jobject JNICALL Java_cz_muni_fi_ode_NodeFactory_getNativeInit(
 	JNIEnv * env, jobject jFactory, jstring jName, jint jOp, jdouble jTh, jobject jColorList, jobject retMap)
 {
 	JVM jvm(env);
@@ -207,7 +215,7 @@ JNIEXPORT jobject JNICALL Java_cz_muni_fi_ode_NodeFactory_getNativeInit(
 	);
 	saveStatesToMap(data, results, factory, jvm);
 	return results.object();
-}
+}*/
 
 
 
@@ -216,7 +224,7 @@ JNIEXPORT jobject JNICALL Java_cz_muni_fi_ode_NodeFactory_getNativeInit(
  * Method:    cacheAllNodes
  * Signature: (Ljava/util/List;)V
  */
-JNIEXPORT void JNICALL Java_cz_muni_fi_ode_NodeFactory_cacheAllNodes(
+/*JNIEXPORT void JNICALL Java_cz_muni_fi_ode_NodeFactory_cacheAllNodes(
 	JNIEnv * env, jobject jFactory, jobject jColorList)
  {
 	JVM jvm(env);
@@ -256,4 +264,4 @@ JNIEXPORT void JNICALL Java_cz_muni_fi_ode_NodeFactory_cacheAllNodes(
 		}	
 		delete array;
 	}
-}
+}*/

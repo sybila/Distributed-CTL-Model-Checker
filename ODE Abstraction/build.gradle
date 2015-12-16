@@ -14,6 +14,7 @@ dependencies {
     compile project(':CTL Parser')
     compile project(':Model Checker')
     compile files('../libs/mpj.jar')
+    compile files('../libs/com.microsoft.z3.jar')
     compile 'com.intellij:annotations:5.1'
     compile 'com.google.guava:guava:18.0'
 }
@@ -116,7 +117,7 @@ task generateIncludeFiles(dependsOn: [generateModelIncludeFiles, generateFactory
 jar {
     //include native libraries in the jar file so that they can be linked at runtime
     from {
-        [binDir+"lib"+nativeName+".jnilib", binDir+"lib"+nativeName+".so"]
+        [binDir+"lib"+nativeName+".jnilib", binDir+"lib"+nativeName+".so", binDir+"lib"+nativeName+".dll"]
     }
 }
 

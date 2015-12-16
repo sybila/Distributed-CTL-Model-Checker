@@ -1,6 +1,7 @@
 package cz.muni.fi.ode;
 
 import com.google.common.collect.Range;
+import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.RealExpr;
@@ -119,7 +120,7 @@ public class OdeModel {
 
         // creation of new ColorFormulae with defaultContext as initial parameter and initial constrains
         @NotNull ColorFormulae set = new ColorFormulae(getDefaultContext());
-        Expr[] exprs = new Expr[parameterCount()];
+        BoolExpr[] exprs = new BoolExpr[parameterCount()];
         for(int i = 0; i < parameterCount(); i++) {
             Range<Double> range = getParameterRange().get(i);
             RealExpr lower = set.getContext().mkReal(range.lowerEndpoint().toString());

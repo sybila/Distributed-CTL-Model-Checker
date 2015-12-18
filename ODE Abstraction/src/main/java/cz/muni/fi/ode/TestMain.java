@@ -34,6 +34,7 @@ public class TestMain {
 
 //-----------------------------------------------------------------------------------------------
         Map.Entry<CoordinateNode,ColorFormulae> initOne = initial.entrySet().iterator().next();
+        //System.out.println("Context: "+initOne.getValue().getContext().toString());
         initial.clear();
         initial.put(initOne.getKey(),initOne.getValue());
 
@@ -41,8 +42,11 @@ public class TestMain {
         int count = 0;
 
         for(int i = 0; i < 100; i++) {
-            Map<CoordinateNode,ColorFormulae> succ = initial;
-            initial = new HashMap<>();
+            Map<CoordinateNode,ColorFormulae> succ = new HashMap<>(initial);
+            //initOne = (Map.Entry<CoordinateNode, ColorFormulae>) initial.entrySet().toArray()[initial.entrySet().toArray().length-1];
+            //succ.put(initOne.getKey(),initOne.getValue());
+            initial.clear();
+            //initial = new HashMap<>();
             Map<CoordinateNode,ColorFormulae> newSucc;
             for(Map.Entry<CoordinateNode,ColorFormulae> entry : succ.entrySet()) {
 
@@ -57,14 +61,15 @@ public class TestMain {
 
                 for(Map.Entry<CoordinateNode,ColorFormulae> suc : newSucc.entrySet()) {
                     initial.put(suc.getKey(),suc.getValue());
-                    System.out.println("SuccNode:\n"+suc.getKey().toString());
-                    System.out.println("ColorSet:\n"+suc.getValue().toString());
                     System.out.println("------------------------------");
+                    System.out.println("SuccNode:\n"+suc.getKey().toString());
+                    System.out.println("ColorSet:\n"+suc.getValue().toString()+"\nAssertions: "+suc.getValue().getAssertions().length);
                 }
                 System.out.println("======================================");
+                System.out.println("Duration for "+count+" states: "+(System.currentTimeMillis() - start));
             }
+            succ.clear();
             System.out.println("############################################");
-
         }
 /*
         Map.Entry<CoordinateNode,ColorFormulae> initEntry = initial.entrySet().iterator().next();
@@ -80,7 +85,8 @@ public class TestMain {
         }
         System.out.println("---------------------------------------");
 */
-        System.out.println("Duration for "+count+" states: "+(System.currentTimeMillis() - start));
+        //System.out.println("Context: "+initial.entrySet().iterator().next().getValue().getContext().toString());
+        System.out.println("Final duration for "+count+" states: "+(System.currentTimeMillis() - start));
 
     }
 

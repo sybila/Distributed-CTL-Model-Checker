@@ -36,7 +36,7 @@ public class ColorFormulae implements ColorSet {
     }
 
     protected void finalize() {
-        this.formulae.reset();
+        this.formulae.dispose();
     }
 
 //    public ColorFormulae(@NotNull Collection<? extends RangeSet<Double>> c) {}
@@ -164,11 +164,12 @@ public class ColorFormulae implements ColorSet {
         return data.toArray(new Range[data.size()]);
     }
 */
+/*
     // It would not be needed after changes in StateSpaceGenerator class
     public static ColorSet derivedColorSet(@NotNull ColorSet ps, int pIndex, double lpValue, double rpValue) {
         return new ColorFormulae();
     }
-
+*/
     public static ColorSet createCopy(@NotNull ColorSet set) {
         ColorFormulae newSet = new ColorFormulae(((ColorFormulae) set).getContext());
         newSet.addAssertions(((ColorFormulae) set).getAssertions());

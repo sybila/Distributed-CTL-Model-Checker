@@ -6,6 +6,7 @@ import cz.muni.fi.ode.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -15,11 +16,11 @@ public class TestMain {
 
     public static void main(String[] args) {
 
-        System.out.println(System.getProperty("java.library.path"));
+        //System.out.println(System.getProperty("java.library.path"));
         System.loadLibrary("ODE");
 
-        String filen = "/Users/daemontus/Workspace/Sybila/Model Checker/ODE Abstraction/src/main/java/cz/muni/fi/ode/model.bio";
-        //System.out.println(args[args.length - 1]);
+        String filen = "ODE Abstraction/src/main/java/cz/muni/fi/ode/model2params.bio";
+
         //read and prepare model
         @NotNull OdeModel model = new OdeModel(filen);
         model.load();
@@ -30,17 +31,63 @@ public class TestMain {
         factory.setGenerator(generator);
 
         Map<CoordinateNode, ColorFormulae> initial = factory.initialNodes(Tautology.INSTANCE);
-        for(Map.Entry<CoordinateNode,ColorFormulae> entry : initial.entrySet()) {
-            System.out.println("Node:\n"+entry.getKey().toString());
-            System.out.println("ColorSet:\n"+entry.getValue().toString());
-            Map<CoordinateNode, ColorFormulae> succ = factory.successorsFor(entry.getKey(), model.getFullColorSet());
-            for(Map.Entry<CoordinateNode,ColorFormulae> entry2 : succ.entrySet()) {
-                System.out.println("SNode:\n"+entry2.getKey().toString());
-                System.out.println("ColorSet:\n"+entry2.getValue().toString());
-                System.out.println("+++++++++++++++++++++++++++++++++++++");
+
+//-----------------------------------------------------------------------------------------------
+        Map.Entry<CoordinateNode,ColorFormulae> initOne = initial.entrySet().iterator().next();
+        //System.out.println("Context: "+initOne.getValue().getContext().toString());
+        initial.clear();
+        initial.put(initOne.getKey(),initOne.getValue());
+
+        long start = System.currentTimeMillis();
+        int count = 0;
+
+        for(int i = 0; i < 100; i++) {
+            Map<CoordinateNode,ColorFormulae> succ = new HashMap<>(initial);
+            //initOne = (Map.Entry<CoordinateNode, ColorFormulae>) initial.entrySet().toArray()[initial.entrySet().toArray().length-1];
+            //succ.put(initOne.getKey(),initOne.getValue());
+            initial.clear();
+            //initial = new HashMap<>();
+            Map<CoordinateNode,ColorFormulae> newSucc;
+            for(Map.Entry<CoordinateNode,ColorFormulae> entry : succ.entrySet()) {
+
+                count++;
+                System.out.println("Node:\n"+entry.getKey().toString());
+                System.out.println("ColorSet:\n"+entry.getValue().toString());
+
+                if(i == 0)
+                    newSucc = factory.successorsFor(entry.getKey(), model.getFullColorSet());
+                else
+                    newSucc = factory.successorsFor(entry.getKey(), entry.getValue());
+
+                for(Map.Entry<CoordinateNode,ColorFormulae> suc : newSucc.entrySet()) {
+                    initial.put(suc.getKey(),suc.getValue());
+                    System.out.println("------------------------------");
+                    System.out.println("SuccNode:\n"+suc.getKey().toString());
+                    System.out.println("ColorSet:\n"+suc.getValue().toString()+"\nAssertions: "+suc.getValue().getAssertions().length);
+                }
+                System.out.println("======================================");
+                System.out.println("Duration for "+count+" states: "+(System.currentTimeMillis() - start));
             }
-            System.out.println("---------------------------------------");
+            succ.clear();
+            System.out.println("############################################");
         }
+/*
+        Map.Entry<CoordinateNode,ColorFormulae> initEntry = initial.entrySet().iterator().next();
+        System.out.println("Node:\n"+initEntry.getKey().toString());
+        System.out.println("ColorSet:\n"+initEntry.getValue().toString());
+
+        Map<CoordinateNode, ColorFormulae> succ = factory.successorsFor(initEntry.getKey(), model.getFullColorSet());
+        for(Map.Entry<CoordinateNode,ColorFormulae> entry2 : succ.entrySet()) {
+            succ.put(entry2.getKey(),entry2.getValue());
+            System.out.println("SuccNode:\n"+entry2.getKey().toString());
+            System.out.println("ColorSet:\n"+entry2.getValue().toString());
+            System.out.println("+++++++++++++++++++++++++++++++++++++");
+        }
+        System.out.println("---------------------------------------");
+*/
+        //System.out.println("Context: "+initial.entrySet().iterator().next().getValue().getContext().toString());
+        System.out.println("Final duration for "+count+" states: "+(System.currentTimeMillis() - start));
+
     }
 
     public static void main2(String[] args) {

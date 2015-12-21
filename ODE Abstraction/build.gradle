@@ -17,6 +17,7 @@ dependencies {
     compile files('../libs/com.microsoft.z3.jar')
     compile 'com.intellij:annotations:5.1'
     compile 'com.google.guava:guava:18.0'
+    compile files('../libs/com.microsoft.z3.jar')
 }
 
 ext {
@@ -85,8 +86,8 @@ task buildGenerator(dependsOn: 'compileGenerator', type:Exec) {
                 "-o", binDir+"lib"+nativeName+".jnilib",
                 objDir+"generator.o"
     } else if (os.equals('win32')) {
-        args    "-shared",
-                "-o", binDir+nativeName+".dll",
+        args    "-shared","-Wl,--add-stdcall-alias",
+                "-o", bindDir+nativeName+".dll",
                 objDir+"generator.o"
     } else {
         args    "-shared",

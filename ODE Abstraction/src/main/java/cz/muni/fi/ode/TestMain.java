@@ -1,12 +1,8 @@
 package cz.muni.fi.ode;
 
-import com.microsoft.z3.*;
-import cz.muni.fi.ctl.formula.proposition.Tautology;
-import cz.muni.fi.ode.*;
+import cz.muni.fi.ctl.formula.proposition.FloatProposition;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -19,7 +15,8 @@ public class TestMain {
         //System.out.println(System.getProperty("java.library.path"));
         System.loadLibrary("ODE");
 
-        String filen = "ODE Abstraction/src/main/java/cz/muni/fi/ode/model2params.bio";
+        //String filen = "ODE Abstraction/src/main/java/cz/muni/fi/ode/model2params.bio";
+        String filen = "/Users/daemontus/Workspace/Sybila/Runtime/ODE/tcbb.bio";
 
         //read and prepare model
         @NotNull OdeModel model = new OdeModel(filen);
@@ -30,8 +27,13 @@ public class TestMain {
         @NotNull StateSpaceGenerator generator = new StateSpaceGenerator(model, factory, partitioner.getMyLimit());
         factory.setGenerator(generator);
 
-        Map<CoordinateNode, ColorFormulae> initial = factory.initialNodes(Tautology.INSTANCE);
+        Map<CoordinateNode, ColorFormulae> initial = factory.initialNodes(new FloatProposition(3.0, "E2F1", FloatProposition.Operator.GT_EQ));
 
+        System.out.println("Initial: "+initial.size());
+        for (Map.Entry<CoordinateNode, ColorFormulae> entry : initial.entrySet()) {
+            System.out.println("E: "+entry.getKey()+" "+entry.getValue());
+        }
+/*
 //-----------------------------------------------------------------------------------------------
         Map.Entry<CoordinateNode,ColorFormulae> initOne = initial.entrySet().iterator().next();
         //System.out.println("Context: "+initOne.getValue().getContext().toString());
@@ -51,8 +53,8 @@ public class TestMain {
             for(Map.Entry<CoordinateNode,ColorFormulae> entry : succ.entrySet()) {
 
                 count++;
-                System.out.println("Node:\n"+entry.getKey().toString());
-                System.out.println("ColorSet:\n"+entry.getValue().toString());
+                //System.out.println("Node:\n"+entry.getKey().toString());
+                //System.out.println("ColorSet:\n"+entry.getValue().toString());
 
                 if(i == 0)
                     newSucc = factory.successorsFor(entry.getKey(), model.getFullColorSet());
@@ -61,12 +63,13 @@ public class TestMain {
 
                 for(Map.Entry<CoordinateNode,ColorFormulae> suc : newSucc.entrySet()) {
                     initial.put(suc.getKey(),suc.getValue());
-                    System.out.println("------------------------------");
-                    System.out.println("SuccNode:\n"+suc.getKey().toString());
-                    System.out.println("ColorSet:\n"+suc.getValue().toString()+"\nAssertions: "+suc.getValue().getAssertions().length);
+                    //System.out.println("------------------------------");
+                    //System.out.println("SuccNode:\n"+suc.getKey().toString());
+                    //System.out.println("ColorSet:\n"+suc.getValue().toString()+"\nAssertions: "+suc.getValue().getAssertions().length);
                 }
                 System.out.println("======================================");
                 System.out.println("Duration for "+count+" states: "+(System.currentTimeMillis() - start));
+                System.out.println(i + " Map size: "+initial.size());
             }
             succ.clear();
             System.out.println("############################################");
@@ -86,10 +89,10 @@ public class TestMain {
         System.out.println("---------------------------------------");
 */
         //System.out.println("Context: "+initial.entrySet().iterator().next().getValue().getContext().toString());
-        System.out.println("Final duration for "+count+" states: "+(System.currentTimeMillis() - start));
+       // System.out.println("Final duration for "+count+" states: "+(System.currentTimeMillis() - start));
 
     }
-
+/*
     public static void main2(String[] args) {
         System.out.println("TestMain for ColorFormulae class");
 
@@ -107,7 +110,7 @@ public class TestMain {
         cf.addAssertion(expr.simplify());
         System.out.println(cf);
         System.out.println(cf.check());
-/*
+
         Context ctx2 = new Context();
         RealExpr zero2 = ctx2.mkReal("0");
         RealExpr x2 = ctx2.mkRealConst("x");
@@ -116,7 +119,7 @@ public class TestMain {
 
         Expr ex2 = ctx2.mkAdd(x2,y2,z2);
         Expr expr2 = ctx2.mkLt(zero2, (ArithExpr) ex2).simplify();
-*/
+
         ColorFormulae cf2 = new ColorFormulae(cf.getContext());
         cf2.addAssertion(ctx.mkNot((BoolExpr) expr).simplify());
         System.out.println(cf2);
@@ -215,5 +218,5 @@ public class TestMain {
         System.out.println(cf);
         System.out.println(cf.check());
 
-    }
+    }*/
 }

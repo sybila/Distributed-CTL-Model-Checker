@@ -3,9 +3,8 @@ package cz.muni.fi.ode;
 import com.google.common.collect.Range;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
-import com.microsoft.z3.Expr;
 import com.microsoft.z3.RealExpr;
-import cz.muni.fi.modelchecker.graph.ColorSet;
+import com.microsoft.z3.Solver;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -40,6 +39,7 @@ public class OdeModel {
 
     private Context defaultContext = new Context();
     private RealExpr[] contextParameters;
+    private Solver defaultSolver = defaultContext.mkSolver();
 
     public OdeModel(String filename) {
         this.filename = filename;
@@ -117,28 +117,24 @@ public class OdeModel {
 
     @NotNull
     public ColorFormulae getFullColorSet() {
-
         // creation of new ColorFormulae with defaultContext as initial parameter and initial constrains
-        @NotNull ColorFormulae set = new ColorFormulae(getDefaultContext());
         BoolExpr[] exprs = new BoolExpr[parameterCount()];
         for(int i = 0; i < parameterCount(); i++) {
             Range<Double> range = getParameterRange().get(i);
-            RealExpr lower = set.getContext().mkReal(range.lowerEndpoint().toString());
-            RealExpr upper = set.getContext().mkReal(range.upperEndpoint().toString());
+            RealExpr lower = defaultContext.mkReal(range.lowerEndpoint().toString());
+            RealExpr upper = defaultContext.mkReal(range.upperEndpoint().toString());
 
             // setting bounds on parameter space as intervals
-            exprs[i] = set.getContext().mkAnd(set.getContext().mkGe(getContextParameter(i),lower),set.getContext().mkLe(getContextParameter(i),upper));
+            exprs[i] = defaultContext.mkAnd(defaultContext.mkGe(getContextParameter(i),lower),defaultContext.mkLe(getContextParameter(i),upper));
         }
-        set.addAssertions(exprs);
-        return set;
+        return new ColorFormulae(defaultContext, defaultSolver, defaultContext.mkAnd(exprs));
     }
 
     @NotNull
     public ColorFormulae getEmptyColorSet() {
 
         // creation of new ColorFormulae instance with initial defaultContext parameter with unsatisfiable constrain
-        @NotNull ColorFormulae set = new ColorFormulae(getDefaultContext());
-        set.addAssertion(set.getContext().mkFalse());
+        @NotNull ColorFormulae set = new ColorFormulae(defaultContext, defaultSolver, defaultContext.mkFalse());
         return set;
     }
 

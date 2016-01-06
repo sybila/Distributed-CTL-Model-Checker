@@ -95,7 +95,9 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, ColorFormulae> 
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {
             @NotNull FloatProposition proposition = (FloatProposition) formula;
             revealedPropositions.add(proposition);
+            System.out.println("Revealing proposition: "+proposition);
             for (CoordinateNode node : generator.initial(proposition)) {
+                System.out.println("Saving proposition: "+proposition+" "+node);
                 //proposition is invariant to parameters
                 node.addFormula(proposition, model.getFullColorSet());
             }
@@ -103,6 +105,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, ColorFormulae> 
             //return values;
         }
         @NotNull Map<CoordinateNode, ColorFormulae> results = new HashMap<>();
+        System.out.println("Node cache size: "+nodeCache.size());
         for (CoordinateNode node : nodeCache.values()) {
             ColorFormulae validColors = node.getValidColors(formula);
             if (validColors != null && !validColors.isEmpty()) {

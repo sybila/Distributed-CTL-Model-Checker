@@ -42,7 +42,7 @@ void saveStatesToMap(vector<State>& data, JVM::MapClass::Instance map, JVM::Node
  * Method:    cppLoad
  * Signature: (Ljava/lang/String;)V
  */
-JNIEXPORT void JNICALL
+JNIEXPORT void JNICALL 
 Java_cz_muni_fi_ode_OdeModel_cppLoad(
 	JNIEnv * env, jobject jModel, jstring jFilename)
 {
@@ -56,7 +56,7 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
         Parser parser(modelfile2);
         parser.parse();
         odeModel = parser.returnStorage();
-        odeModel.RunAbstraction(); // TODO: to set false as input parameter finally
+        odeModel.RunAbstraction(); // TODO: set false as input parameter finally
         generator = new StateSpaceGenerator(odeModel, true);
 
 /*

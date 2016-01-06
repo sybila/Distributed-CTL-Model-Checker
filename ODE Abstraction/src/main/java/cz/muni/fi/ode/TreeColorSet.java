@@ -7,7 +7,6 @@ import cz.muni.fi.modelchecker.graph.ColorSet;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Set;
 
 public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSet {
@@ -77,7 +76,7 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
     }
 */
     @Override
-    public boolean union(@NotNull ColorSet set1) {
+    public void union(@NotNull ColorSet set1) {
         @NotNull TreeColorSet set = (TreeColorSet) set1;
         boolean change = false;
         for (int i=0; i<size(); i++) {
@@ -86,7 +85,6 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
                 get(i).addAll(set.get(i));
             }
         }
-        return change;
     }
 
     @NotNull

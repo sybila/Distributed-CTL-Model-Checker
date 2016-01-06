@@ -62,15 +62,19 @@ public class CoordinateNode implements Node {
     }
 
     public synchronized boolean addFormula(Formula formula, @NotNull ColorFormulae colors) {
+        //System.out.println("Adding empty:"+colors.isEmpty()+" "+colors);
         if (colors.isEmpty()) return false;
         ColorFormulae colorSet = formulae.get(formula);
         if (colorSet == null) {
+            System.out.println("Saving first time");
             formulae.put(formula, (ColorFormulae) ColorFormulae.createCopy(colors));
             return true;
         } else {
             if (colorSet.encloses(colors)) {
+                System.out.println("Is superset, skipping");
                 return false;
             } else {
+                System.out.println("Union!");
                 colorSet.union(colors);
                 return true;
             }

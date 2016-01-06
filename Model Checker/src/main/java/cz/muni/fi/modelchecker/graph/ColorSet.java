@@ -5,11 +5,11 @@ package cz.muni.fi.modelchecker.graph;
  */
 public interface ColorSet {
 
-    public void intersect(ColorSet set);
+    void intersect(ColorSet set);
 
-    public void subtract(ColorSet set);
+    void subtract(ColorSet set);
 
-    public boolean union(ColorSet set);
+    void union(ColorSet set);
 
-    public boolean isEmpty();
+    boolean isEmpty();
 }

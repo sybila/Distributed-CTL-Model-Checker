@@ -2,9 +2,11 @@ package cz.muni.fi.ode;
 
 import com.google.common.collect.Range;
 import com.google.common.math.IntMath;
-import com.microsoft.z3.*;
+import com.microsoft.z3.ArithExpr;
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
+import com.microsoft.z3.RealExpr;
 import cz.muni.fi.ctl.formula.proposition.FloatProposition;
-import cz.muni.fi.modelchecker.graph.ColorSet;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
@@ -170,8 +172,8 @@ public class StateSpaceGenerator {
 
             //ColorFormulae outgoingDirectionExpressions = new ColorFormulae(color.getContext());
             //ColorFormulae incomingDirectionExpressions = new ColorFormulae(color.getContext());
-            Expr outgoingDirectionExpression = color.getContext().mkFalse();
-            Expr incomingDirectionExpression = color.getContext().mkFalse();
+            BoolExpr outgoingDirectionExpression = color.getContext().mkFalse();
+            BoolExpr incomingDirectionExpression = color.getContext().mkFalse();
 
             // cycle for every vertices in lower (n-1)-dimensional facet of this state
             for (int[] vertex : vertices) {
@@ -189,17 +191,15 @@ public class StateSpaceGenerator {
                     }
                     consts[i] = ctx.mkReal(equationConsts[i].toString());
 
-                    Expr expr = ctx.mkMul(model.getContextParameter(0),consts[0]).simplify();
+                    ArithExpr expr = ctx.mkMul(model.getContextParameter(0),consts[0]);
                     for(i = 1; i < model.parameterCount(); i++) {
-                        expr = ctx.mkAdd((ArithExpr) expr,(ArithExpr) ctx.mkMul(model.getContextParameter(i),consts[i]).simplify()).simplify();
+                        expr = ctx.mkAdd(expr, ctx.mkMul(model.getContextParameter(i),consts[i]));
                     }
-                    expr = ctx.mkAdd((ArithExpr) expr, consts[i]).simplify();
+                    expr = ctx.mkAdd(expr, consts[i]);
 
                     // on lower facet outgoing direction means equation's value is less or equal to zero and incoming means value is greater or equal to zero
-                    outgoingDirectionExpression = ctx.mkOr((BoolExpr) outgoingDirectionExpression, (BoolExpr) ctx.mkGe(zero, (ArithExpr) expr).simplify()).simplify();
-                    incomingDirectionExpression = ctx.mkOr((BoolExpr) incomingDirectionExpression, (BoolExpr) ctx.mkLe(zero, (ArithExpr) expr).simplify()).simplify();
-                    //outgoingDirectionExpressions.addAssertion(ctx.mkGe(zero, (ArithExpr) expr).simplify());
-                    //incomingDirectionExpressions.addAssertion(ctx.mkLe(zero, (ArithExpr) expr).simplify());
+                    outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkGe(zero, expr));
+                    incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkLe(zero, expr));
 
                 } else {
                     // The case when model doesn't contain any parameter - whole equation becomes form f(x): 0 = c
@@ -208,8 +208,8 @@ public class StateSpaceGenerator {
                     RealExpr consts = ctx.mkReal(equationConsts[0].toString());
 
                     // on lower facet outgoing direction means equation's value is less or equal to zero and incoming means value is greater or equal to zero
-                    outgoingDirectionExpression = ctx.mkOr((BoolExpr) outgoingDirectionExpression, (BoolExpr) ctx.mkGe(zero, consts).simplify()).simplify();
-                    incomingDirectionExpression = ctx.mkOr((BoolExpr) incomingDirectionExpression, (BoolExpr) ctx.mkLe(zero, consts).simplify()).simplify();
+                    outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkGe(zero, consts));
+                    incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkLe(zero, consts));
                     //outgoingDirectionExpressions.addAssertion(ctx.mkGe(zero, consts).simplify());
                     //incomingDirectionExpressions.addAssertion(ctx.mkLe(zero, consts).simplify());
                 }
@@ -217,14 +217,14 @@ public class StateSpaceGenerator {
 
             // Checking part - using of SMT-solver
             ColorFormulae outgoingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
-            outgoingDirectionSolver.addAssertion(outgoingDirectionExpression);
-            lowerOutgoingDirection = outgoingDirectionSolver.check().equals(ColorFormulae.SAT);
+            outgoingDirectionSolver.intersect(outgoingDirectionExpression);
+            lowerOutgoingDirection = outgoingDirectionSolver.isNotEmpty();
 
             ColorFormulae incomingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
-            incomingDirectionSolver.addAssertion(incomingDirectionExpression);
-            lowerIncomingDirection = incomingDirectionSolver.check().equals(ColorFormulae.SAT);
+            incomingDirectionSolver.intersect(incomingDirectionExpression);
+            lowerIncomingDirection = incomingDirectionSolver.isNotEmpty();
 
-            System.out.println("Directions: "+lowerOutgoingDirection+" "+lowerIncomingDirection);
+            //System.out.println("Directions: "+lowerOutgoingDirection+" "+lowerIncomingDirection);
 
             if(from.coordinates[dimension] != 0)	{
 
@@ -233,7 +233,7 @@ public class StateSpaceGenerator {
                     @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
                     newStateCoors[dimension] = newStateCoors[dimension] - 1;
 
-                    System.out.println("Adding");
+                   // System.out.println("Adding");
                     if(successors)
                         results.put(factory.getNode(newStateCoors), outgoingDirectionSolver);
                     else
@@ -262,15 +262,15 @@ public class StateSpaceGenerator {
                     }
                     consts[i] = ctx.mkReal(equationConsts[i].toString());
 
-                    Expr expr = ctx.mkMul(model.getContextParameter(0),consts[0]).simplify();
+                    ArithExpr expr = ctx.mkMul(model.getContextParameter(0),consts[0]);
                     for(i = 1; i < model.parameterCount(); i++) {
-                        expr = ctx.mkAdd((ArithExpr) expr,(ArithExpr) ctx.mkMul(model.getContextParameter(i),consts[i]).simplify()).simplify();
+                        expr = ctx.mkAdd(expr, ctx.mkMul(model.getContextParameter(i),consts[i]));
                     }
-                    expr = ctx.mkAdd((ArithExpr) expr, consts[i]).simplify();
+                    expr = ctx.mkAdd(expr, consts[i]);
 
                     // on upper facet outgoing direction means equation's value is greater or equal to zero and incoming means value is less or equal to zero
-                    outgoingDirectionExpression = ctx.mkOr((BoolExpr) outgoingDirectionExpression, (BoolExpr) ctx.mkLe(zero, (ArithExpr) expr).simplify()).simplify();
-                    incomingDirectionExpression = ctx.mkOr((BoolExpr) incomingDirectionExpression, (BoolExpr) ctx.mkGe(zero, (ArithExpr) expr).simplify()).simplify();
+                    outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkLe(zero, expr));
+                    incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkGe(zero, expr));
 
                 } else {
                     // The case when model doesn't contain any parameter - whole equation becomes form f(x): 0 = c
@@ -279,21 +279,21 @@ public class StateSpaceGenerator {
                     RealExpr consts = ctx.mkReal(equationConsts[0].toString());
 
                     // on upper facet outgoing direction means equation's value is greater or equal to zero and incoming means value is less or equal to zero
-                    outgoingDirectionExpression = ctx.mkOr((BoolExpr) outgoingDirectionExpression, (BoolExpr) ctx.mkLe(zero, consts).simplify()).simplify();
-                    incomingDirectionExpression = ctx.mkOr((BoolExpr) incomingDirectionExpression, (BoolExpr) ctx.mkGe(zero, consts).simplify()).simplify();
+                    outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkLe(zero, consts));
+                    incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkGe(zero, consts));
                 }
             }
 
             // Checking part - using of SMT-solver
             outgoingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
-            outgoingDirectionSolver.addAssertion(outgoingDirectionExpression);
-            upperOutgoingDirection = outgoingDirectionSolver.check().equals(ColorFormulae.SAT);
+            outgoingDirectionSolver.intersect(outgoingDirectionExpression);
+            upperOutgoingDirection = outgoingDirectionSolver.isNotEmpty();
 
             incomingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
-            incomingDirectionSolver.addAssertion(incomingDirectionExpression);
-            upperIncomingDirection = incomingDirectionSolver.check().equals(ColorFormulae.SAT);
+            incomingDirectionSolver.intersect(incomingDirectionExpression);
+            upperIncomingDirection = incomingDirectionSolver.isNotEmpty();
 
-            System.out.println("Directions: "+upperOutgoingDirection+" "+upperIncomingDirection);
+          //  System.out.println("Directions: "+upperOutgoingDirection+" "+upperIncomingDirection);
 
             if(from.coordinates[dimension] != model.getThresholdRanges().get(dimension).upperEndpoint() - 1) {
 
@@ -302,7 +302,7 @@ public class StateSpaceGenerator {
                     @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
                     newStateCoors[dimension] = newStateCoors[dimension] + 1;
 
-                    System.out.println("Adding");
+                   // System.out.println("Adding");
                     if(successors)
                         results.put(factory.getNode(newStateCoors), outgoingDirectionSolver);
                     else

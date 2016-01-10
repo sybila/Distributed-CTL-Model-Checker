@@ -17,9 +17,10 @@ public class NativeUtils {
 
     public static void loadLibrary(String name) {
         try {
-            System.loadLibrary(name);
-            System.err.println(name+" module loaded from include path.");
-        } catch (UnsatisfiedLinkError e) {
+            throw new IllegalStateException();  //force jar
+            //System.loadLibrary(name);
+            //System.err.println(name+" module loaded from include path.");
+        } catch (Exception e) {
             try {
                 switch (OsCheck.getOperatingSystemType()) {
                     case MacOS:
@@ -34,7 +35,7 @@ public class NativeUtils {
                 }
                 System.err.println(name+" module loaded from jar file.");
             } catch (Exception e1) {
-                System.err.println("Unable to load module: "+name+", problem: "+e1.toString());
+                System.err.println("Unable to load module: "+name+", problem: "+e1.toString()+", "+e.toString());
             }
         }
     }

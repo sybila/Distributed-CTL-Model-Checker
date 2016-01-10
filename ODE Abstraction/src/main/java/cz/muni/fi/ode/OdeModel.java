@@ -41,6 +41,8 @@ public class OdeModel {
     private RealExpr[] contextParameters;
     private Solver defaultSolver = defaultContext.mkSolver();
 
+    private String smtParamDefinition = "";
+
     public OdeModel(String filename) {
         this.filename = filename;
     }
@@ -66,9 +68,14 @@ public class OdeModel {
             contextParameters = new RealExpr[parameterCount()];
             for(int i = 0; i < parameterCount(); i++) {
                 contextParameters[i] = defaultContext.mkRealConst("p" + i);
+                smtParamDefinition += " ( declare-const p"+i+" Real ) ";
             }
         } else contextParameters = null;
 
+    }
+
+    public String getSmtParamDefinition() {
+        return smtParamDefinition;
     }
 
     public long nodeHash(@NotNull int[] nodeCoordinates) {

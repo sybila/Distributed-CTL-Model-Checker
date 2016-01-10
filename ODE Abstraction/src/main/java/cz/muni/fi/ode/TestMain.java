@@ -16,8 +16,8 @@ public class TestMain {
 
         ArithExpr z = ctx.mkReal("0");
 
-        BoolExpr p1 = ctx.mkGt(z, ctx.mkAdd(ctx.mkReal("3.0"), x));
-        BoolExpr p2 = ctx.mkLt(z, ctx.mkAdd(ctx.mkReal("3.0"), x));
+        BoolExpr p1 = ctx.mkGe(z, ctx.mkAdd(ctx.mkReal("3.0"), x));
+        BoolExpr p2 = ctx.mkLe(z, ctx.mkAdd(ctx.mkReal("3.0"), x));
 
 
         BoolExpr and = ctx.mkAnd(p1, p2);
@@ -31,8 +31,11 @@ public class TestMain {
 
 
         ApplyResult r = s.apply(g);
+        String str = r.getSubgoals()[0].AsBoolExpr().toString();
         System.out.println("false: "+r.getSubgoals()[0].AsBoolExpr().isFalse());
-        System.out.println(r);
+        System.out.println("Result: "+r);
+        System.out.println("Formula: "+str);
+        System.out.println("Parse: "+ctx.parseSMTLIB2String("(declare-const x Real) (assert "+str+")", null, null, null, null));
         //System.out.println(Arrays.toString(ctx.getTacticNames()));
         //System.out.println(s.getHelp());
 

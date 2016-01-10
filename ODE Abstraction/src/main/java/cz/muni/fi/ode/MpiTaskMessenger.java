@@ -1,13 +1,12 @@
 package cz.muni.fi.ode;
 
-import com.google.common.collect.Range;
+import com.microsoft.z3.Context;
 import cz.muni.fi.modelchecker.mpi.tasks.BlockingTaskMessenger;
 import cz.muni.fi.modelchecker.mpi.tasks.OnTaskListener;
 import mpi.Comm;
 import mpi.MPI;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -27,6 +26,8 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Colo
     private final NodeFactory factory;
     private final OdeModel model;
 
+    private final Context solverContext;
+
     private final int[] recvBuffer;
     private double[] recvParams;
 
@@ -34,30 +35,34 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Colo
             Comm comm,
             int dimensions,
             NodeFactory factory,
-            OdeModel model) {
+            OdeModel model
+    ) {
         this.COMM = comm;
         this.dimensions = dimensions;
         this.factory = factory;
         this.model = model;
+        this.solverContext = model.getDefaultContext();
         this.recvBuffer = new int[2*dimensions + model.parameterCount() + 3];
         this.recvParams = new double[2];
     }
 
     /**
      * Secondary task message structure:
-     * coordinates of source node|coordinates of destination node|lengths of color sets for parameters|sender|parentId
+     * coordinates of source node|coordinates of destination node|lengths of color string|sender|parentId
      */
 
 
     @Override
     public void sendTask(int destinationNode, @NotNull CoordinateNode internal, @NotNull CoordinateNode external, @NotNull ColorFormulae colors) {
-        @NotNull int[] buffer = new int[2*dimensions + model.parameterCount() + 3];
+        @NotNull int[] buffer = new int[2*dimensions + 4];
         buffer[0] = CREATE;
         buffer[buffer.length - 2] = COMM.Rank();
         buffer[buffer.length - 1] = 0;
         System.arraycopy(internal.coordinates, 0, buffer, 1, dimensions);
         System.arraycopy(external.coordinates, 0, buffer, dimensions + 1, dimensions);
-        @NotNull List<Double> data = new ArrayList<>(2*dimensions);
+        String parameterFormula = colors.toString();
+        buffer[buffer.length - 3] = parameterFormula.length();
+        //@NotNull List<Double> data = new ArrayList<>(2*dimensions);
         /*//TODO: temporary - this class is not necessary right now
         for (int i=0; i<model.parameterCount(); i++) {
             @NotNull Range<Double>[] ranges = colors.asArrayForParam(i);
@@ -68,9 +73,10 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Colo
             }
         }
         */
+        char[] chars = parameterFormula.toCharArray();
         synchronized (this) {   //ensure message ordering
             COMM.Bsend(buffer, 0, buffer.length, MPI.INT, destinationNode, TAG);
-            COMM.Bsend(toBuffer(data), 0, data.size(), MPI.DOUBLE, destinationNode, TAG);
+            COMM.Bsend(chars, 0, chars.length, MPI.CHAR, destinationNode, TAG);
         }
     }
 
@@ -83,16 +89,19 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Colo
             //int parentId = buffer[buffer.length - 1];
             CoordinateNode source = factory.getNode(Arrays.copyOfRange(recvBuffer, 1, dimensions + 1));
             CoordinateNode dest = factory.getNode(Arrays.copyOfRange(recvBuffer, dimensions + 1, 2 * dimensions + 1));
-            @NotNull int[] lengths = Arrays.copyOfRange(recvBuffer, 2*dimensions + 1, 2*dimensions + model.parameterCount() + 1);
-            //@NotNull double[] colors = new double[sum(lengths)];
-            int paramBufferSize = sum(lengths);
-
-            if (recvParams.length < paramBufferSize) {
-                recvParams = new double[paramBufferSize];
-            }
-
-            COMM.Recv(recvParams, 0, paramBufferSize, MPI.DOUBLE, sender, TAG);
-            @NotNull ColorFormulae colorSet = (ColorFormulae) ColorFormulae.createFromBuffer(lengths, recvParams);
+            int length = recvBuffer[recvBuffer.length - 3];
+            char[] chars = new char[length];
+            COMM.Recv(chars, 0, length, MPI.CHAR, sender, TAG);
+            String formula = String.valueOf(chars);
+            String full = model.getSmtParamDefinition() + "( assert "+formula+" )";
+            System.out.println(full);
+            @NotNull ColorFormulae colorSet = new ColorFormulae(
+                    solverContext,
+                    solverContext.mkSolver(),
+                    solverContext.parseSMTLIB2String(
+                            full,
+                            null, null, null, null)
+                    );
             taskListener.onTask(sender, source, dest, colorSet);
             return true;
         } else {
@@ -102,7 +111,7 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Colo
 
     @Override
     protected void finishSelf() {
-        @NotNull int[] buffer = new int[2*dimensions + model.parameterCount() + 3];
+        @NotNull int[] buffer = new int[2*dimensions + 4];
         buffer[0] = FINISH;
         //we have to finish other nodes because we can't send messages to ourselves (BUG)
         COMM.Bsend(buffer, 0, buffer.length, MPI.INT, (COMM.Rank() + 1) % COMM.Size(), TAG);

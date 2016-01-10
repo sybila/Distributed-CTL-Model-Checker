@@ -18,7 +18,9 @@ import java.nio.ByteBuffer;
 public class ODEMain {
 
     static {
+        //System.out.println(System.getProperty("java.library.path"));
         NativeUtils.loadLibrary("ODE");
+        NativeUtils.loadLibrary("z3java");
     }
 
     public static void main(@NotNull String[] args) throws InterruptedException, IOException {

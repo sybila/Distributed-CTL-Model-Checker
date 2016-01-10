@@ -115,9 +115,9 @@ task generateModelIncludeFiles(dependsOn: 'fullJar', type:Exec) {
 task generateIncludeFiles(dependsOn: [generateModelIncludeFiles, generateFactoryIncludeFiles]) {}
 
 jar {
-    //include native libraries in the jar file so that they can be linked at runtime
+    //include native libraries in the jar file so that they can be linked at runtime (plus z3 library)
     from {
-        [binDir+"lib"+nativeName+".jnilib", binDir+"lib"+nativeName+".so", binDir+nativeName+".dll"]
+        [binDir+"lib"+nativeName+".jnilib", binDir+"lib"+nativeName+".so", binDir+nativeName+".dll", "native/libz3java.jnilib" ]
     }
 }
 

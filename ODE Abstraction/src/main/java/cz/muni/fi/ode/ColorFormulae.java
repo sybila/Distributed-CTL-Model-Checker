@@ -1,9 +1,6 @@
 package cz.muni.fi.ode;
 
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
-import com.microsoft.z3.Solver;
-import com.microsoft.z3.Status;
+import com.microsoft.z3.*;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import org.jetbrains.annotations.NotNull;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -19,33 +16,42 @@ public class ColorFormulae implements ColorSet {
 
     private BoolExpr formula;
     private Boolean sat = null;
+    private Goal goal = null;
+    private Tactic tactic = null;
 
     public ColorFormulae(Context c, Solver s) {
         this.ctx = c;
         this.solver = s;
         this.formula = ctx.mkTrue();
         this.sat = true;
+        tactic = ctx.mkTactic("ctx-solver-simplify");
     }
 
     public ColorFormulae(Context c, Solver s, BoolExpr formula) {
         this.ctx = c;
         this.solver = s;
         this.formula = formula;
+        this.goal = ctx.mkGoal(false, false, false);
         this.sat = true;
+        tactic = ctx.mkTactic("ctx-solver-simplify");
     }
 
     public ColorFormulae(ColorFormulae f) {
         this.ctx = f.ctx;
         this.solver = f.solver;
         this.formula = f.formula;
+        this.goal = ctx.mkGoal(false, false, false);
         this.sat = f.sat;
+        tactic = ctx.mkTactic("ctx-solver-simplify");
     }
 
     public ColorFormulae() {
         this.ctx = new Context();
         this.solver = ctx.mkSolver();
         this.formula = ctx.mkTrue();
+        this.goal = ctx.mkGoal(false, false, false);
         this.sat = true;
+        tactic = ctx.mkTactic("ctx-solver-simplify");
     }
 
     public Context getContext() {
@@ -73,11 +79,21 @@ public class ColorFormulae implements ColorSet {
         synchronized (solver) {
             //System.out.println("SAT:"+sat);
             if (this.sat == null) {
-                solver.add(formula);
+                /*solver.add(formula);
                 //System.out.println("Is sat? "+solver.check());
                 boolean sat = solver.check() == Status.SATISFIABLE;
                 this.sat = sat;
                 solver.reset();
+                return !sat;*/
+                goal.add(formula);
+                Goal[] result = tactic.apply(goal).getSubgoals();
+                sat = !result[0].AsBoolExpr().isFalse();
+                BoolExpr[] exprs = new BoolExpr[result.length];
+                for (int i=0; i<result.length; i++) {
+                    exprs[i] = result[i].AsBoolExpr();
+                }
+                formula = ctx.mkAnd(exprs);
+                goal.reset();
                 return !sat;
             } else return !sat;
         }

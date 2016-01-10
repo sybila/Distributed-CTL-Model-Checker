@@ -66,15 +66,15 @@ public class CoordinateNode implements Node {
         if (colors.isEmpty()) return false;
         ColorFormulae colorSet = formulae.get(formula);
         if (colorSet == null) {
-            System.out.println("Saving first time");
+           // System.out.println("Saving first time");
             formulae.put(formula, (ColorFormulae) ColorFormulae.createCopy(colors));
             return true;
         } else {
             if (colorSet.encloses(colors)) {
-                System.out.println("Is superset, skipping");
+               // System.out.println("Is superset, skipping");
                 return false;
             } else {
-                System.out.println("Union!");
+               // System.out.println("Union!");
                 colorSet.union(colors);
                 return true;
             }

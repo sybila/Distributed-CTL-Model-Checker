@@ -1,9 +1,6 @@
 package cz.muni.fi.ode;
 
-import cz.muni.fi.ctl.formula.proposition.FloatProposition;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Map;
+import com.microsoft.z3.*;
 
 /**
  * Created by User on 6.12.15.
@@ -12,8 +9,36 @@ public class TestMain {
 
     public static void main(String[] args) {
 
+        Context ctx = new Context();
+
+        ArithExpr x = ctx.mkRealConst("x");
+        ArithExpr y = ctx.mkRealConst("y");
+
+        ArithExpr z = ctx.mkReal("0");
+
+        BoolExpr p1 = ctx.mkGt(z, ctx.mkAdd(ctx.mkReal("3.0"), x));
+        BoolExpr p2 = ctx.mkLt(z, ctx.mkAdd(ctx.mkReal("3.0"), x));
+
+
+        BoolExpr and = ctx.mkAnd(p1, p2);
+        Expr sim = and.simplify();
+
+        System.out.println(and + " " + sim);
+        Tactic s = ctx.mkTactic("ctx-solver-simplify");
+
+        Goal g = ctx.mkGoal(false, false, false);
+        g.add(and);
+
+
+        ApplyResult r = s.apply(g);
+        System.out.println("false: "+r.getSubgoals()[0].AsBoolExpr().isFalse());
+        System.out.println(r);
+        //System.out.println(Arrays.toString(ctx.getTacticNames()));
+        //System.out.println(s.getHelp());
+
+
         //System.out.println(System.getProperty("java.library.path"));
-        System.loadLibrary("ODE");
+      /*  System.loadLibrary("ODE");
 
         //String filen = "ODE Abstraction/src/main/java/cz/muni/fi/ode/model2params.bio";
         String filen = "/Users/daemontus/Workspace/Sybila/Runtime/ODE/tcbb.bio";
@@ -32,7 +57,7 @@ public class TestMain {
         System.out.println("Initial: "+initial.size());
         for (Map.Entry<CoordinateNode, ColorFormulae> entry : initial.entrySet()) {
             System.out.println("E: "+entry.getKey()+" "+entry.getValue());
-        }
+        }*/
 /*
 //-----------------------------------------------------------------------------------------------
         Map.Entry<CoordinateNode,ColorFormulae> initOne = initial.entrySet().iterator().next();

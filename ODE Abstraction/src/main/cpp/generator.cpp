@@ -77,7 +77,7 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
                 }*/
 
         //read parameter ranges and add them to java model object
-        std::cout << "Copying parameter ranges" << std::endl;
+        //std::cout << "Copying parameter ranges" << std::endl;
         std::vector<std::pair<double, double> > paramRanges = odeModel.getParamRanges();
         for (int i = 0; i < paramRanges.size(); ++i)
         {
@@ -86,23 +86,23 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
 	        model.paramList.add(newRange.object());
         }
         //read threashold ranges and add them to java model object
-        std::cout << "Copying threshold ranges" << std::endl;
+        //std::cout << "Copying threshold ranges" << std::endl;
         for (int i = 0; i < odeModel.getDims(); ++i)
         {
         	//write threshold range
         	std::vector<double> thresholds = odeModel.getThresholdsForVariable(i);
 	        auto newRange = jvm.Range.closedInt(0, thresholds.size() - 1);
 	        model.varList.add(newRange.object());
-	        std::cout << "Threshold range written" << std::endl;
+	        //std::cout << "Threshold range written" << std::endl;
 	        //init name->index function
 	        model.variableOrder.add(env->NewStringUTF(odeModel.getVariable(i).c_str()));
-	        std::cout << "Variable order written" << std::endl;
+	        //std::cout << "Variable order written" << std::endl;
 	        //copy thresholds
         	auto tList = jvm.List.create();
         	for (int j = 0; j < thresholds.size(); j++) {
         		//std::cout << "T "<< i <<j << " " << thresholds[j] <<std::endl;
         		tList.add(jvm.Double.valueOf(thresholds[j]).object());
-        		std::cout << "Threshold written" << std::endl;
+        		//std::cout << "Threshold written" << std::endl;
         	}
         	model.thresholds.add(tList.object());
         	//copy equation
@@ -111,10 +111,10 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
         	for (int j = 0; j < sumMembers.size(); j++) {
 				//std::cout << "S "<<i<<j<<" "<<sumMembers[j]<<std::endl;
         		sList.add(jvm.SumMember.create(sumMembers[j]).object());
-        		std::cout << "Summember written" << std::endl;
+        		//std::cout << "Summember written" << std::endl;
         	}
         	model.equations.add(sList.object());
-        	std::cout << "Equation written" << std::endl;
+        	//std::cout << "Equation written" << std::endl;
 		}
 
 	/*	std::vector<std::pair<double, double> > borders;
@@ -135,7 +135,7 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
 		}
 		std::cout << "Native s: " << s << " " << data.size() << std::endl;*/
     }
-    std::cout << "Returning" << std::endl;
+  //  std::cout << "Returning" << std::endl;
 	return;
 }
 /*

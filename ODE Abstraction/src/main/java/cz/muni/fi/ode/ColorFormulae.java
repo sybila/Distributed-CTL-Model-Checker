@@ -18,33 +18,33 @@ public class ColorFormulae implements ColorSet {
     private Boolean sat = null;
     private Goal goal = null;
     private Tactic tactic = null;
-
+/*
     public ColorFormulae(Context c, Solver s) {
         this.ctx = c;
         this.solver = s;
         this.formula = ctx.mkTrue();
         this.sat = true;
         tactic = ctx.mkTactic("ctx-solver-simplify");
-    }
+    }*/
 
-    public ColorFormulae(Context c, Solver s, BoolExpr formula) {
+    public ColorFormulae(Context c, Solver s, Goal g, Tactic t, BoolExpr formula) {
         this.ctx = c;
         this.solver = s;
         this.formula = formula;
-        this.goal = ctx.mkGoal(false, false, false);
+        this.goal = g;
         this.sat = true;
-        tactic = ctx.mkTactic("ctx-solver-simplify");
+        tactic = t;
     }
 
     public ColorFormulae(ColorFormulae f) {
         this.ctx = f.ctx;
         this.solver = f.solver;
         this.formula = f.formula;
-        this.goal = ctx.mkGoal(false, false, false);
+        this.goal = f.goal;
         this.sat = f.sat;
-        tactic = ctx.mkTactic("ctx-solver-simplify");
+        this.tactic = f.tactic;
     }
-
+/*
     public ColorFormulae() {
         this.ctx = new Context();
         this.solver = ctx.mkSolver();
@@ -52,7 +52,7 @@ public class ColorFormulae implements ColorSet {
         this.goal = ctx.mkGoal(false, false, false);
         this.sat = true;
         tactic = ctx.mkTactic("ctx-solver-simplify");
-    }
+    }*/
 
     public Context getContext() {
         return ctx;

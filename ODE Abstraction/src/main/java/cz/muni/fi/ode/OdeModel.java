@@ -1,10 +1,7 @@
 package cz.muni.fi.ode;
 
 import com.google.common.collect.Range;
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
-import com.microsoft.z3.RealExpr;
-import com.microsoft.z3.Solver;
+import com.microsoft.z3.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -40,6 +37,8 @@ public class OdeModel {
     private Context defaultContext = new Context();
     private RealExpr[] contextParameters;
     private Solver defaultSolver = defaultContext.mkSolver();
+    private Tactic defaultTactic = defaultContext.mkTactic("ctx-solver-simplify");
+    private Goal  defaultGoal = defaultContext.mkGoal(false, false, false);
 
     private String smtParamDefinition = "";
 
@@ -134,20 +133,32 @@ public class OdeModel {
             // setting bounds on parameter space as intervals
             exprs[i] = defaultContext.mkAnd(defaultContext.mkGe(getContextParameter(i),lower),defaultContext.mkLe(getContextParameter(i),upper));
         }
-        return new ColorFormulae(defaultContext, defaultSolver, defaultContext.mkAnd(exprs));
+        return new ColorFormulae(defaultContext, defaultSolver, defaultGoal, defaultTactic, defaultContext.mkAnd(exprs));
     }
 
     @NotNull
     public ColorFormulae getEmptyColorSet() {
 
         // creation of new ColorFormulae instance with initial defaultContext parameter with unsatisfiable constrain
-        @NotNull ColorFormulae set = new ColorFormulae(defaultContext, defaultSolver, defaultContext.mkFalse());
+        @NotNull ColorFormulae set = new ColorFormulae(defaultContext, defaultSolver, defaultGoal, defaultTactic, defaultContext.mkFalse());
         return set;
     }
 
     @NotNull
     public Context getDefaultContext() {
         return this.defaultContext;
+    }
+
+    public Goal getDefaultGoal() {
+        return defaultGoal;
+    }
+
+    public Tactic getDefaultTactic() {
+        return defaultTactic;
+    }
+
+    public Solver getDefaultSolver() {
+        return defaultSolver;
     }
 
     @NotNull

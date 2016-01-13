@@ -97,7 +97,9 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Colo
             System.out.println(full);
             @NotNull ColorFormulae colorSet = new ColorFormulae(
                     solverContext,
-                    solverContext.mkSolver(),
+                    model.getDefaultSolver(),
+                    model.getDefaultGoal(),
+                    model.getDefaultTactic(),
                     solverContext.parseSMTLIB2String(
                             full,
                             null, null, null, null)

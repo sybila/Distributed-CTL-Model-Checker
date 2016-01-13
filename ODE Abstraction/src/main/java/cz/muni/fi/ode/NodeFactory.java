@@ -93,7 +93,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, ColorFormulae> 
             return new HashMap<>();
         }
         if (formula instanceof FloatProposition && !revealedPropositions.contains(formula)) {
-            System.out.println("Starting "+formula+" identification");
+            //System.out.println("Starting "+formula+" identification");
             @NotNull FloatProposition proposition = (FloatProposition) formula;
             revealedPropositions.add(proposition);
            // System.out.println("Revealing proposition: "+proposition);
@@ -101,7 +101,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, ColorFormulae> 
             for (CoordinateNode node : generator.initial(proposition)) {
                // System.out.println("Saving proposition: "+proposition+" "+node);
                 //proposition is invariant to parameters
-                System.out.println("Node added: "+i);
+                //System.out.println("Node added: "+i);
                 i+=1;
                 node.addFormula(proposition, model.getFullColorSet());
             }
@@ -116,7 +116,7 @@ public class NodeFactory implements ModelAdapter<CoordinateNode, ColorFormulae> 
                 results.put(node, (ColorFormulae) ColorFormulae.createCopy(validColors));
             }
         }
-        System.out.println("Finish: "+formula+"");
+        //System.out.println("Finish: "+formula+"");
         return results;
     }
 

@@ -32,7 +32,7 @@ public class ColorFormulae implements ColorSet {
         this.solver = s;
         this.formula = formula;
         this.goal = g;
-        this.sat = true;
+        this.sat = null;
         tactic = t;
     }
 

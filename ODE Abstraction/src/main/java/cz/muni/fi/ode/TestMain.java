@@ -9,6 +9,9 @@ public class TestMain {
 
     public static void main(String[] args) {
 
+        System.out.println(System.getProperty("java.library.path"));
+        System.loadLibrary("z3java");
+
         Context ctx = new Context();
 
         ArithExpr x = ctx.mkRealConst("x");
@@ -16,8 +19,8 @@ public class TestMain {
 
         ArithExpr z = ctx.mkReal("0");
 
-        BoolExpr p1 = ctx.mkGe(z, ctx.mkAdd(ctx.mkReal("3.0"), x));
-        BoolExpr p2 = ctx.mkLe(z, ctx.mkAdd(ctx.mkReal("3.0"), x));
+        BoolExpr p1 = ctx.mkGt(z, ctx.mkAdd(ctx.mkReal("3.0"), x));
+        BoolExpr p2 = ctx.mkLt(z, ctx.mkAdd(ctx.mkReal("3.0"), x));
 
 
         BoolExpr and = ctx.mkAnd(p1, p2);
@@ -36,6 +39,10 @@ public class TestMain {
         System.out.println("Result: "+r);
         System.out.println("Formula: "+str);
         System.out.println("Parse: "+ctx.parseSMTLIB2String("(declare-const x Real) (assert "+str+")", null, null, null, null));
+
+        ColorFormulae formulae = new ColorFormulae(ctx, ctx.mkSimpleSolver(), g, s, and);
+        System.out.println("Is empty: "+formulae.isEmpty());
+        System.out.println("Formula: "+formulae.toString());
         //System.out.println(Arrays.toString(ctx.getTacticNames()));
         //System.out.println(s.getHelp());
 

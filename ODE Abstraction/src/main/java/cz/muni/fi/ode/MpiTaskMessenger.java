@@ -42,7 +42,7 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Colo
         this.factory = factory;
         this.model = model;
         this.solverContext = model.getDefaultContext();
-        this.recvBuffer = new int[2*dimensions + model.parameterCount() + 3];
+        this.recvBuffer = new int[2*dimensions + 4];
         this.recvParams = new double[2];
     }
 

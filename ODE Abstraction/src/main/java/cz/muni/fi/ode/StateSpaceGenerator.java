@@ -215,30 +215,42 @@ public class StateSpaceGenerator {
                 }
             }
 
-            // Checking part - using of SMT-solver
-            ColorFormulae outgoingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
-            outgoingDirectionSolver.intersect(outgoingDirectionExpression);
-            lowerOutgoingDirection = outgoingDirectionSolver.isNotEmpty();
-
-            ColorFormulae incomingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
-            incomingDirectionSolver.intersect(incomingDirectionExpression);
-            lowerIncomingDirection = incomingDirectionSolver.isNotEmpty();
 
             //System.out.println("Directions: "+lowerOutgoingDirection+" "+lowerIncomingDirection);
 
             if(from.coordinates[dimension] != 0)	{
 
-                if((successors && lowerOutgoingDirection) || (!successors && lowerIncomingDirection)) {
+                @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
+                newStateCoors[dimension] = newStateCoors[dimension] - 1;
 
-                    @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
-                    newStateCoors[dimension] = newStateCoors[dimension] - 1;
+                // Checking part - using of SMT-solver
+
+
+                if (successors) {
+                    ColorFormulae outgoingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
+                    outgoingDirectionSolver.intersect(outgoingDirectionExpression);
+                    lowerOutgoingDirection = outgoingDirectionSolver.isNotEmpty();
+
+                    if (lowerOutgoingDirection) {
+                        results.put(factory.getNode(newStateCoors), outgoingDirectionSolver);
+                    }
+                } else {
+                    ColorFormulae incomingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
+                    incomingDirectionSolver.intersect(incomingDirectionExpression);
+                    lowerIncomingDirection = incomingDirectionSolver.isNotEmpty();
+
+                    if (lowerIncomingDirection) {
+                        results.put(factory.getNode(newStateCoors), incomingDirectionSolver);
+                    }
+                }
+                /*if((successors && lowerOutgoingDirection) || (!successors && lowerIncomingDirection)) {
 
                    // System.out.println("Adding");
                     if(successors)
                         results.put(factory.getNode(newStateCoors), outgoingDirectionSolver);
                     else
                         results.put(factory.getNode(newStateCoors), incomingDirectionSolver);
-                }
+                }*/
 
             }
 
@@ -285,44 +297,53 @@ public class StateSpaceGenerator {
             }
 
             // Checking part - using of SMT-solver
-            outgoingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
-            outgoingDirectionSolver.intersect(outgoingDirectionExpression);
-            upperOutgoingDirection = outgoingDirectionSolver.isNotEmpty();
 
-            incomingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
-            incomingDirectionSolver.intersect(incomingDirectionExpression);
-            upperIncomingDirection = incomingDirectionSolver.isNotEmpty();
-
-          //  System.out.println("Directions: "+upperOutgoingDirection+" "+upperIncomingDirection);
+            //  System.out.println("Directions: "+upperOutgoingDirection+" "+upperIncomingDirection);
 
             if(from.coordinates[dimension] != model.getThresholdRanges().get(dimension).upperEndpoint() - 1) {
 
-                if((successors && upperOutgoingDirection) || (!successors && upperIncomingDirection)) {
+                @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
+                newStateCoors[dimension] = newStateCoors[dimension] + 1;
 
-                    @NotNull int[] newStateCoors = Arrays.copyOf(from.coordinates, from.coordinates.length);
-                    newStateCoors[dimension] = newStateCoors[dimension] + 1;
+                if (successors) {
+                    ColorFormulae outgoingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
+                    outgoingDirectionSolver.intersect(outgoingDirectionExpression);
+                    upperOutgoingDirection = outgoingDirectionSolver.isNotEmpty();
+                    if (upperOutgoingDirection) {
+                        results.put(factory.getNode(newStateCoors), outgoingDirectionSolver);
+                    }
+                } else {
+                    ColorFormulae incomingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
+                    incomingDirectionSolver.intersect(incomingDirectionExpression);
+                    upperIncomingDirection = incomingDirectionSolver.isNotEmpty();
+                    if (upperIncomingDirection) {
+                        results.put(factory.getNode(newStateCoors), incomingDirectionSolver);
+                    }
+                }
+
+                /*if((successors && upperOutgoingDirection) || (!successors && upperIncomingDirection)) {
 
                    // System.out.println("Adding");
                     if(successors)
                         results.put(factory.getNode(newStateCoors), outgoingDirectionSolver);
                     else
                         results.put(factory.getNode(newStateCoors), incomingDirectionSolver);
-                }
+                }*/
 
             }
 
-            if(hasSelfLoop) {
-                if(lowerOutgoingDirection && upperOutgoingDirection && !lowerIncomingDirection && !upperIncomingDirection ||
-                        !lowerOutgoingDirection && !upperOutgoingDirection && lowerIncomingDirection && upperIncomingDirection) {
+            /*if(hasSelfLoop) {
+                if(lowerIncomingDirection && upperOutgoingDirection && !lowerOutgoingDirection && !upperIncomingDirection ||
+                        !lowerIncomingDirection && !upperOutgoingDirection && lowerOutgoingDirection && upperIncomingDirection) {
 
                     hasSelfLoop = false;
                 }
-            }
+            }*/
         }
 
-        if(hasSelfLoop) {
+/*        if(hasSelfLoop) {
             results.put(from, border);
-        }
+        }*/
 
         return results;
     }

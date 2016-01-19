@@ -301,7 +301,7 @@ template <typename T>
 void Model<T>::AddThresholdValue(std::string value) {
 
 	value_type val = (T)std::stod(value);
-	
+
     if(!thresholds.empty()) {
     	if(std::find(thresholds.back().second.begin(),thresholds.back().second.end(),val) == thresholds.back().second.end()) {
 		    thresholds.back().second.push_back(val);
@@ -614,7 +614,7 @@ void Model<T>::RunAbstraction(bool useFastApproximation)
 	std::vector<std::vector<typename Summember<T>::ramp> > new_sigmoids_ramps;
 	std::vector<std::vector<typename Summember<T>::ramp> > new_hills_ramps;	
 	unsigned int curveNum = 0;
-	bool dbg = false;
+	bool dbg = true;
 
     for(int i = 0; i < var_names.size(); i++) {
 
@@ -652,7 +652,9 @@ void Model<T>::RunAbstraction(bool useFastApproximation)
         for(int t = 0; t < thresholdsX.size(); t++) {
             std::stringstream ss;
             ss << thresholdsX.at(t);
-            AddThresholdValue(ss.str());
+            if (thresholdsX.at(t) < thresholds.back().second.back()) {
+                AddThresholdValue(ss.str());
+            }
             if(dbg) std::cerr << ss.str() << ", ";		//Just for testing
         }
         if(dbg) std::cerr << "\n";		//just for testing

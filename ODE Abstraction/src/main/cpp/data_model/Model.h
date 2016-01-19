@@ -614,7 +614,7 @@ void Model<T>::RunAbstraction(bool useFastApproximation)
 	std::vector<std::vector<typename Summember<T>::ramp> > new_sigmoids_ramps;
 	std::vector<std::vector<typename Summember<T>::ramp> > new_hills_ramps;	
 	unsigned int curveNum = 0;
-	bool dbg = true;
+	bool dbg = false;
 
     for(int i = 0; i < var_names.size(); i++) {
 

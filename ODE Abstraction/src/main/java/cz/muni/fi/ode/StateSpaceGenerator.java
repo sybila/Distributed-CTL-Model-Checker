@@ -198,8 +198,8 @@ public class StateSpaceGenerator {
                     expr = ctx.mkAdd(expr, consts[i]);
 
                     // on lower facet outgoing direction means equation's value is less or equal to zero and incoming means value is greater or equal to zero
-                    outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkGe(zero, expr));
-                    incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkLe(zero, expr));
+                    outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkGt(zero, expr));
+                    incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkLt(zero, expr));
 
                 } else {
                     // The case when model doesn't contain any parameter - whole equation becomes form f(x): 0 = c
@@ -208,8 +208,8 @@ public class StateSpaceGenerator {
                     RealExpr consts = ctx.mkReal(equationConsts[0].toString());
 
                     // on lower facet outgoing direction means equation's value is less or equal to zero and incoming means value is greater or equal to zero
-                    outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkGe(zero, consts));
-                    incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkLe(zero, consts));
+                    outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkGt(zero, consts));
+                    incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkLt(zero, consts));
                     //outgoingDirectionExpressions.addAssertion(ctx.mkGe(zero, consts).simplify());
                     //incomingDirectionExpressions.addAssertion(ctx.mkLe(zero, consts).simplify());
                 }
@@ -281,8 +281,8 @@ public class StateSpaceGenerator {
                     expr = ctx.mkAdd(expr, consts[i]);
 
                     // on upper facet outgoing direction means equation's value is greater or equal to zero and incoming means value is less or equal to zero
-                    outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkLe(zero, expr));
-                    incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkGe(zero, expr));
+                    outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkLt(zero, expr));
+                    incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkGt(zero, expr));
 
                 } else {
                     // The case when model doesn't contain any parameter - whole equation becomes form f(x): 0 = c
@@ -291,11 +291,10 @@ public class StateSpaceGenerator {
                     RealExpr consts = ctx.mkReal(equationConsts[0].toString());
 
                     // on upper facet outgoing direction means equation's value is greater or equal to zero and incoming means value is less or equal to zero
-                    outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkLe(zero, consts));
-                    incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkGe(zero, consts));
+                    outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkLt(zero, consts));
+                    incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkGt(zero, consts));
                 }
             }
-
             // Checking part - using of SMT-solver
 
             //  System.out.println("Directions: "+upperOutgoingDirection+" "+upperIncomingDirection);

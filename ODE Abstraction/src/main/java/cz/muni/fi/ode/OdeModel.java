@@ -131,7 +131,7 @@ public class OdeModel {
             RealExpr upper = defaultContext.mkReal(range.upperEndpoint().toString());
 
             // setting bounds on parameter space as intervals
-            exprs[i] = defaultContext.mkAnd(defaultContext.mkGe(getContextParameter(i),lower),defaultContext.mkLe(getContextParameter(i),upper));
+            exprs[i] = defaultContext.mkAnd(defaultContext.mkGt(getContextParameter(i),lower),defaultContext.mkLt(getContextParameter(i),upper));
         }
         return new ColorFormulae(defaultContext, defaultSolver, defaultGoal, defaultTactic, defaultContext.mkAnd(exprs));
     }

@@ -675,7 +675,7 @@ void Model<T>::RunAbstraction(bool useFastApproximation)
 
         for(int j = 0; j < groupOfSigmoids.size(); j++) {
 
-            thresholdsY.push_back(sigmoids.at(groupOfSigmoids.at(j)).enumerateYPoints(thresholdsX));
+            thresholdsY.push_back(sigmoids.at(groupOfSigmoids.at(j)).enumerateYPoints(thresholds.back().second));
 /*
             // Testing functionality
             std::stringstream ss;
@@ -695,11 +695,11 @@ void Model<T>::RunAbstraction(bool useFastApproximation)
             // End of testing
 */
         }
-        new_sigmoids_ramps = generateNewRamps(thresholdsX, thresholdsY, i+1);
+        new_sigmoids_ramps = generateNewRamps(thresholds.back().second, thresholdsY, i+1);
         
         thresholdsY.clear();
         for(int j = 0; j < groupOfHills.size(); j++) {
-            thresholdsY.push_back(hills.at(groupOfHills.at(j)).enumerateYPoints(thresholdsX));
+            thresholdsY.push_back(hills.at(groupOfHills.at(j)).enumerateYPoints(thresholds.back().second));
 /*
             // Testing functionality
             std::stringstream ss;
@@ -719,7 +719,7 @@ void Model<T>::RunAbstraction(bool useFastApproximation)
             // End of testing
 */
         }
-        new_hills_ramps = generateNewRamps(thresholdsX, thresholdsY, i+1);
+        new_hills_ramps = generateNewRamps(thresholds.back().second, thresholdsY, i+1);
 
         // For testing----------------------------------------------------
         if(dbg && groupOfSigmoids.size() > 0) {
@@ -1148,7 +1148,6 @@ std::vector <double> Model<T>::optimalFastGlobalLinearApproximation2 (std::vecto
 	mCost[1][0] = 0.0;
 	
 	std::vector<std::vector<int> > father (n_points, std::vector<int> (n_segments, 0));
-	
 	
 	for (int n=1; n < n_points; n++) {
 		double temp = -1 * INFINITY;

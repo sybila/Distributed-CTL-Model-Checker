@@ -11,6 +11,9 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
  */
 public class ColorFormulae implements ColorSet {
 
+    public static long timeSpentInSolver = 0;
+    public static long solverUsedCount = 0;
+
     private final Context ctx;
     private final Solver solver;
 
@@ -85,14 +88,26 @@ public class ColorFormulae implements ColorSet {
                 this.sat = sat;
                 solver.reset();
                 return !sat;*/
+                //Expr orig = formula;
                 goal.add(formula);
+                long start = System.currentTimeMillis();
                 Goal[] result = tactic.apply(goal).getSubgoals();
+                timeSpentInSolver += System.currentTimeMillis() - start;
+                solverUsedCount += 1;
                 sat = !result[0].AsBoolExpr().isFalse();
                 BoolExpr[] exprs = new BoolExpr[result.length];
                 for (int i=0; i<result.length; i++) {
                     exprs[i] = result[i].AsBoolExpr();
                 }
                 formula = ctx.mkAnd(exprs);
+                //Verify that we did the right thing:
+                /*solver.add(formula);
+                Status SAT = solver.check();
+                System.out.println("SAT: "+ solver.check() + " sat: " + sat);
+                if (SAT != Status.SATISFIABLE && sat) {
+                    throw new IllegalStateException("Inconsistency! "+orig+" "+formula);
+                }
+                solver.reset();*/
                 goal.reset();
                 return !sat;
             } else return !sat;

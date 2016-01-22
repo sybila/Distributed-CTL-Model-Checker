@@ -93,7 +93,11 @@ public class ODEMain {
         MPI.Buffer_detach();
 
         MPI.Finalize();
-        System.err.println(MPI.COMM_WORLD.Rank()+" Duration: "+(System.currentTimeMillis() - start));
+        System.err.println(MPI.COMM_WORLD.Rank()+" Total duration: "+(System.currentTimeMillis() - start));
+        System.err.println(MPI.COMM_WORLD.Rank()+" Solver used x-times: "+ColorFormulae.solverUsedCount);
+        System.err.println(MPI.COMM_WORLD.Rank()+" Time in solver: "+ColorFormulae.timeSpentInSolver);
+        System.err.println(MPI.COMM_WORLD.Rank()+" Messages sent: "+MpiTaskMessenger.messageCount);
+        System.err.println(MPI.COMM_WORLD.Rank()+" Aprox. messages size (bytes): "+MpiTaskMessenger.messageSize);
         System.exit(0);
     }
 

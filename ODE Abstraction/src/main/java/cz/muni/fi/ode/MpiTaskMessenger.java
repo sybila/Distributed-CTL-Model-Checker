@@ -16,6 +16,9 @@ import java.util.List;
  */
 public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, ColorFormulae> {
 
+    public static long messageCount = 0;
+    public static long messageSize = 0;
+
     private static final int TAG = 1;
 
     private static final int FINISH = -1;
@@ -75,6 +78,9 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Colo
         */
         char[] chars = parameterFormula.toCharArray();
         synchronized (this) {   //ensure message ordering
+            messageCount += 2;
+            messageSize += 4 * buffer.length;
+            messageSize += chars.length;
             COMM.Bsend(buffer, 0, buffer.length, MPI.INT, destinationNode, TAG);
             COMM.Bsend(chars, 0, chars.length, MPI.CHAR, destinationNode, TAG);
         }

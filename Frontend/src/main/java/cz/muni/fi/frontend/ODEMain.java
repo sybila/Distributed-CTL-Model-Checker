@@ -98,6 +98,7 @@ public class ODEMain {
         System.err.println(MPI.COMM_WORLD.Rank()+" Time in solver: "+ColorFormulae.timeSpentInSolver);
         System.err.println(MPI.COMM_WORLD.Rank()+" Messages sent: "+MpiTaskMessenger.messageCount);
         System.err.println(MPI.COMM_WORLD.Rank()+" Aprox. messages size (bytes): "+MpiTaskMessenger.messageSize);
+        System.err.println(MPI.COMM_WORLD.Rank()+" Parsing time: "+MpiTaskMessenger.parserTime);
         System.exit(0);
     }
 

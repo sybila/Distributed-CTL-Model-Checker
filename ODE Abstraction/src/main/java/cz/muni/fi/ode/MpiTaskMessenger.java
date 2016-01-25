@@ -18,6 +18,7 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Colo
 
     public static long messageCount = 0;
     public static long messageSize = 0;
+    public static long parserTime = 0;
 
     private static final int TAG = 1;
 
@@ -101,6 +102,7 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Colo
             String formula = String.valueOf(chars);
             String full = model.getSmtParamDefinition() + "( assert "+formula+" )";
             System.out.println(full);
+            long start = System.currentTimeMillis();
             @NotNull ColorFormulae colorSet = new ColorFormulae(
                     solverContext,
                     model.getDefaultSolver(),
@@ -110,6 +112,7 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Colo
                             full,
                             null, null, null, null)
                     );
+            parserTime += System.currentTimeMillis() - start;
             taskListener.onTask(sender, source, dest, colorSet);
             return true;
         } else {

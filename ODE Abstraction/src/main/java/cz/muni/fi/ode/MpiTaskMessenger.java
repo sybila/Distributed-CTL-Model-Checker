@@ -101,7 +101,7 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Colo
             COMM.Recv(chars, 0, length, MPI.CHAR, sender, TAG);
             String formula = String.valueOf(chars);
             String full = model.getSmtParamDefinition() + "( assert "+formula+" )";
-            System.out.println(full);
+	    // System.out.println(full);
             long start = System.currentTimeMillis();
             @NotNull ColorFormulae colorSet = new ColorFormulae(
                     solverContext,

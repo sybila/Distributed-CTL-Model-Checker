@@ -124,7 +124,7 @@ public class OdeModel {
     @NotNull
     public ColorFormulae getFullColorSet() {
         // creation of new ColorFormulae with defaultContext as initial parameter and initial constrains
-        BoolExpr[] exprs = new BoolExpr[parameterCount()];
+/*        BoolExpr[] exprs = new BoolExpr[parameterCount()];
         for(int i = 0; i < parameterCount(); i++) {
             Range<Double> range = getParameterRange().get(i);
             RealExpr lower = defaultContext.mkReal(range.lowerEndpoint().toString());
@@ -134,6 +134,10 @@ public class OdeModel {
             exprs[i] = defaultContext.mkAnd(defaultContext.mkGt(getContextParameter(i),lower),defaultContext.mkLt(getContextParameter(i),upper));
         }
         return new ColorFormulae(defaultContext, defaultSolver, defaultGoal, defaultTactic, defaultContext.mkAnd(exprs));
+*/
+        // creation of new ColorFormulae instance with initial defaultContext parameter with always satisfiable constrain
+        @NotNull ColorFormulae set = new ColorFormulae(defaultContext, defaultSolver, defaultGoal, defaultTactic, defaultContext.mkTrue());
+        return set;
     }
 
     @NotNull

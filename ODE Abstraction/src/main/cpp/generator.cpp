@@ -56,7 +56,7 @@ Java_cz_muni_fi_ode_OdeModel_cppLoad(
         Parser parser(modelfile2);
         parser.parse();
         odeModel = parser.returnStorage();
-        odeModel.RunAbstraction(); // TODO: set false as input parameter finally
+        odeModel.RunAbstraction(false); // TODO: set false as input parameter finally
         generator = new StateSpaceGenerator(odeModel, true);
 
 /*

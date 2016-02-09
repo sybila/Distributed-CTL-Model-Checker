@@ -228,7 +228,7 @@ public class StateSpaceGenerator {
 
                 if (successors) {
                     ColorFormulae outgoingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
-                    outgoingDirectionSolver.intersect(outgoingDirectionExpression);
+                    outgoingDirectionSolver.intersect(outgoingDirectionSolver.copy(outgoingDirectionExpression));
                     lowerOutgoingDirection = outgoingDirectionSolver.isNotEmpty();
 
                     if (lowerOutgoingDirection) {
@@ -236,7 +236,7 @@ public class StateSpaceGenerator {
                     }
                 } else {
                     ColorFormulae incomingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
-                    incomingDirectionSolver.intersect(incomingDirectionExpression);
+                    incomingDirectionSolver.intersect(incomingDirectionSolver.copy(incomingDirectionExpression));
                     lowerIncomingDirection = incomingDirectionSolver.isNotEmpty();
 
                     if (lowerIncomingDirection) {
@@ -306,14 +306,14 @@ public class StateSpaceGenerator {
 
                 if (successors) {
                     ColorFormulae outgoingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
-                    outgoingDirectionSolver.intersect(outgoingDirectionExpression);
+                    outgoingDirectionSolver.intersect(outgoingDirectionSolver.copy(outgoingDirectionExpression));
                     upperOutgoingDirection = outgoingDirectionSolver.isNotEmpty();
                     if (upperOutgoingDirection) {
                         results.put(factory.getNode(newStateCoors), outgoingDirectionSolver);
                     }
                 } else {
                     ColorFormulae incomingDirectionSolver = (ColorFormulae) ColorFormulae.createCopy(color);
-                    incomingDirectionSolver.intersect(incomingDirectionExpression);
+                    incomingDirectionSolver.intersect(incomingDirectionSolver.copy(incomingDirectionExpression));
                     upperIncomingDirection = incomingDirectionSolver.isNotEmpty();
                     if (upperIncomingDirection) {
                         results.put(factory.getNode(newStateCoors), incomingDirectionSolver);

@@ -87,6 +87,7 @@ class AllUntilVerificator<N extends Node, C extends ColorSet> extends MergeQueue
         while (!queue.isEmpty()) {
             Map.Entry<N,C> inspected;
             synchronized (queue) {
+                System.out.println("Remaining: ("+partitioner.getMyId()+", "+queue.size()+")");
                 inspected = queue.entrySet().iterator().next();
                 queue.remove(inspected.getKey());
             }

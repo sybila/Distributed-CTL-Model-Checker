@@ -1,11 +1,9 @@
 package cz.muni.fi.frontend;
 
-import com.google.common.collect.Range;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import cz.muni.fi.ctl.formula.proposition.Tautology;
 import cz.muni.fi.export.Model;
-import cz.muni.fi.export.Transition;
 import cz.muni.fi.export.Variable;
 import cz.muni.fi.ode.*;
 import org.jetbrains.annotations.NotNull;
@@ -13,12 +11,12 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Set;
 
 public class TransitionMain {
 
     static {
         NativeUtils.loadLibrary("ODE");
+        NativeUtils.loadLibrary("z3java");
     }
 
     public static void main(@NotNull String[] args) throws InterruptedException, IOException {
@@ -44,10 +42,11 @@ public class TransitionMain {
             }
             exported.variables.add(variable);
         }
-/*      //TODO: temporary - not necessary for run
+      //TODO: temporary - not necessary for run
         for (Map.Entry<CoordinateNode, ColorFormulae> entry : factory.initialNodes(Tautology.INSTANCE).entrySet()) {
+            System.out.println("Successors of "+entry.getKey()+":");
             for (Map.Entry<CoordinateNode, ColorFormulae> succ : factory.successorsFor(entry.getKey(), null).entrySet()) {
-                Transition transition = new Transition();
+                /*Transition transition = new Transition();
                 transition.source = convertNode(entry.getKey());
                 transition.destination = convertNode(succ.getKey());
                 transition.colours = new double[succ.getValue().size()][2];
@@ -60,10 +59,11 @@ public class TransitionMain {
                     transition.colours[i][0] = range.lowerEndpoint();
                     transition.colours[i][1] = range.upperEndpoint();
                 }
-                exported.transitions.add(transition);
+                exported.transitions.add(transition);*/
+                System.out.println(succ.getKey()+" "+succ.getValue()+" e: "+succ.getValue().isEmpty());
             }
         }
-*/
+
         System.out.println(gson.toJson(exported));
 
     }

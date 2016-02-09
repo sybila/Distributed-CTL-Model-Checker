@@ -26,19 +26,66 @@ public class TestMain {
         BoolExpr and = ctx.mkAnd(p1, p2);
         Expr sim = and.simplify();
 
-        System.out.println(and + " " + sim);
+        Expr e = ctx.parseSMTLIB2String(
+                "(declare-const p0 Real) (declare-const p1 Real) (assert (let ((a!1 (not (<= 0.0\n" +
+                        "                    (+ (* (/ 1388888888888889.0 2500000000000000.0) p0)\n" +
+                        "                       (* (- 4.0) p1))))))\n" +
+                        "  (and a!1 (not (<= p0 (/ 4.0 5.0))) (not (<= (/ 3.0 20.0) p1)))))"
+        , null, null, null, null);
+
+        BoolExpr longExpr = ctx.parseSMTLIB2String(
+                "(declare-const p0 Real) (assert (let ((a!1 (not (and (<= p0 (/ 290843798183171.0 59840425531914900.0))\n" +
+                        "                     (not (<= p0 0.0))))))\n" +
+                        "(let ((a!2 (not (and (not (<= p0 0.0)) (not (<= (/ 1.0 100.0) p0)) a!1))))\n" +
+                        "(let ((a!3 (not (and a!2 (not (<= p0 0.0)) (not (<= (/ 1.0 100.0) p0))))))\n" +
+                        "(let ((a!4 (not (and (not (<= p0 0.0)) (not (<= (/ 1.0 100.0) p0)) a!3))))\n" +
+                        "(let ((a!5 (not (and a!4 (not (<= p0 0.0)) (not (<= (/ 1.0 100.0) p0))))))\n" +
+                        "(let ((a!6 (not (and (not (<= p0 0.0)) (not (<= (/ 1.0 100.0) p0)) a!5))))\n" +
+                        "(let ((a!7 (not (and a!6 (not (<= p0 0.0)) (not (<= (/ 1.0 100.0) p0))))))\n" +
+                        "(let ((a!8 (not (and (not (<= p0 0.0)) (not (<= (/ 1.0 100.0) p0)) a!7))))\n" +
+                        "(let ((a!9 (not (and a!8 (not (<= p0 0.0)) (not (<= (/ 1.0 100.0) p0))))))\n" +
+                        "(let ((a!10 (not (and (not (<= p0 0.0)) (not (<= (/ 1.0 100.0) p0)) a!9))))\n" +
+                        "(let ((a!11 (not (and a!10 (not (<= p0 0.0)) (not (<= (/ 1.0 100.0) p0))))))\n" +
+                        "(let ((a!12 (not (and (not (<= p0 0.0)) (not (<= (/ 1.0 100.0) p0)) a!11))))\n" +
+                        "(let ((a!13 (not (and a!12 (not (<= p0 0.0)) (not (<= (/ 1.0 100.0) p0))))))\n" +
+                        "(let ((a!14 (not (and (not (<= p0 0.0)) (not (<= (/ 1.0 100.0) p0)) a!13))))\n" +
+                        "  (and a!14 (not (<= p0 0.0)) (not (<= (/ 1.0 100.0) p0))))))))))))))))))"
+        , null, null, null, null);
+
+        //System.out.println(e);
+        //System.out.println("e: "+e.isAnd()+" "+e.getNumArgs()+" "+Arrays.toString(e.getArgs()));
+        //System.out.println(and + " " + Arrays.toString(and.getArgs()));
         Tactic s = ctx.mkTactic("ctx-solver-simplify");
 
+        Tactic cnf = ctx.mkTactic("tseitin-cnf");
+
+        Params p = ctx.mkParams();
+        p.add("local_ctx", true);
+
         Goal g = ctx.mkGoal(false, false, false);
-        g.add(and);
+        g.add(longExpr);
 
 
         ApplyResult r = s.apply(g);
         String str = r.getSubgoals()[0].AsBoolExpr().toString();
         System.out.println("false: "+r.getSubgoals()[0].AsBoolExpr().isFalse());
+        System.out.println("Result length: "+r.getNumSubgoals());
         System.out.println("Result: "+r);
-        System.out.println("Formula: "+str);
-        System.out.println("Parse: "+ctx.parseSMTLIB2String("(declare-const x Real) (assert "+str+")", null, null, null, null));
+
+        ApplyResult cnfExpr = cnf.apply(g, p);
+        String cnfStr = cnfExpr.getSubgoals()[0].AsBoolExpr().toString();
+        System.out.println("Result length: "+cnfExpr.getNumSubgoals());
+        System.out.println("Result: "+cnfStr);
+
+        Goal g2 = ctx.mkGoal(false, false, false);
+        g2.add(cnfExpr.getSubgoals()[0].AsBoolExpr());
+        ApplyResult cnfSimplified = s.apply(g2);
+        String cnfSimplifiedStr = cnfSimplified.getSubgoals()[0].AsBoolExpr().toString();
+        System.out.println("Result length: "+cnfSimplified.getNumSubgoals());
+        System.out.println("Result: "+cnfSimplifiedStr);
+
+//        System.out.println("Formula: "+str);
+//        System.out.println("Parse: "+ctx.parseSMTLIB2String("(declare-const x Real) (assert "+str+")", null, null, null, null));
 
         ColorFormulae formulae = new ColorFormulae(ctx, ctx.mkSimpleSolver(), g, s, and);
         System.out.println("Is empty: "+formulae.isEmpty());

@@ -46,7 +46,7 @@ class ExistsUntilVerificator<N extends Node, C extends ColorSet> extends MergeQu
             Map.Entry<N,C> inspected;
             synchronized (queue) {
                 inspected = queue.entrySet().iterator().next();
-                System.out.print("Q("+partitioner.getMyId()+", "+queue.size()+") - ");
+                System.out.println("Remaining: ("+partitioner.getMyId()+", "+queue.size()+")");
                 queue.remove(inspected.getKey());
             }
             for (@NotNull Map.Entry<N, C> predecessor : model.predecessorsFor(inspected.getKey(), inspected.getValue()).entrySet()) {

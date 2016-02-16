@@ -88,6 +88,7 @@ class AllUntilVerificator<N extends Node, C extends ColorSet> extends MergeQueue
             Map.Entry<N,C> inspected;
             synchronized (queue) {
                 inspected = queue.entrySet().iterator().next();
+                System.out.println(partitioner.getMyId()+" queue "+queue.size());
                 queue.remove(inspected.getKey());
             }
             //go through all predecessors of an inspected node and

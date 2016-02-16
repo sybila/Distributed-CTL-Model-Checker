@@ -76,6 +76,7 @@ public class ODEMain {
             }
         }*/
 
+        ColorFormulae parameterBounds = model.getParameterBounds();
         //print results
         if (args.length >= 3 && args[args.length - 3].equals("--all")) {
             for (@NotNull CoordinateNode node : factory.getNodes()) {
@@ -84,6 +85,7 @@ public class ODEMain {
         } else if (args.length >= 3 && !args[args.length - 3].equals("--none")) {
             for (@NotNull CoordinateNode node : factory.getNodes()) {
                 @NotNull ColorFormulae colorSet = factory.validColorsFor(node, formula);
+                colorSet.intersect(parameterBounds);
                 if (!colorSet.isEmpty()) {
                     System.out.println(model.coordinateString(node.coordinates)+" "+colorSet);
                 }

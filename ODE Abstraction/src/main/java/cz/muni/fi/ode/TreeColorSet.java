@@ -126,7 +126,7 @@ public class TreeColorSet extends ArrayList<RangeSet<Double>> implements ColorSe
     }
 
     @NotNull
-    @SuppressWarnings("UnusedDeclaration")
+    @SuppressWarnings({"UnusedDeclaration", "unchecked"})
     public Range<Double>[] asArrayForParam(int i) {
         RangeSet<Double> set = get(i);
         Set<Range<Double>> data = set.asRanges();

@@ -3,7 +3,6 @@ package cz.muni.fi.ode;
 import com.microsoft.z3.*;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import org.jetbrains.annotations.NotNull;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 
 /**
@@ -139,10 +138,6 @@ public class ColorFormulae implements ColorSet {
             solver.reset();
             return !sat;
         }
-    }
-
-    public static ColorSet createFromBuffer(@NotNull int[] lengths, double[] data) {
-        throw new NotImplementedException();
     }
 
     public static ColorSet createCopy(@NotNull ColorSet set) {

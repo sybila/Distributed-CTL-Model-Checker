@@ -4,10 +4,10 @@ import com.microsoft.z3.*;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
+import java.util.Map;
 
-/**
- * Created by User on 7.12.15.
- */
+
 public class ColorFormulae implements ColorSet {
 
     public static long timeSpentInSolver = 0;
@@ -15,6 +15,9 @@ public class ColorFormulae implements ColorSet {
 
     private final Context ctx;
     private final Solver solver;
+
+    private static Map<BoolExpr, BoolExpr> solverCache = new HashMap<>();
+    public static int cacheHit = 0;
 
     private BoolExpr formula;
     private Boolean sat = null;
@@ -81,33 +84,26 @@ public class ColorFormulae implements ColorSet {
         synchronized (solver) {
             //System.out.println("SAT:"+sat);
             if (this.sat == null) {
-                /*solver.add(formula);
-                //System.out.println("Is sat? "+solver.check());
-                boolean sat = solver.check() == Status.SATISFIABLE;
-                this.sat = sat;
-                solver.reset();
-                return !sat;*/
-                //Expr orig = formula;
-                goal.add(formula);
-                long start = System.currentTimeMillis();
-                Goal[] result = tactic.apply(goal).getSubgoals();
-                timeSpentInSolver += System.currentTimeMillis() - start;
-                solverUsedCount += 1;
-                sat = !result[0].AsBoolExpr().isFalse();
-                BoolExpr[] exprs = new BoolExpr[result.length];
-                for (int i=0; i<result.length; i++) {
-                    exprs[i] = result[i].AsBoolExpr();
+                if (solverCache.containsKey(formula)) {
+                    cacheHit += 1;
+                    this.formula = solverCache.get(formula);
+                    sat = !formula.isFalse();
+                } else {
+                    BoolExpr orig = formula;
+                    goal.add(formula);
+                    long start = System.currentTimeMillis();
+                    Goal[] result = tactic.apply(goal).getSubgoals();
+                    timeSpentInSolver += System.currentTimeMillis() - start;
+                    solverUsedCount += 1;
+                    sat = !result[0].AsBoolExpr().isFalse();
+                    BoolExpr[] exprs = new BoolExpr[result.length];
+                    for (int i=0; i<result.length; i++) {
+                        exprs[i] = result[i].AsBoolExpr();
+                    }
+                    formula = ctx.mkAnd(exprs);
+                    solverCache.put(orig, formula);
+                    goal.reset();
                 }
-                formula = ctx.mkAnd(exprs);
-                //Verify that we did the right thing:
-                /*solver.add(formula);
-                Status SAT = solver.check();
-                System.out.println("SAT: "+ solver.check() + " sat: " + sat);
-                if (SAT != Status.SATISFIABLE && sat) {
-                    throw new IllegalStateException("Inconsistency! "+orig+" "+formula);
-                }
-                solver.reset();*/
-                goal.reset();
                 return !sat;
             } else return !sat;
         }

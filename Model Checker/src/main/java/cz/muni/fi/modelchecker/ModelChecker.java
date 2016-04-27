@@ -20,6 +20,7 @@ public class ModelChecker<N extends Node, C extends ColorSet> {
 
 
     public static int merged = 0;
+    public static int mergedFromMessages = 0;
 
     @NotNull
     private final Set<Formula> processedFormulas = new HashSet<>();

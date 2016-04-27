@@ -2,6 +2,7 @@ package cz.muni.fi.modelchecker.verification;
 
 import cz.muni.fi.ctl.formula.Formula;
 import cz.muni.fi.modelchecker.ModelAdapter;
+import cz.muni.fi.modelchecker.ModelChecker;
 import cz.muni.fi.modelchecker.StateSpacePartitioner;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
@@ -74,7 +75,9 @@ class ExistsUntilVerificator<N extends Node, C extends ColorSet> extends MergeQu
             //if this is not empty and there are new colors, run back
             candidates.intersect(model.validColorsFor(internal, formula.getSubFormulaAt(0)));
             if (model.addFormula(internal, formula, candidates)) {
-                addToQueue(internal, candidates);
+                if (addToQueue(internal, candidates)) {
+                    ModelChecker.mergedFromMessages += 1;
+                }
             }
             queue.notify();
             terminator.messageReceived();

@@ -103,6 +103,7 @@ public class ODEMain {
         System.err.println(MPI.COMM_WORLD.Rank()+" Aprox. messages size (bytes): "+MpiTaskMessenger.messageSize);
         System.err.println(MPI.COMM_WORLD.Rank()+" Parsing time: "+MpiTaskMessenger.parserTime);
         System.err.println(MPI.COMM_WORLD.Rank()+" Merged: "+ModelChecker.merged);
+        System.err.println(MPI.COMM_WORLD.Rank()+" Merged from messages: "+ModelChecker.mergedFromMessages);
        // System.err.println(MPI.COMM_WORLD.Rank()+" Solver cache hit: "+ColorFormulae.cacheHit);
         System.exit(0);
     }

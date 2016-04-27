@@ -102,13 +102,15 @@ abstract class MergeQueueProcessor<N extends Node, C extends ColorSet> implement
     }
 
     /** Add data to the "merge queue" */
-    void addToQueue(N node, C colors) {
+    boolean addToQueue(N node, C colors) {
         synchronized (queue) {
             if (queue.containsKey(node)) {
                 ModelChecker.merged += 1;
                 queue.get(node).union(colors);
+                return true;
             } else {
                 queue.put(node, colors);
+                return false;
             }
         }
     }

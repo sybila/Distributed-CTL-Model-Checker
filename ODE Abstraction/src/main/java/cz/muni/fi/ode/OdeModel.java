@@ -36,7 +36,7 @@ public class OdeModel {
 
     private final Context defaultContext = new Context();
     private RealExpr[] contextParameters;
-    private Solver defaultSolver = defaultContext.mkSolver();
+    private Solver defaultSolver = defaultContext.mkSolver(defaultContext.mkTactic("qflra"));
     private Tactic defaultTactic = defaultContext.mkTactic("ctx-solver-simplify");
     private Goal  defaultGoal = defaultContext.mkGoal(false, false, false);
 

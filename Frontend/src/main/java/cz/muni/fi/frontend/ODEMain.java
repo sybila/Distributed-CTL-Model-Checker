@@ -35,7 +35,7 @@ public class ODEMain {
             System.out.println("MPI started on "+MPI.COMM_WORLD.Size()+" machines.");
         }
 
-        MPI.Buffer_attach(ByteBuffer.allocateDirect(1000 * 1000));
+        //MPI.Buffer_attach(ByteBuffer.allocateDirect(1000 * 1000));
 
         //read and normalize formula
         @NotNull FormulaParser parser = new FormulaParser();

@@ -59,29 +59,31 @@ public class ColorFormulae implements ColorSet {
         tactic = ctx.mkTactic("ctx-solver-simplify");
     }*/
 
-    public Context getContext() {
-        return ctx;
-    }
-
     @Override
     public void intersect(@NotNull ColorSet set) {
-        this.formula = ctx.mkAnd(formula, ((ColorFormulae) set).formula);
-        sat = null;
+        synchronized (ctx) {
+            this.formula = ctx.mkAnd(formula, ((ColorFormulae) set).formula);
+            sat = null;
+        }
     }
 
     public void intersect(BoolExpr expr) {
-        this.formula = ctx.mkAnd(formula, expr);
-        sat = null;
+        synchronized (ctx) {
+            this.formula = ctx.mkAnd(formula, expr);
+            sat = null;
+        }
     }
 
     @Override
     public void union(@NotNull ColorSet set) {
-        this.formula = ctx.mkOr(formula, ((ColorFormulae) set).formula);
+        synchronized (ctx) {
+            this.formula = ctx.mkOr(formula, ((ColorFormulae) set).formula);
+        }
     }
 
     @Override
     public boolean isEmpty() {
-        synchronized (solver) {
+        synchronized (ctx) {
             //System.out.println("SAT:"+sat);
             if (this.sat == null) {
                 /*if (solverCache.containsKey(formula)) {
@@ -121,15 +123,17 @@ public class ColorFormulae implements ColorSet {
 
     @Override
     public void subtract(@NotNull ColorSet set) {
-        this.formula = ctx.mkAnd(formula, ctx.mkNot(((ColorFormulae) set).formula));
-        this.sat = null;
+        synchronized (ctx) {
+            this.formula = ctx.mkAnd(formula, ctx.mkNot(((ColorFormulae) set).formula));
+            this.sat = null;
+        }
     }
 
     public boolean encloses(@NotNull ColorSet set) {
-        BoolExpr subtract = ctx.mkAnd(((ColorFormulae) set).formula, ctx.mkNot(formula));//ctx.mkAnd(formula, ctx.mkNot(((ColorFormulae) set).formula));
-        synchronized (solver) {
+        synchronized (ctx) {
+            BoolExpr subtract = ctx.mkAnd(((ColorFormulae) set).formula, ctx.mkNot(formula));//ctx.mkAnd(formula, ctx.mkNot(((ColorFormulae) set).formula));
             solver.add(subtract);
-           // System.out.println("Encloses"+subtract);
+            // System.out.println("Encloses"+subtract);
             boolean sat = solver.check() == Status.SATISFIABLE;
             solver.reset();
             return !sat;

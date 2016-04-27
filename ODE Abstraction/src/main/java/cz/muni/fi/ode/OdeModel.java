@@ -34,11 +34,14 @@ public class OdeModel {
     private long[] dimensionMultipliers;
     private long stateCount;
 
-    private Context defaultContext = new Context();
+    private final Context defaultContext = new Context();
     private RealExpr[] contextParameters;
     private Solver defaultSolver = defaultContext.mkSolver();
     private Tactic defaultTactic = defaultContext.mkTactic("ctx-solver-simplify");
     private Goal  defaultGoal = defaultContext.mkGoal(false, false, false);
+
+    BoolExpr ff = defaultContext.mkFalse();
+    BoolExpr tt = defaultContext.mkTrue();
 
     private String smtParamDefinition = "";
 
@@ -63,14 +66,15 @@ public class OdeModel {
         }
         System.err.println("Multipliers: "+ Arrays.toString(dimensionMultipliers));
 
-        if(parameterCount() > 0) {
-            contextParameters = new RealExpr[parameterCount()];
-            for(int i = 0; i < parameterCount(); i++) {
-                contextParameters[i] = defaultContext.mkRealConst("p" + i);
-                smtParamDefinition += " ( declare-const p"+i+" Real ) ";
-            }
-        } else contextParameters = null;
-
+        synchronized (defaultContext) {
+            if(parameterCount() > 0) {
+                contextParameters = new RealExpr[parameterCount()];
+                for(int i = 0; i < parameterCount(); i++) {
+                    contextParameters[i] = defaultContext.mkRealConst("p" + i);
+                    smtParamDefinition += " ( declare-const p"+i+" Real ) ";
+                }
+            } else contextParameters = null;
+        }
     }
 
     public String getSmtParamDefinition() {
@@ -136,30 +140,32 @@ public class OdeModel {
         return new ColorFormulae(defaultContext, defaultSolver, defaultGoal, defaultTactic, defaultContext.mkAnd(exprs));
 */
         // creation of new ColorFormulae instance with initial defaultContext parameter with always satisfiable constrain
-        @NotNull ColorFormulae set = new ColorFormulae(defaultContext, defaultSolver, defaultGoal, defaultTactic, defaultContext.mkTrue());
+        @NotNull ColorFormulae set = new ColorFormulae(defaultContext, defaultSolver, defaultGoal, defaultTactic, tt);
         return set;
     }
 
     @NotNull
     public ColorFormulae getParameterBounds() {
         // creation of new ColorFormulae with defaultContext as initial parameter and initial constrains
-        BoolExpr[] exprs = new BoolExpr[parameterCount()];
-        for(int i = 0; i < parameterCount(); i++) {
-            Range<Double> range = getParameterRange().get(i);
-            RealExpr lower = defaultContext.mkReal(range.lowerEndpoint().toString());
-            RealExpr upper = defaultContext.mkReal(range.upperEndpoint().toString());
+        synchronized (defaultContext) {
+            BoolExpr[] exprs = new BoolExpr[parameterCount()];
+            for(int i = 0; i < parameterCount(); i++) {
+                Range<Double> range = getParameterRange().get(i);
+                RealExpr lower = defaultContext.mkReal(range.lowerEndpoint().toString());
+                RealExpr upper = defaultContext.mkReal(range.upperEndpoint().toString());
 
-            // setting bounds on parameter space as intervals
-            exprs[i] = defaultContext.mkAnd(defaultContext.mkGt(getContextParameter(i),lower),defaultContext.mkLt(getContextParameter(i),upper));
+                // setting bounds on parameter space as intervals
+                exprs[i] = defaultContext.mkAnd(defaultContext.mkGt(getContextParameter(i),lower),defaultContext.mkLt(getContextParameter(i),upper));
+            }
+            return new ColorFormulae(defaultContext, defaultSolver, defaultGoal, defaultTactic, defaultContext.mkAnd(exprs));
         }
-        return new ColorFormulae(defaultContext, defaultSolver, defaultGoal, defaultTactic, defaultContext.mkAnd(exprs));
     }
 
     @NotNull
     public ColorFormulae getEmptyColorSet() {
 
         // creation of new ColorFormulae instance with initial defaultContext parameter with unsatisfiable constrain
-        @NotNull ColorFormulae set = new ColorFormulae(defaultContext, defaultSolver, defaultGoal, defaultTactic, defaultContext.mkFalse());
+        @NotNull ColorFormulae set = new ColorFormulae(defaultContext, defaultSolver, defaultGoal, defaultTactic, ff);
         return set;
     }
 

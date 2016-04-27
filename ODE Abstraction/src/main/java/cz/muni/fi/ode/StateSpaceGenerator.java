@@ -172,46 +172,47 @@ public class StateSpaceGenerator {
 
             //ColorFormulae outgoingDirectionExpressions = new ColorFormulae(color.getContext());
             //ColorFormulae incomingDirectionExpressions = new ColorFormulae(color.getContext());
-            BoolExpr outgoingDirectionExpression = color.getContext().mkFalse();
-            BoolExpr incomingDirectionExpression = color.getContext().mkFalse();
+            BoolExpr outgoingDirectionExpression = model.ff;
+            BoolExpr incomingDirectionExpression = model.ff;
 
             // cycle for every vertices in lower (n-1)-dimensional facet of this state
             for (int[] vertex : vertices) {
 
                 calculateValue(vertex, dimension);
 
-                if(model.parameterCount() > 0) {
-                    // In this case model equations
-                    Context ctx = model.getDefaultContext(); //OR color.getContext();
-                    RealExpr zero = ctx.mkReal("0");
-                    RealExpr[] consts = new RealExpr[model.parameterCount()+1];
-                    int i = 0;
-                    for( ; i < model.parameterCount(); i++) {
-                        consts[i] = ctx.mkReal(equationConsts[i].toString());
+                final Context ctx = model.getDefaultContext();
+                synchronized (ctx) {
+                    if(model.parameterCount() > 0) {
+                        // In this case model equations
+                            RealExpr zero = ctx.mkReal("0");
+                            RealExpr[] consts = new RealExpr[model.parameterCount()+1];
+                            int i = 0;
+                            for( ; i < model.parameterCount(); i++) {
+                                consts[i] = ctx.mkReal(equationConsts[i].toString());
+                            }
+                            consts[i] = ctx.mkReal(equationConsts[i].toString());
+
+                            ArithExpr expr = ctx.mkMul(model.getContextParameter(0),consts[0]);
+                            for(i = 1; i < model.parameterCount(); i++) {
+                                expr = ctx.mkAdd(expr, ctx.mkMul(model.getContextParameter(i),consts[i]));
+                            }
+                            expr = ctx.mkAdd(expr, consts[i]);
+
+                            // on lower facet outgoing direction means equation's value is less or equal to zero and incoming means value is greater or equal to zero
+                            outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkGt(zero, expr));
+                            incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkLt(zero, expr));
+
+                    } else {
+                        // The case when model doesn't contain any parameter - whole equation becomes form f(x): 0 = c
+                        RealExpr zero = ctx.mkReal("0");
+                        RealExpr consts = ctx.mkReal(equationConsts[0].toString());
+
+                        // on lower facet outgoing direction means equation's value is less or equal to zero and incoming means value is greater or equal to zero
+                        outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkGt(zero, consts));
+                        incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkLt(zero, consts));
+                        //outgoingDirectionExpressions.addAssertion(ctx.mkGe(zero, consts).simplify());
+                        //incomingDirectionExpressions.addAssertion(ctx.mkLe(zero, consts).simplify());
                     }
-                    consts[i] = ctx.mkReal(equationConsts[i].toString());
-
-                    ArithExpr expr = ctx.mkMul(model.getContextParameter(0),consts[0]);
-                    for(i = 1; i < model.parameterCount(); i++) {
-                        expr = ctx.mkAdd(expr, ctx.mkMul(model.getContextParameter(i),consts[i]));
-                    }
-                    expr = ctx.mkAdd(expr, consts[i]);
-
-                    // on lower facet outgoing direction means equation's value is less or equal to zero and incoming means value is greater or equal to zero
-                    outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkGt(zero, expr));
-                    incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkLt(zero, expr));
-
-                } else {
-                    // The case when model doesn't contain any parameter - whole equation becomes form f(x): 0 = c
-                    Context ctx = model.getDefaultContext(); //OR color.getContext();
-                    RealExpr zero = ctx.mkReal("0");
-                    RealExpr consts = ctx.mkReal(equationConsts[0].toString());
-
-                    // on lower facet outgoing direction means equation's value is less or equal to zero and incoming means value is greater or equal to zero
-                    outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkGt(zero, consts));
-                    incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkLt(zero, consts));
-                    //outgoingDirectionExpressions.addAssertion(ctx.mkGe(zero, consts).simplify());
-                    //incomingDirectionExpressions.addAssertion(ctx.mkLe(zero, consts).simplify());
                 }
             }
 
@@ -255,44 +256,45 @@ public class StateSpaceGenerator {
             }
 
             vertices = computeBorderVerticesForState(from, dimension, false);
-            outgoingDirectionExpression = color.getContext().mkFalse();
-            incomingDirectionExpression = color.getContext().mkFalse();
+            outgoingDirectionExpression = model.ff;
+            incomingDirectionExpression = model.ff;
 
             // cycle for every vertices in higher (n-1)-dimensional facet of this state
             for (int[] vertex : vertices) {
 
                 calculateValue(vertex, dimension);
 
-                if(model.parameterCount() > 0) {
-                    // In this case model equations
-                    Context ctx = model.getDefaultContext(); //OR color.getContext();
-                    RealExpr zero = ctx.mkReal("0");
-                    RealExpr[] consts = new RealExpr[model.parameterCount()+1];
-                    int i = 0;
-                    for( ; i < model.parameterCount(); i++) {
+                final Context ctx = model.getDefaultContext(); //OR color.getContext();
+                synchronized (ctx) {
+                    if(model.parameterCount() > 0) {
+                        // In this case model equations
+                        RealExpr zero = ctx.mkReal("0");
+                        RealExpr[] consts = new RealExpr[model.parameterCount()+1];
+                        int i = 0;
+                        for( ; i < model.parameterCount(); i++) {
+                            consts[i] = ctx.mkReal(equationConsts[i].toString());
+                        }
                         consts[i] = ctx.mkReal(equationConsts[i].toString());
+
+                        ArithExpr expr = ctx.mkMul(model.getContextParameter(0),consts[0]);
+                        for(i = 1; i < model.parameterCount(); i++) {
+                            expr = ctx.mkAdd(expr, ctx.mkMul(model.getContextParameter(i),consts[i]));
+                        }
+                        expr = ctx.mkAdd(expr, consts[i]);
+
+                        // on upper facet outgoing direction means equation's value is greater or equal to zero and incoming means value is less or equal to zero
+                        outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkLt(zero, expr));
+                        incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkGt(zero, expr));
+
+                    } else {
+                        // The case when model doesn't contain any parameter - whole equation becomes form f(x): 0 = c
+                        RealExpr zero = ctx.mkReal("0");
+                        RealExpr consts = ctx.mkReal(equationConsts[0].toString());
+
+                        // on upper facet outgoing direction means equation's value is greater or equal to zero and incoming means value is less or equal to zero
+                        outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkLt(zero, consts));
+                        incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkGt(zero, consts));
                     }
-                    consts[i] = ctx.mkReal(equationConsts[i].toString());
-
-                    ArithExpr expr = ctx.mkMul(model.getContextParameter(0),consts[0]);
-                    for(i = 1; i < model.parameterCount(); i++) {
-                        expr = ctx.mkAdd(expr, ctx.mkMul(model.getContextParameter(i),consts[i]));
-                    }
-                    expr = ctx.mkAdd(expr, consts[i]);
-
-                    // on upper facet outgoing direction means equation's value is greater or equal to zero and incoming means value is less or equal to zero
-                    outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkLt(zero, expr));
-                    incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkGt(zero, expr));
-
-                } else {
-                    // The case when model doesn't contain any parameter - whole equation becomes form f(x): 0 = c
-                    Context ctx = model.getDefaultContext(); //OR color.getContext();
-                    RealExpr zero = ctx.mkReal("0");
-                    RealExpr consts = ctx.mkReal(equationConsts[0].toString());
-
-                    // on upper facet outgoing direction means equation's value is greater or equal to zero and incoming means value is less or equal to zero
-                    outgoingDirectionExpression = ctx.mkOr(outgoingDirectionExpression, ctx.mkLt(zero, consts));
-                    incomingDirectionExpression = ctx.mkOr(incomingDirectionExpression, ctx.mkGt(zero, consts));
                 }
             }
             // Checking part - using of SMT-solver

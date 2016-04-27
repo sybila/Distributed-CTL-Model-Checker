@@ -93,10 +93,8 @@ public class ColorFormulae implements ColorSet {
                 } else {*/
                     //BoolExpr orig = formula;
                 //first quick SAT check
-                solver.add(formula);
-                sat = solver.check() == Status.SATISFIABLE;
-                solver.reset();
-                if (sat) {
+                double r = Math.random();
+                if (r > 0.5) {
                     goal.add(formula);
                     long start = System.currentTimeMillis();
                     Goal[] result = tactic.apply(goal).getSubgoals();
@@ -110,6 +108,10 @@ public class ColorFormulae implements ColorSet {
                     formula = ctx.mkAnd(exprs);
                     //solverCache.put(orig, formula);
                     goal.reset();
+                } else {
+                    solver.add(formula);
+                    sat = solver.check() == Status.SATISFIABLE;
+                    solver.reset();
                 }
                 //}
                 return !sat;

@@ -94,7 +94,7 @@ public class ColorFormulae implements ColorSet {
                     //BoolExpr orig = formula;
                 //first quick SAT check
                 double r = Math.random();
-                if (r > 0.5) {
+                if (r > 0.8) {
                     goal.add(formula);
                     long start = System.currentTimeMillis();
                     Goal[] result = tactic.apply(goal).getSubgoals();

@@ -16,8 +16,8 @@ public class ColorFormulae implements ColorSet {
     private final Context ctx;
     private final Solver solver;
 
-    private static Map<BoolExpr, BoolExpr> solverCache = new HashMap<>();
-    public static int cacheHit = 0;
+    //private static Map<BoolExpr, BoolExpr> solverCache = new HashMap<>();
+    //public static int cacheHit = 0;
 
     private BoolExpr formula;
     private Boolean sat = null;
@@ -84,12 +84,12 @@ public class ColorFormulae implements ColorSet {
         synchronized (solver) {
             //System.out.println("SAT:"+sat);
             if (this.sat == null) {
-                if (solverCache.containsKey(formula)) {
+                /*if (solverCache.containsKey(formula)) {
                     cacheHit += 1;
                     this.formula = solverCache.get(formula);
                     sat = !formula.isFalse();
-                } else {
-                    BoolExpr orig = formula;
+                } else {*/
+                    //BoolExpr orig = formula;
                     goal.add(formula);
                     long start = System.currentTimeMillis();
                     Goal[] result = tactic.apply(goal).getSubgoals();
@@ -101,9 +101,9 @@ public class ColorFormulae implements ColorSet {
                         exprs[i] = result[i].AsBoolExpr();
                     }
                     formula = ctx.mkAnd(exprs);
-                    solverCache.put(orig, formula);
+                    //solverCache.put(orig, formula);
                     goal.reset();
-                }
+                //}
                 return !sat;
             } else return !sat;
         }

@@ -83,8 +83,8 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Colo
             messageCount += 2;
             messageSize += 4 * buffer.length;
             messageSize += chars.length;
-            COMM.Bsend(buffer, 0, buffer.length, MPI.INT, destinationNode, TAG);
-            COMM.Bsend(chars, 0, chars.length, MPI.CHAR, destinationNode, TAG);
+            COMM.Isend(buffer, 0, buffer.length, MPI.INT, destinationNode, TAG);
+            COMM.Isend(chars, 0, chars.length, MPI.CHAR, destinationNode, TAG);
         }
     }
 

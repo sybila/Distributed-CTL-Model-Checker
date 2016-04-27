@@ -130,7 +130,7 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Colo
         @NotNull int[] buffer = new int[2*dimensions + 4];
         buffer[0] = FINISH;
         //we have to finish other nodes because we can't send messages to ourselves (BUG)
-        COMM.Bsend(buffer, 0, buffer.length, MPI.INT, (COMM.Rank() + 1) % COMM.Size(), TAG);
+        COMM.Isend(buffer, 0, buffer.length, MPI.INT, (COMM.Rank() + 1) % COMM.Size(), TAG);
     }
 
     private static int sum(@NotNull int[] array) {

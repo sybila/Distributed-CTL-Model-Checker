@@ -1,5 +1,6 @@
 package cz.muni.fi.ode;
 
+import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import cz.muni.fi.modelchecker.mpi.tasks.BlockingTaskMessenger;
 import cz.muni.fi.modelchecker.mpi.tasks.OnTaskListener;
@@ -103,19 +104,21 @@ public class MpiTaskMessenger extends BlockingTaskMessenger<CoordinateNode, Colo
             String full = model.getSmtParamDefinition() + "( assert "+formula+" )";
 	    // System.out.println(full);
             long start = System.currentTimeMillis();
+            BoolExpr e;
             synchronized (solverContext) {
-                @NotNull ColorFormulae colorSet = new ColorFormulae(
-                        solverContext,
-                        model.getDefaultSolver(),
-                        model.getDefaultGoal(),
-                        model.getDefaultTactic(),
-                        solverContext.parseSMTLIB2String(
-                                full,
-                                null, null, null, null)
-                );
-                parserTime += System.currentTimeMillis() - start;
-                taskListener.onTask(sender, source, dest, colorSet);
+                e = solverContext.parseSMTLIB2String(
+                        full,
+                        null, null, null, null);
             }
+            @NotNull ColorFormulae colorSet = new ColorFormulae(
+                    solverContext,
+                    model.getDefaultSolver(),
+                    model.getDefaultGoal(),
+                    model.getDefaultTactic(),
+                    e
+            );
+            parserTime += System.currentTimeMillis() - start;
+            taskListener.onTask(sender, source, dest, colorSet);
             return true;
         } else {
             return false;

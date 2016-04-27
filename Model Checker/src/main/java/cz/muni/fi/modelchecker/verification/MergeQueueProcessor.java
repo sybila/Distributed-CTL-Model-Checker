@@ -2,6 +2,7 @@ package cz.muni.fi.modelchecker.verification;
 
 import cz.muni.fi.ctl.formula.Formula;
 import cz.muni.fi.modelchecker.ModelAdapter;
+import cz.muni.fi.modelchecker.ModelChecker;
 import cz.muni.fi.modelchecker.StateSpacePartitioner;
 import cz.muni.fi.modelchecker.graph.ColorSet;
 import cz.muni.fi.modelchecker.graph.Node;
@@ -17,7 +18,6 @@ import java.util.Map;
  * Common functionality of the until operator processors.
  */
 abstract class MergeQueueProcessor<N extends Node, C extends ColorSet> implements FormulaProcessor, OnTaskListener<N,C> {
-
 
     @NotNull
     private final Terminator.TerminatorFactory terminatorFactory;
@@ -105,6 +105,7 @@ abstract class MergeQueueProcessor<N extends Node, C extends ColorSet> implement
     void addToQueue(N node, C colors) {
         synchronized (queue) {
             if (queue.containsKey(node)) {
+                ModelChecker.merged += 1;
                 queue.get(node).union(colors);
             } else {
                 queue.put(node, colors);

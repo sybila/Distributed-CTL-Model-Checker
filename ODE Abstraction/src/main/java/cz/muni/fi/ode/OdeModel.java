@@ -43,6 +43,8 @@ public class OdeModel {
     BoolExpr ff = defaultContext.mkFalse();
     BoolExpr tt = defaultContext.mkTrue();
 
+    BoolExpr paramBounds;
+
     private String smtParamDefinition = "";
 
     public OdeModel(String filename) {
@@ -74,6 +76,20 @@ public class OdeModel {
                     smtParamDefinition += " ( declare-const p"+i+" Real ) ";
                 }
             } else contextParameters = null;
+
+            //create parameter bounds
+            BoolExpr[] exprs = new BoolExpr[parameterCount()];
+            for(int i = 0; i < parameterCount(); i++) {
+                Range<Double> range = getParameterRange().get(i);
+                RealExpr lower = defaultContext.mkReal(range.lowerEndpoint().toString());
+                RealExpr upper = defaultContext.mkReal(range.upperEndpoint().toString());
+
+                // setting bounds on parameter space as intervals
+                exprs[i] = defaultContext.mkAnd(defaultContext.mkGt(getContextParameter(i),lower),defaultContext.mkLt(getContextParameter(i),upper));
+            }
+            paramBounds = defaultContext.mkAnd(exprs);
+
+            defaultSolver.add(paramBounds);
         }
     }
 

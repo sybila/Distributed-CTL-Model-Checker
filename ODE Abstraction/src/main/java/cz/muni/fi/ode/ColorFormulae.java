@@ -95,7 +95,7 @@ public class ColorFormulae implements ColorSet {
                 //first quick SAT check
                 double r = Math.random();
                 if (r > 0.8) {
-                    goal.add(formula);
+                    goal.add(ctx.mkAnd(formula, ctx.mkAnd(solver.getAssertions())));
                     long start = System.currentTimeMillis();
                     Goal[] result = tactic.apply(goal).getSubgoals();
                     timeSpentInSolver += System.currentTimeMillis() - start;
@@ -109,9 +109,7 @@ public class ColorFormulae implements ColorSet {
                     //solverCache.put(orig, formula);
                     goal.reset();
                 } else {
-                    solver.add(formula);
-                    sat = solver.check() == Status.SATISFIABLE;
-                    solver.reset();
+                    sat = solver.check(formula) == Status.SATISFIABLE;
                 }
                 //}
                 return !sat;
@@ -140,10 +138,8 @@ public class ColorFormulae implements ColorSet {
     public boolean encloses(@NotNull ColorSet set) {
         synchronized (ctx) {
             BoolExpr subtract = ctx.mkAnd(((ColorFormulae) set).formula, ctx.mkNot(formula));//ctx.mkAnd(formula, ctx.mkNot(((ColorFormulae) set).formula));
-            solver.add(subtract);
             // System.out.println("Encloses"+subtract);
-            boolean sat = solver.check() == Status.SATISFIABLE;
-            solver.reset();
+            boolean sat = solver.check(subtract) == Status.SATISFIABLE;
             return !sat;
         }
     }

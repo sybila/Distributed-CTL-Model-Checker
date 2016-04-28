@@ -18,7 +18,7 @@ import java.nio.ByteBuffer;
 public class ODEMain {
 
     static {
-        //System.out.println(System.getProperty("java.library.path"));
+        System.out.println(System.getProperty("java.library.path"));
         NativeUtils.loadLibrary("ODE");
         NativeUtils.loadLibrary("z3");  //windows does not like the java suffix.
         NativeUtils.loadLibrary("z3java");

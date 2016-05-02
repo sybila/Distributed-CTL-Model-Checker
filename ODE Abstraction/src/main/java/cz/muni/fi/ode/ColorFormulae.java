@@ -95,7 +95,10 @@ public class ColorFormulae implements ColorSet {
                 //first quick SAT check
                 double r = Math.random();
                 if (r > 0.5) {
-                    goal.add(ctx.mkAnd(formula, ctx.mkAnd(solver.getAssertions())));
+                   // goal.add(ctx.mkAnd(formula, ctx.mkAnd(solver.getAssertions())));
+                    //System.out.println("From: "+formula);
+                    goal.add(formula);
+                    //goal.add(solver.getAssertions());
                     long start = System.currentTimeMillis();
                     Goal[] result = tactic.apply(goal).getSubgoals();
                     timeSpentInSolver += System.currentTimeMillis() - start;
@@ -103,6 +106,7 @@ public class ColorFormulae implements ColorSet {
                     sat = !result[0].AsBoolExpr().isFalse();
                     BoolExpr[] exprs = new BoolExpr[result.length];
                     for (int i=0; i<result.length; i++) {
+                       // System.out.println("Res: "+result[i].AsBoolExpr());
                         exprs[i] = result[i].AsBoolExpr();
                     }
                     formula = ctx.mkAnd(exprs);

@@ -148,6 +148,10 @@ public class ColorFormulae implements ColorSet {
         }
     }
 
+    public BoolExpr getFormula() {
+        return formula;
+    }
+
     public static ColorSet createCopy(@NotNull ColorSet set) {
         return new ColorFormulae((ColorFormulae) set);
     }

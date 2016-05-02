@@ -1,5 +1,8 @@
 package cz.muni.fi.frontend;
 
+import com.microsoft.z3.ArithExpr;
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
 import cz.muni.fi.ctl.FormulaNormalizer;
 import cz.muni.fi.ctl.FormulaParser;
 import cz.muni.fi.ctl.formula.Formula;
@@ -88,7 +91,11 @@ public class ODEMain {
                 @NotNull ColorFormulae colorSet = factory.validColorsFor(node, formula);
                 colorSet.intersect(parameterBounds);
                 if (!colorSet.isEmpty()) {
-                    System.out.println(model.coordinateString(node.coordinates)+" "+colorSet);
+                    if (args[args.length - 3].equals("--symba")) {
+                        System.out.println(model.coordinateString(node.coordinates)+" "+transform(colorSet.getFormula(), model.getDefaultContext()));
+                    } else {
+                        System.out.println(model.coordinateString(node.coordinates)+" "+colorSet.getFormula());
+                    }
                 }
             }
         }
@@ -106,6 +113,71 @@ public class ODEMain {
         System.err.println(MPI.COMM_WORLD.Rank()+" Merged from messages: "+ModelChecker.mergedFromMessages);
        // System.err.println(MPI.COMM_WORLD.Rank()+" Solver cache hit: "+ColorFormulae.cacheHit);
         System.exit(0);
+    }
+
+    private static BoolExpr transform(BoolExpr e, Context z3) {
+        if (e.isNot()) {
+            BoolExpr inner = (BoolExpr) e.getArgs()[0];
+            if (inner.isGT()) {
+                // ! (a > b) -> a <= b
+                return z3.mkLe((ArithExpr) inner.getArgs()[0], (ArithExpr) inner.getArgs()[1]);
+            } else if (inner.isLT()) {
+                // ! (a < b) -> a >= b
+                return z3.mkGe((ArithExpr) inner.getArgs()[0], (ArithExpr) inner.getArgs()[1]);
+            } else if (inner.isGE()) {
+                // ! (a >= b) -> a < b -> a <= b
+                return z3.mkLe((ArithExpr) inner.getArgs()[0], (ArithExpr) inner.getArgs()[1]);
+            } else if (inner.isLE()) {
+                // ! (a <= b) -> a > b -> a >= b
+                return z3.mkGe((ArithExpr) inner.getArgs()[0], (ArithExpr) inner.getArgs()[1]);
+            } else if (inner.isAnd()) {
+                // ! (a && b) -> !a || !b
+                BoolExpr[] children = new BoolExpr[inner.getNumArgs()];
+                for (int i=0; i < inner.getNumArgs(); i++) {
+                    children[i] = transform(z3.mkNot((BoolExpr) inner.getArgs()[i]), z3);
+                }
+                return z3.mkOr(children);
+            } else if (inner.isOr()) {
+                // ! (a || b) -> !a && !b
+                BoolExpr[] children = new BoolExpr[inner.getNumArgs()];
+                for (int i=0; i < inner.getNumArgs(); i++) {
+                    children[i] = transform(z3.mkNot((BoolExpr) inner.getArgs()[i]), z3);
+                }
+                return z3.mkAnd(children);
+            } else if (inner.isNot()) {
+                // ! ! a -> a
+                return transform((BoolExpr) inner.getArgs()[0], z3);
+            } else if (inner.isTrue()) {
+                return z3.mkFalse();
+            } else if (inner.isFalse()) {
+                return z3.mkTrue();
+            } else {
+                throw new IllegalStateException("Unexpected formula: "+e.toString());
+            }
+        } else if (e.isGT()) {
+            // (a > b) -> a >= b
+            return z3.mkGe((ArithExpr) e.getArgs()[0], (ArithExpr) e.getArgs()[1]);
+        } else if (e.isLT()) {
+            // (a < b) -> a <= b
+            return z3.mkLe((ArithExpr) e.getArgs()[0], (ArithExpr) e.getArgs()[1]);
+        } else if(e.isAnd()) {
+            //do nothing, just map
+            BoolExpr[] children = new BoolExpr[e.getNumArgs()];
+            for (int i=0; i < e.getNumArgs(); i++) {
+                children[i] = transform((BoolExpr) e.getArgs()[i], z3);
+            }
+            return z3.mkAnd(children);
+        } else if(e.isOr()) {
+            //do nothing, just map
+            BoolExpr[] children = new BoolExpr[e.getNumArgs()];
+            for (int i=0; i < e.getNumArgs(); i++) {
+                children[i] = transform((BoolExpr) e.getArgs()[i], z3);
+            }
+            return z3.mkOr(children);
+        } else {
+            //a proposition, just return
+            return e;
+        }
     }
 
 }
